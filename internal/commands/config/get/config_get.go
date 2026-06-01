@@ -29,7 +29,13 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get <key>",
 		Short: "Prints the value of a given configuration key.",
-		Long:  ``,
+		Long: heredoc.Docf(`By default, the lookup order is: environment variables, then the local
+		repository configuration, then the global configuration. Use %[1]s--global%[1]s to
+		read only from the global configuration file, or %[1]s--host%[1]s to read a
+		per-host setting.
+
+		If the key is not set, nothing is printed.
+		`, "`"),
 		Example: heredoc.Doc(`
   		$ glab config get editor
   		vim
