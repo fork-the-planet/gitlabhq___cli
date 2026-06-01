@@ -29,7 +29,12 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get <key-id>",
 		Short: "Returns a single GPG key specified by the ID.",
-		Long:  ``,
+		Long: heredoc.Docf(`Pass the ID of the key to return as an argument. Find key IDs by
+		running %[1]sglab gpg-key list --show-id%[1]s.
+
+		By default, the command prints the key's ID, public key, and creation date.
+		Use %[1]s--output json%[1]s to return the full key object.
+		`, "`"),
 		Example: heredoc.Doc(`
 			# Get GPG key with ID as argument
 			glab gpg-key get 7750633`),
