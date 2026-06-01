@@ -1,6 +1,7 @@
 package gpg
 
 import (
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -14,7 +15,11 @@ func NewCmdGPGKey(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gpg-key <command>",
 		Short: "Manage GPG keys registered with your GitLab account.",
-		Long:  "",
+		Long: heredoc.Doc(`
+			Add, list, get, and delete the GPG keys associated with your account.
+
+			GitLab uses GPG keys to verify the signatures on signed commits and tags.
+		`),
 	}
 
 	cmdutils.EnableRepoOverride(cmd, f)

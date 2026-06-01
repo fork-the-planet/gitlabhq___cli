@@ -29,7 +29,11 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete <key-id>",
 		Short: "Deletes a single GPG key specified by the ID.",
-		Long:  ``,
+		Long: heredoc.Docf(`Pass the ID of the key to delete as an argument. Find key IDs by
+		running %[1]sglab gpg-key list --show-id%[1]s.
+
+		This action is permanent and cannot be undone.
+		`, "`"),
 		Example: heredoc.Doc(`
 			# Delete GPG key with ID as argument
 			glab gpg-key delete 7750633`),

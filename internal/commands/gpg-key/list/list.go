@@ -31,9 +31,16 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "Get a list of GPG keys for the currently authenticated user.",
-		Long:  "",
+		Long: heredoc.Docf(`Each row shows the key and its creation date. Pass %[1]s--show-id%[1]s to
+		also display the key ID, which the %[1]sget%[1]s and %[1]sdelete%[1]s commands accept
+		as an argument.
+		`, "`"),
 		Example: heredoc.Doc(`
-			glab gpg-key list`),
+			# List your GPG keys
+			glab gpg-key list
+
+			# Include the key ID in the output
+			glab gpg-key list --show-id`),
 		Args: cobra.MaximumNArgs(1),
 		Annotations: map[string]string{
 			mcpannotations.Safe: "true",
