@@ -36,7 +36,12 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get <key-id>",
 		Short: "Returns a single SSH key specified by the ID.",
-		Long:  ``,
+		Long: heredoc.Docf(`Pass the key ID as an argument, or run the command without arguments
+		to select a key interactively. Find key IDs by running %[1]sglab ssh-key list --show-id%[1]s.
+
+		By default, the command prints the public key. Use %[1]s--output json%[1]s to return
+		the full key object.
+		`, "`"),
 		Example: heredoc.Doc(`
 			# Get ssh key with ID as argument
 			glab ssh-key get 7750633
