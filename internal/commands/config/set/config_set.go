@@ -28,10 +28,9 @@ func NewCmdSet(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set <key> <value>",
 		Short: "Updates configuration with the value of a given key.",
-		Long: `Update the configuration by setting a key to a value.
-Use 'glab config set --global' to set a global config.
-Specifying the '--host' flag also saves in the global configuration file.
-`,
+		Long: heredoc.Docf(`Use %[1]sglab config set --global%[1]s to write to the global configuration.
+		Specifying the %[1]s--host%[1]s flag also saves to the global configuration file.
+		`, "`"),
 		Example: heredoc.Doc(`
 glab config set editor vim
 glab config set token xxxxx --host gitlab.com

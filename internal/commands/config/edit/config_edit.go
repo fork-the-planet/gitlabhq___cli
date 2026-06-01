@@ -29,13 +29,12 @@ func NewCmdEdit(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "edit",
 		Short: "Opens the glab configuration file.",
-		Long: heredoc.Doc(`Opens the glab configuration file.
-The command uses the following order when choosing the editor to use:
+		Long: heredoc.Docf(`The command uses the following order when choosing the editor to use:
 
-1. 'glab_editor' field in the configuration file
-2. 'VISUAL' environment variable
-3. 'EDITOR' environment variable
-`),
+		1. %[1]sglab_editor%[1]s field in the configuration file.
+		1. %[1]sVISUAL%[1]s environment variable.
+		1. %[1]sEDITOR%[1]s environment variable.
+		`, "`"),
 		Example: heredoc.Doc(`
 			# Open the configuration file with the default editor
 			glab config edit
