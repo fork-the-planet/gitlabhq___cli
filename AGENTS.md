@@ -4,17 +4,58 @@ Go-based GitLab CLI. Entrypoint: `cmd/glab/main.go`. Commands live under
 `internal/commands/<noun>/<verb>/` (noun-first grammar, for example,
 `glab mr create`).
 
-## Project structure
+## Common tasks
 
-- `cmd/glab/` - CLI entrypoint; sets up Cobra root command and theme.
-- `cmd/gen-docs/` - Doc generator invoked by `make gen-docs`.
-- `internal/commands/` - Command implementations, one package per command.
-- `internal/cmdutils/` - Shared command-building helpers. Only
-  `internal/commands/**` can import this, enforced by `depguard` in
-  `.golangci.yml`.
-- `internal/api/`, `internal/auth/`, `internal/config/`, `internal/git/`,
-  `internal/glrepo/`, `internal/iostreams/` - Shared infrastructure.
-- `docs/source/` - Generated from Go source. Never edit directly.
+For each common task, the one non-discoverable pointer the agent can't
+infer from reading the tree.
+
+- **Adding or editing a command** — first read the matching block of
+  [`.gitlab/duo/mr-review-instructions.yaml`](.gitlab/duo/mr-review-instructions.yaml).
+  It is the canonical source for code conventions (command structure,
+  flag handling, IO streams, API client and pagination, test setup,
+  test discipline) and is what GitLab Duo Code Review grades MRs
+  against. Blocks are scoped by `fileFilters`, so only the ones that
+  match the file you are editing apply.
+- **Looking for a helper before writing a new one** — the most common
+  feedback on this project is "use the existing helper":
+  - `internal/cmdutils/` — flag wiring (`EnableRepoOverride`,
+    `EnableJSONOutput`, `NewEnumValue`), the `Factory` interface.
+  - `internal/testing/cmdtest/` — test setup (`SetupCmdForTest`,
+    `NewTestFactory`, `WithStdin`/`WithBranch`/`WithGitLabClient`).
+  - `internal/iostreams/` — all output (`LogInfo*`, `LogError*`,
+    `PrintJSON`) and interactive prompts (`Confirm`, `Input`, `Select`).
+  - `internal/glrepo/` — repository interface.
+  - `internal/tableprinter/` — formatted text output.
+  - `internal/text/` — `ExperimentalString`, `BetaString`.
+- **Copying from a canonical example**:
+  - New command: `internal/commands/gpg-key/get/get.go`.
+  - Paginated list command: `internal/commands/securefile/list/list.go`.
+  - Command tests with API mocks:
+    `internal/commands/gpg-key/get/get_test.go`.
+  - JSON output assertion test:
+    `internal/commands/runnercontroller/token/list/list_test.go`.
+- **Updating a command's docs** — author the change in the Go source
+  (`Short`, `Long`, `Example`, flag descriptions on the `cobra.Command`),
+  run `make gen-docs`, commit the regenerated files under `docs/source/`
+  in the same commit. Never edit `docs/source/` directly.
+- **Reviewing MR feedback** — use the `glab` CLI (or `glab` MCP tools)
+  end-to-end, not raw `glab api`:
+  - Fetch: `glab mr view <id> --output json`.
+  - Reply: `glab mr note create --reply <discussion-id> --message "..."`.
+  - Resolve: `glab mr note resolve <discussion-id>`. Pass **only** the
+    discussion ID — a trailing MR ID argument errors out.
+  - Add a new inline diff comment:
+    `glab mr note create --file <path> --line <N>` (or `--line N:M`, or
+    `--old-line N` for a deletion).
+- **Creating an MR that references an issue** — add
+  `/copy_metadata #<issue-id>` on its own line in the description.
+  GitLab copies the issue's labels and milestone, so the
+  `glab mr create --label` flags aren't needed.
+- **Naming a new command or writing a commit message** — verbs follow
+  noun-first grammar (`create`, `list`, `get`, `update`, `delete`);
+  see `CONTRIBUTING.md` "Grammar" before introducing a new verb.
+  Commit messages are Conventional Commits, enforced by the
+  `commit-msg` hook through `scripts/commit-lint` (needs Node.js).
 
 ## Verify changes before you push
 
@@ -71,72 +112,13 @@ set (see `GetHostOrSkip` in `test/helpers.go`). The token must have the
 `api` scope. The
 `glab duo` tests require a GitLab Duo-enabled user.
 
-## Documentation is generated
-
-- Never edit files under `docs/source/`. They are regenerated from each
-  `cobra.Command`'s `Short`, `Long`, `Example`, and flag description fields
-  by `cmd/gen-docs/docs.go` through `make gen-docs`.
-- The pre-commit hook regenerates docs when `internal/commands/**` changes,
-  and fails if the result differs from what is committed. After you change
-  a command, run `make gen-docs` and stage `docs/`.
-- The pre-push hook also runs `make generate` and fails on drift.
-- Follow the [GitLab CLI (glab) documentation style guide](https://docs.gitlab.com/development/documentation/cli_styleguide/).
-
-## Lint rules to watch for
-
-`.golangci.yml` enforces the following rules:
-
-- Do not send raw JSON to stdout. Use `iostreams.IOStreams.PrintJSON()`
-  instead of `json.Marshal` or `json.NewEncoder` for stdout output. For
-  non-stdout serialization, add `//nolint:forbidigo` with a reason. See
-  the `forbidigo` configuration.
-- Imports of `internal/cmdutils` are forbidden outside
-  `internal/commands/**`.
-- Pre-push runs `golangci-lint run --new-from-rev=origin/main`, which only
-  flags new issues compared to `main`.
-
-## Command conventions
-
-[`.gitlab/duo/mr-review-instructions.yaml`](.gitlab/duo/mr-review-instructions.yaml)
-is the source that GitLab Duo Code Review enforces. Before you make changes in
-`internal/commands/**`, read the matching `fileFilters` section:
-`Commands`, `Command documentation`, or `Command tests`.
-
-Highlights:
-
-- Noun-first verbs with shared semantics: `create`, `list`, `get`,
-  `update`, and `delete`. See the `Grammar` section in `CONTRIBUTING.md`
-  before you introduce a new verb.
-- The per-command options struct is unexported and named `options`, not
-  `xxxOptions`. The constructor, if present, is `newOptions`, and the
-  `NewCmd*` factory takes a `cmdutils.Factory`. Implement only the needed
-  subset of `complete`, `validate`, and `run`. Copy the pattern from a
-  neighboring command.
-- Commit messages use Conventional Commits, enforced by the `commit-msg`
-  hook through `scripts/commit-lint`. Requires Node.js.
-
-## Skills
-
-`internal/commands/skills/` has a dedicated pre-commit validator
-(`go test ./internal/commands/skills/...`) that catches a missing
-`SKILL.md`, bad front matter, an empty `name` or `description`,
-asset-directory mismatches, and malformed registry entries. Run it after
-you change anything under that tree.
-
 ## Environment variables
 
-- `GITLAB_TOKEN` - API token. Overrides configuration.
-- `GITLAB_HOST`, `GITLAB_URI`, `GL_HOST` - Default GitLab instance,
+- `GITLAB_TOKEN` — API token. Overrides configuration.
+- `GITLAB_HOST`, `GITLAB_URI`, `GL_HOST` — Default GitLab instance,
   outside Git repositories.
-- `GLAB_CONFIG_DIR` - Overrides the configuration directory. Highest priority.
-- `GLAB_ENABLE_CI_AUTOLOGIN=true` - Together with `GITLAB_CI=true`,
+- `GLAB_CONFIG_DIR` — Overrides the configuration directory. Highest priority.
+- `GLAB_ENABLE_CI_AUTOLOGIN=true` — Together with `GITLAB_CI=true`,
   enables `CI_JOB_TOKEN` auto-login.
-- `DEBUG=true` - Verbose logging for Git commands, expanded aliases, and
+- `DEBUG=true` — Verbose logging for Git commands, expanded aliases, and
   DNS.
-
-## Create merge requests
-
-When a merge request relates to an issue, add `/copy_metadata #<issue-id>`
-on its own line in the description. GitLab copies the issue's labels,
-milestone, and related metadata to the merge request, so you do not need
-`glab mr create --label` flags.
