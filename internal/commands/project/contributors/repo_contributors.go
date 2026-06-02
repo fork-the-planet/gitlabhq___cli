@@ -37,6 +37,11 @@ func NewCmdContributors(f cmdutils.Factory) *cobra.Command {
 	repoContributorsCmd := &cobra.Command{
 		Use:   "contributors",
 		Short: `Get repository contributors list.`,
+		Long: heredoc.Docf(`
+			Lists the users who have contributed commits to the repository, with
+			each contributor's commit count. Use %[1]s--repo%[1]s to target a different
+			repository.
+		`, "`"),
 		Example: heredoc.Doc(`
 			# List contributors for the current repository
 			glab repo contributors

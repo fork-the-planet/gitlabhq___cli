@@ -44,7 +44,7 @@ func NewCmdMirror(f cmdutils.Factory) *cobra.Command {
 	}
 
 	projectMirrorCmd := &cobra.Command{
-		Use:   "mirror [ID | URL | PATH] [flags]",
+		Use:   "mirror [<id | url | path>] [flags]",
 		Short: "Configure mirroring on an existing project to sync with a remote repository.",
 		Long: heredoc.Docf(`
 			Configure repository mirroring for an existing GitLab project.

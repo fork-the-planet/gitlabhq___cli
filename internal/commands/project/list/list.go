@@ -44,6 +44,11 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	repoListCmd := &cobra.Command{
 		Use:   "list",
 		Short: `Get list of repositories.`,
+		Long: heredoc.Docf(`
+			By default, lists the projects you own. Use %[1]s--all%[1]s to list every
+			project on the instance, %[1]s--group%[1]s to scope to one group, or
+			%[1]s--user%[1]s to list another user's projects.
+		`, "`"),
 		Example: heredoc.Doc(`
 			glab repo list`),
 		Args:    cobra.ExactArgs(0),

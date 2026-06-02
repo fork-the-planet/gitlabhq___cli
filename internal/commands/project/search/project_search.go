@@ -32,9 +32,13 @@ func NewCmdSearch(f cmdutils.Factory) *cobra.Command {
 	}
 
 	projectSearchCmd := &cobra.Command{
-		Use:     "search [flags]",
-		Short:   `Search for GitLab repositories and projects by name.`,
-		Long:    ``,
+		Use:   "search [flags]",
+		Short: `Search for GitLab repositories and projects by name.`,
+		Long: heredoc.Docf(`
+			Searches every project visible to you for a string in the project
+			name. Provide the query with %[1]s--search%[1]s, and use %[1]s-F json%[1]s for
+			machine-readable output.
+		`, "`"),
 		Args:    cobra.ExactArgs(0),
 		Aliases: []string{"find", "lookup"},
 		Example: heredoc.Doc(`

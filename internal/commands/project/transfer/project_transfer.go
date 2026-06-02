@@ -19,6 +19,11 @@ func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 	repoTransferCmd := &cobra.Command{
 		Use:   "transfer [repo] [flags]",
 		Short: `Transfer a repository to a new namespace.`,
+		Long: heredoc.Docf(`
+			Moves a project to a different group or user namespace. Specify the
+			destination with %[1]s--target-namespace%[1]s. You must have permission to
+			create projects in the target namespace.
+		`, "`"),
 		Example: heredoc.Doc(`
 			glab repo transfer profclems/glab --target-namespace notprofclems`),
 		Args: cobra.MaximumNArgs(1),

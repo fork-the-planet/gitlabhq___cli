@@ -1,6 +1,7 @@
 package project
 
 import (
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -23,9 +24,13 @@ import (
 
 func NewCmdRepo(f cmdutils.Factory) *cobra.Command {
 	repoCmd := &cobra.Command{
-		Use:     "repo <command> [flags]",
-		Short:   `Work with GitLab repositories and projects.`,
-		Long:    ``,
+		Use:   "repo <command> [flags]",
+		Short: `Work with GitLab repositories and projects.`,
+		Long: heredoc.Doc(`
+			Create, clone, fork, view, and manage GitLab projects. List and
+			search for projects, and configure project settings such as
+			mirroring and members.
+		`),
 		Aliases: []string{"project"},
 	}
 

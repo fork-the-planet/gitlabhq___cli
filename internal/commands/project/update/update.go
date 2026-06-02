@@ -48,7 +48,11 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update [path] [flags]",
 		Short: `Update an existing GitLab project or repository.`,
-		Args:  cobra.MaximumNArgs(1),
+		Long: heredoc.Docf(`
+			Change project settings such as the description or default branch, or
+			archive and unarchive the project with %[1]s--archive%[1]s.
+		`, "`"),
+		Args: cobra.MaximumNArgs(1),
 		Example: heredoc.Doc(`
 			# Update the description for my-project.
 			glab repo update my-project --description "This project is cool."
