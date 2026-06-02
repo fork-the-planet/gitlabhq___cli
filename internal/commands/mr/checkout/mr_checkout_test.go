@@ -14,6 +14,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go/v2"
 	gitlabtesting "gitlab.com/gitlab-org/api/client-go/v2/testing"
 
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/git"
@@ -60,7 +61,9 @@ func setupTest(t *testing.T, testClient *gitlabtesting.TestClient, opts ...cmdte
 }
 
 func TestMrCheckout(t *testing.T) {
+	t.Parallel()
 	t.Run("when a valid MR is checked out using MR id", func(t *testing.T) {
+		t.Parallel()
 		testClient := gitlabtesting.NewTestClient(t)
 
 		testClient.MockMergeRequests.EXPECT().
@@ -105,6 +108,7 @@ func TestMrCheckout(t *testing.T) {
 	})
 
 	t.Run("when a valid MR comes from a forked private project", func(t *testing.T) {
+		t.Parallel()
 		testClient := gitlabtesting.NewTestClient(t)
 
 		testClient.MockMergeRequests.EXPECT().
@@ -153,6 +157,7 @@ func TestMrCheckout(t *testing.T) {
 	})
 
 	t.Run("when a valid MR is checked out using MR id and specifying branch", func(t *testing.T) {
+		t.Parallel()
 		testClient := gitlabtesting.NewTestClient(t)
 
 		testClient.MockMergeRequests.EXPECT().
@@ -197,6 +202,7 @@ func TestMrCheckout(t *testing.T) {
 	})
 
 	t.Run("when initial fetch fails but retry succeeds", func(t *testing.T) {
+		t.Parallel()
 		testClient := gitlabtesting.NewTestClient(t)
 
 		testClient.MockMergeRequests.EXPECT().
@@ -241,6 +247,7 @@ func TestMrCheckout(t *testing.T) {
 	})
 
 	t.Run("when fetch fails completely", func(t *testing.T) {
+		t.Parallel()
 		testClient := gitlabtesting.NewTestClient(t)
 
 		testClient.MockMergeRequests.EXPECT().
@@ -281,6 +288,7 @@ func TestMrCheckout(t *testing.T) {
 	})
 
 	t.Run("when checkout fails", func(t *testing.T) {
+		t.Parallel()
 		testClient := gitlabtesting.NewTestClient(t)
 
 		testClient.MockMergeRequests.EXPECT().
@@ -323,6 +331,7 @@ func TestMrCheckout(t *testing.T) {
 	})
 
 	t.Run("when git config fails", func(t *testing.T) {
+		t.Parallel()
 		testClient := gitlabtesting.NewTestClient(t)
 
 		testClient.MockMergeRequests.EXPECT().
@@ -362,6 +371,7 @@ func TestMrCheckout(t *testing.T) {
 	})
 
 	t.Run("when diverged without --force and non-interactive", func(t *testing.T) {
+		t.Parallel()
 		testClient := newDivergenceTestClient(t)
 
 		ctrl := gomock.NewController(t)
@@ -377,13 +387,14 @@ func TestMrCheckout(t *testing.T) {
 		exec := setupTest(t, testClient, cmdtest.WithGitRunner(mockGit))
 		_, err := exec("123")
 
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "--force")
 		var fe cmdutils.FlagError
-		assert.ErrorAs(t, err, &fe)
+		require.ErrorAs(t, err, &fe)
 	})
 
 	t.Run("when --force, on target, clean", func(t *testing.T) {
+		t.Parallel()
 		testClient := newDivergenceTestClient(t)
 
 		ctrl := gomock.NewController(t)
@@ -406,10 +417,11 @@ func TestMrCheckout(t *testing.T) {
 		exec := setupTest(t, testClient, cmdtest.WithGitRunner(mockGit))
 		_, err := exec("123 --force")
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("when --force, on target, tracked modifications refuse", func(t *testing.T) {
+		t.Parallel()
 		testClient := newDivergenceTestClient(t)
 
 		ctrl := gomock.NewController(t)
@@ -426,11 +438,12 @@ func TestMrCheckout(t *testing.T) {
 		exec := setupTest(t, testClient, cmdtest.WithGitRunner(mockGit))
 		_, err := exec("123 --force")
 
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "changes that would be lost")
 	})
 
 	t.Run("when --force, on target, untracked file conflicts with incoming", func(t *testing.T) {
+		t.Parallel()
 		testClient := newDivergenceTestClient(t)
 
 		ctrl := gomock.NewController(t)
@@ -449,11 +462,12 @@ func TestMrCheckout(t *testing.T) {
 		exec := setupTest(t, testClient, cmdtest.WithGitRunner(mockGit))
 		_, err := exec("123 --force")
 
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "changes that would be lost")
 	})
 
 	t.Run("when --force, on target, unrelated untracked file allowed", func(t *testing.T) {
+		t.Parallel()
 		testClient := newDivergenceTestClient(t)
 
 		ctrl := gomock.NewController(t)
@@ -477,10 +491,11 @@ func TestMrCheckout(t *testing.T) {
 		exec := setupTest(t, testClient, cmdtest.WithGitRunner(mockGit))
 		_, err := exec("123 --force")
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("when --force, not on target", func(t *testing.T) {
+		t.Parallel()
 		testClient := newDivergenceTestClient(t)
 
 		ctrl := gomock.NewController(t)
@@ -501,7 +516,7 @@ func TestMrCheckout(t *testing.T) {
 		exec := setupTest(t, testClient, cmdtest.WithGitRunner(mockGit))
 		_, err := exec("123 --force")
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -626,12 +641,13 @@ func TestUnsafeToReset(t *testing.T) {
 			mockGit := git_testing.NewMockGitRunner(ctrl)
 			tc.mocks(mockGit.EXPECT())
 
-			got, err := unsafeToReset(mockGit)
+			o := &options{gr: mockGit}
+			got, err := o.unsafeToReset()
 
 			if tc.wantErr != nil {
-				assert.ErrorIs(t, err, tc.wantErr)
+				require.ErrorIs(t, err, tc.wantErr)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 			assert.Equal(t, tc.wantBlocked, got)
 		})
@@ -681,6 +697,7 @@ func TestMrCheckout_SetUpstreamTo(t *testing.T) {
 }
 
 func TestMrCheckout_HTTPSProtocolConfiguration(t *testing.T) {
+	t.Parallel()
 	testClient := gitlabtesting.NewTestClient(t)
 
 	testClient.MockMergeRequests.EXPECT().
@@ -722,6 +739,64 @@ func TestMrCheckout_HTTPSProtocolConfiguration(t *testing.T) {
 
 	exec := setupTest(t, testClient, cmdtest.WithGitRunner(mockGit), cmdtest.WithConfig(cfg))
 	output, err := exec("123")
+
+	require.NoError(t, err)
+	assert.Contains(t, output.Stderr(), "[new branch] refs/heads/feat-new-mr:feat-new-mr")
+	assert.Contains(t, output.Stderr(), "Switched to a new branch 'feat-new-mr'")
+}
+
+// TestMrCheckout_CrossHostURLUsesURLHostProtocol verifies that when an MR URL pointing at a
+// different host is given, the git_protocol lookup uses the URL's host (not the local repo's
+// host). Before the refactor, baseRepo came from f.BaseRepo(); now it comes from MRFromArgs,
+// which overrides baseRepo with the URL repo for cross-host URLs.
+func TestMrCheckout_CrossHostURLUsesURLHostProtocol(t *testing.T) {
+	t.Parallel()
+	testClient := gitlabtesting.NewTestClient(t)
+
+	testClient.MockMergeRequests.EXPECT().
+		GetMergeRequest("OWNER/REPO", int64(123), gomock.Any(), gomock.Any()).
+		Return(&gitlab.MergeRequest{
+			BasicMergeRequest: gitlab.BasicMergeRequest{
+				ID:              123,
+				IID:             123,
+				ProjectID:       3,
+				SourceProjectID: 3,
+				SourceBranch:    "feat-new-mr",
+				Title:           "test mr title",
+				Description:     "test mr description",
+				State:           "opened",
+			},
+		}, nil, nil)
+
+	testClient.MockProjects.EXPECT().
+		GetProject(gomock.Any(), gomock.Any()).
+		Return(&gitlab.Project{
+			ID:            3,
+			HTTPURLToRepo: "https://custom.host.com/OWNER/REPO.git",
+			SSHURLToRepo:  "git@custom.host.com:OWNER/REPO.git",
+		}, nil, nil)
+
+	ctrl := gomock.NewController(t)
+	mockGit := git_testing.NewMockGitRunner(ctrl)
+	// The fetch URL must use HTTPS (from custom.host.com's config), not SSH (from gitlab.com's config).
+	mockGit.EXPECT().GitWithIO(gomock.Any(), gomock.Any(), "fetch", "https://custom.host.com/OWNER/REPO.git", "refs/heads/feat-new-mr:feat-new-mr").
+		DoAndReturn(git.FetchStub("refs/heads/feat-new-mr:feat-new-mr"))
+	mockGit.EXPECT().Git("config", "branch.feat-new-mr.remote", "https://custom.host.com/OWNER/REPO.git").Return("", nil)
+	mockGit.EXPECT().Git("config", "branch.feat-new-mr.merge", "refs/heads/feat-new-mr").Return("", nil)
+	mockGit.EXPECT().GitWithIO(gomock.Any(), gomock.Any(), "checkout", "feat-new-mr").
+		DoAndReturn(git.CheckoutStub("feat-new-mr"))
+
+	cfg := config.NewBlankConfig()
+	err := cfg.Set("custom.host.com", "git_protocol", "https")
+	require.NoError(t, err)
+	// gitlab.com intentionally left with default (ssh) to distinguish the two hosts.
+
+	exec := setupTest(t, testClient,
+		cmdtest.WithGitRunner(mockGit),
+		cmdtest.WithConfig(cfg),
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, nil, "", "", api.WithGitLabClient(testClient.Client))),
+	)
+	output, err := exec("https://custom.host.com/OWNER/REPO/-/merge_requests/123")
 
 	require.NoError(t, err)
 	assert.Contains(t, output.Stderr(), "[new branch] refs/heads/feat-new-mr:feat-new-mr")
