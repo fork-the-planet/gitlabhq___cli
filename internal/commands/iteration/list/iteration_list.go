@@ -35,9 +35,13 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	}
 
 	iterationListCmd := &cobra.Command{
-		Use:     "list [flags]",
-		Short:   `List project iterations.`,
-		Long:    ``,
+		Use:   "list [flags]",
+		Short: `List project iterations.`,
+		Long: heredoc.Docf(`
+			By default, lists the iterations for the current project. Use
+			%[1]s--group%[1]s to list a group's iterations instead, or %[1]s--repo%[1]s to
+			target a project other than the current one.
+		`, "`"),
 		Aliases: []string{"ls"},
 		Example: heredoc.Doc(`
 			glab iteration list
