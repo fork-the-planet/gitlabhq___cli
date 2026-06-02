@@ -3,6 +3,7 @@ package list
 import (
 	"fmt"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go/v2"
@@ -31,7 +32,14 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: `List states.`,
-		Args:  cobra.NoArgs,
+		Long: heredoc.Doc(`
+			Lists the OpenTofu or Terraform states in the current project,
+			including each state's latest version serial and lock status.
+		`),
+		Example: heredoc.Doc(`
+			glab opentofu state list
+			glab opentofu state list -F json`),
+		Args: cobra.NoArgs,
 		Annotations: map[string]string{
 			mcpannotations.Destructive: "true",
 		},

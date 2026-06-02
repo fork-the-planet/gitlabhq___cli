@@ -1,6 +1,7 @@
 package state
 
 import (
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -15,6 +16,11 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "state <command> [flags]",
 		Short: `Work with the OpenTofu or Terraform states.`,
+		Long: heredoc.Doc(`
+			List the states in the current project, lock or unlock a state to
+			control concurrent access, download a state as JSON, or delete a
+			state or one of its versions.
+		`),
 	}
 
 	cmd.AddCommand(listCmd.NewCmd(f))

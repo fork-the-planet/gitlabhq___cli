@@ -43,6 +43,15 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 			Prompts for confirmation before deletion. Use %[1]s--force%[1]s to skip
 			the confirmation prompt.
 		`, "`"),
+		Example: heredoc.Doc(`
+			# Delete a state and all its versions
+			glab opentofu state delete production
+
+			# Delete only a specific version of a state, by serial
+			glab opentofu state delete production 42
+
+			# Delete without the confirmation prompt
+			glab opentofu state delete production --force`),
 		Args: cobra.MinimumNArgs(1),
 		Annotations: map[string]string{
 			mcpannotations.Destructive: "true",

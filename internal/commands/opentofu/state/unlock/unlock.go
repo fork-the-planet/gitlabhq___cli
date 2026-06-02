@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go/v2"
@@ -32,7 +33,13 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "unlock <state>",
 		Short: `Unlock the given state.`,
-		Args:  cobra.ExactArgs(1),
+		Long: heredoc.Doc(`
+			Unlocking a state releases a lock held on it, so others can modify
+			the state again.
+		`),
+		Example: heredoc.Doc(`
+			glab opentofu state unlock production`),
+		Args: cobra.ExactArgs(1),
 		Annotations: map[string]string{
 			mcpannotations.Destructive: "true",
 		},
