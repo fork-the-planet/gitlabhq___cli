@@ -64,8 +64,15 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	snippetCreateCmd := &cobra.Command{
 		Use: `create [flags] -t <title> <file1> [<file2>...]
 glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
-		Short:   `Create a new snippet.`,
-		Long:    ``,
+		Short: `Create a new snippet.`,
+		Long: heredoc.Docf(`
+			Provide one or more file paths to upload, or pass %[1]s--filename%[1]s and
+			pipe content from standard input.
+
+			Snippets are created in the current project by default. Use
+			%[1]s--personal%[1]s to create the snippet in your personal account instead,
+			and %[1]s--visibility%[1]s to control who can see it.
+		`, "`"),
 		Aliases: []string{"new"},
 		Example: heredoc.Doc(`
 			glab snippet create script.py --title "Title of the snippet"

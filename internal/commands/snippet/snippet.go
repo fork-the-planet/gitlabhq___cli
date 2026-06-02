@@ -12,7 +12,11 @@ func NewCmdSnippet(f cmdutils.Factory) *cobra.Command {
 	snippetCmd := &cobra.Command{
 		Use:   "snippet <command> [flags]",
 		Short: `Create, view and manage snippets.`,
-		Long:  ``,
+		Long: heredoc.Docf(`
+			Snippets store and share small pieces of code or text. A snippet can
+			belong to a project, or to your personal account when you pass
+			%[1]s--personal%[1]s.
+		`, "`"),
 		Example: heredoc.Doc(`
 			glab snippet create --title "Title of the snippet" --filename "main.go"`),
 		Annotations: map[string]string{
