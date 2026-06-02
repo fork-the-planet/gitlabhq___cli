@@ -44,9 +44,15 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:     "list [flags]",
-		Short:   "List your to-do items.",
-		Long:    ``,
+		Use:   "list [flags]",
+		Short: "List your to-do items.",
+		Long: heredoc.Docf(`
+			By default, lists your pending to-do items. Use %[1]s--state%[1]s to
+			show done or all items instead.
+
+			Narrow the results with %[1]s--action%[1]s to filter by why an item was
+			created, or %[1]s--type%[1]s to filter by its target type.
+		`, "`"),
 		Aliases: []string{"ls"},
 		Example: heredoc.Doc(`
 			glab todo list

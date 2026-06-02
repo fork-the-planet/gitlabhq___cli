@@ -30,7 +30,12 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "done [<id>] [flags]",
 		Short: "Mark a to-do item as done.",
-		Long:  ``,
+		Long: heredoc.Docf(`
+			Pass a to-do item's ID to mark that single item as done, or use
+			%[1]s--all%[1]s to mark every pending item as done at once.
+
+			Find item IDs with %[1]sglab todo list%[1]s.
+		`, "`"),
 		Example: heredoc.Doc(`
 			glab todo done 123
 			glab todo done --all

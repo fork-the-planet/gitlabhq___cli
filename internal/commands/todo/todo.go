@@ -13,7 +13,13 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 	todoCmd := &cobra.Command{
 		Use:   "todo <command> [flags]",
 		Short: "Manage your to-do list.",
-		Long:  ``,
+		Long: heredoc.Doc(`
+			Your to-do list collects the items that need your attention, such as
+			issues and merge requests where you were assigned, mentioned, or
+			asked to review.
+
+			List pending items, then mark them as done individually or all at once.
+		`),
 		Example: heredoc.Doc(`
 			glab todo list
 			glab todo done 123
