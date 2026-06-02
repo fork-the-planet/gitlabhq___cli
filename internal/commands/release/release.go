@@ -1,6 +1,7 @@
 package release
 
 import (
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -16,7 +17,14 @@ func NewCmdRelease(f cmdutils.Factory) *cobra.Command {
 	releaseCmd := &cobra.Command{
 		Use:   "release <command> [flags]",
 		Short: `Manage GitLab releases.`,
-		Long:  ``,
+		Long: heredoc.Docf(`
+			A release bundles a Git tag with release notes and downloadable
+			assets, such as binaries or source archives.
+
+			Create and update releases, list and view them, upload assets, and
+			download or delete releases. Use %[1]s--repo%[1]s to target a project other
+			than the current one.
+		`, "`"),
 	}
 
 	cmdutils.EnableRepoOverride(releaseCmd, f)

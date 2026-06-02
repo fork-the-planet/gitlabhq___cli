@@ -20,5 +20,5 @@ func Test_Release(t *testing.T) {
 	assert.NotNil(t, cmd.Root())
 	require.NoError(t, cmd.Execute())
 
-	assert.Contains(t, buf.String(), "Manage GitLab releases")
+	assert.Contains(t, buf.String(), "A release bundles a Git tag")
 }

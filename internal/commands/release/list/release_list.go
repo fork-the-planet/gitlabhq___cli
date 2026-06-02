@@ -3,6 +3,7 @@ package list
 import (
 	"fmt"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go/v2"
@@ -48,11 +49,20 @@ func NewCmdReleaseList(f cmdutils.Factory) *cobra.Command {
 	}
 
 	releaseListCmd := &cobra.Command{
-		Use:     "list [flags]",
-		Short:   `List releases in a repository.`,
-		Long:    ``,
+		Use:   "list [flags]",
+		Short: `List releases in a repository.`,
+		Long: heredoc.Docf(`
+			By default, lists the releases for the current project, most recent
+			first. Use %[1]s--repo%[1]s to target a different project, or %[1]s-F json%[1]s for
+			machine-readable output.
+		`, "`"),
 		Aliases: []string{"ls"},
 		Args:    cobra.ExactArgs(0),
+		Example: heredoc.Doc(`
+			glab release list
+			glab release list --per-page 50
+			glab release list -R owner/repository
+			glab release list -F json`),
 		Annotations: map[string]string{
 			mcpannotations.Safe: "true",
 		},

@@ -112,6 +112,11 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		   can be a commit SHA, another tag name, or a branch name.
 		4. Optional. To fetch the new tag locally after the release, run
 		   %[1]sgit fetch --tags origin%[1]s.
+
+		The %[1]s--publish-to-catalog%[1]s flag is an experiment: it might be
+		unstable or removed at any time, and is not ready for production use.
+		For more information, see
+		https://docs.gitlab.com/policy/development_stages_support/.
 		`, "`"),
 		Args: cmdutils.MinimumArgs(1, "no tag name provided."),
 		Example: heredoc.Docf(`
