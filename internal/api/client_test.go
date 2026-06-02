@@ -1,6 +1,7 @@
 package api
 
 import (
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -198,6 +199,65 @@ func TestNewClientFromConfig(t *testing.T) {
 			assert.Equal(t, tt.expectedBaseURL, client.BaseURL())
 		})
 	}
+}
+
+func TestNewClientFromConfig_DuoSessionID(t *testing.T) {
+	t.Setenv("GITLAB_TOKEN", "test-pat")
+	t.Setenv("GITLAB_DUO_SESSION_ID", "")
+
+	baseURL, _ := url.Parse("https://example.com/api")
+
+	t.Run("header injected when env var is set", func(t *testing.T) {
+		t.Setenv("GITLAB_DUO_SESSION_ID", "duo-session-abc123")
+
+		client, err := NewClientFromConfig("example.com", config.NewBlankConfig(), false, "test-agent")
+		require.NoError(t, err)
+
+		req, err := NewHTTPRequest(t.Context(), client, "GET", baseURL, nil, []string{}, false)
+		require.NoError(t, err)
+		assert.Equal(t, "duo-session-abc123", req.Header.Get("X-Gitlab-Duo-Session-Id"))
+	})
+
+	t.Run("no header when env var is empty", func(t *testing.T) {
+		t.Setenv("GITLAB_DUO_SESSION_ID", "")
+
+		client, err := NewClientFromConfig("example.com", config.NewBlankConfig(), false, "test-agent")
+		require.NoError(t, err)
+
+		req, err := NewHTTPRequest(t.Context(), client, "GET", baseURL, nil, []string{}, false)
+		require.NoError(t, err)
+		assert.Empty(t, req.Header.Get("X-Gitlab-Duo-Session-Id"))
+	})
+
+	t.Run("env var overrides X-Gitlab-Duo-Session-Id from config headers", func(t *testing.T) {
+		t.Setenv("GITLAB_DUO_SESSION_ID", "from-env")
+
+		cfg := config.NewFromString(`
+hosts:
+  example.com:
+    custom_headers:
+      - name: X-Gitlab-Duo-Session-Id
+        value: from-config
+`)
+
+		client, err := NewClientFromConfig("example.com", cfg, false, "test-agent")
+		require.NoError(t, err)
+
+		req, err := NewHTTPRequest(t.Context(), client, "GET", baseURL, nil, []string{}, false)
+		require.NoError(t, err)
+		assert.Equal(t, "from-env", req.Header.Get("X-Gitlab-Duo-Session-Id"))
+	})
+
+	t.Run("malformed session ID is ignored", func(t *testing.T) {
+		t.Setenv("GITLAB_DUO_SESSION_ID", "session\r\nid")
+
+		client, err := NewClientFromConfig("example.com", config.NewBlankConfig(), false, "test-agent")
+		require.NoError(t, err)
+
+		req, err := NewHTTPRequest(t.Context(), client, "GET", baseURL, nil, []string{}, false)
+		require.NoError(t, err)
+		assert.Empty(t, req.Header.Get("X-Gitlab-Duo-Session-Id"))
+	})
 }
 
 func TestNewClientFromConfig_OAuth2NoTokenReturnsError(t *testing.T) {
