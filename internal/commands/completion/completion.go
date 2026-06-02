@@ -109,6 +109,12 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 		more shell configuration to support completions.
 		For Homebrew, see [brew shell completion](https://docs.brew.sh/Shell-Completion)
 		`, "`", "```"),
+		Example: heredoc.Doc(`
+			# Load completions in the current zsh session
+			source <(glab completion -s zsh); compdef _glab glab
+
+			# Print the bash completion script
+			glab completion -s bash`),
 		Annotations: map[string]string{
 			mcpannotations.Safe: "true",
 		},

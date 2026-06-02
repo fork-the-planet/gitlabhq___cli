@@ -19,5 +19,5 @@ func TestIssueCmd(t *testing.T) {
 
 	require.NoError(t, cmd.Execute())
 
-	assert.Contains(t, buf.String(), "Interact with a GitLab user account.\n")
+	assert.Contains(t, buf.String(), "Look up information about GitLab users")
 }

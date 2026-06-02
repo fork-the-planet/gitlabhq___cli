@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -12,9 +13,14 @@ import (
 
 func NewCmdVersion(f cmdutils.Factory) *cobra.Command {
 	versionCmd := &cobra.Command{
-		Use:     "version",
-		Short:   "Show version information for glab.",
-		Long:    ``,
+		Use:   "version",
+		Short: "Show version information for glab.",
+		Long: heredoc.Doc(`
+			Prints the installed glab version and the commit it was built from.
+			Include this information when reporting a bug.
+		`),
+		Example: heredoc.Doc(`
+			glab version`),
 		Aliases: []string{"v"},
 		Annotations: map[string]string{
 			mcpannotations.Safe: "true",

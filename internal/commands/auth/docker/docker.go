@@ -78,6 +78,10 @@ func NewCmdCredentialHelper(f cmdutils.Factory) *cobra.Command {
 		Responds to Docker credential helper requests for GitLab container
 		registries. Docker invokes this command automatically.
 		`),
+		Example: heredoc.Doc(`
+		# Docker invokes the helper automatically; supported actions are 'store', 'get', and 'erase'.
+		# Retrieve the stored credentials for a registry:
+		echo registry.gitlab.com | glab auth docker-helper get`),
 		Annotations: map[string]string{
 			mcpannotations.Destructive: "true",
 		},

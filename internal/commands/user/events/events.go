@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go/v2"
@@ -18,7 +19,15 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "events",
 		Short: "View user events.",
-		Args:  cobra.ExactArgs(0),
+		Long: heredoc.Docf(`
+			By default, lists events for the current project. Use %[1]s--all%[1]s to
+			include events from every project you can access.
+		`, "`"),
+		Example: heredoc.Doc(`
+			glab user events
+			glab user events --all
+			glab user events -F json`),
+		Args: cobra.ExactArgs(0),
 		Annotations: map[string]string{
 			mcpannotations.Safe: "true",
 		},
