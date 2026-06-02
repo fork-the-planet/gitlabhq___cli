@@ -68,7 +68,7 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	cmdutils.NewBoolFlagPair(cmd, &opts.pause, "pause", "Pause the runner", "unpause", "Resume a paused runner")
+	cmdutils.NewBoolFlagPair(cmd, &opts.pause, "pause", "Pause the runner.", "unpause", "Resume a paused runner.")
 	cmd.MarkFlagsOneRequired("pause", "unpause")
 	return cmd
 }

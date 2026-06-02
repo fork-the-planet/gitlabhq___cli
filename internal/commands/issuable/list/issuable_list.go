@@ -156,7 +156,7 @@ func NewCmdList(f cmdutils.Factory, runE func(opts *ListOptions) error, issueTyp
 	issueListCmd.Flags().StringVar(&opts.Author, "author", "", fmt.Sprintf("Filter %s by author <username>.", issueType))
 	issueListCmd.Flags().StringVar(&opts.NotAuthor, "not-author", "", fmt.Sprintf("Filter %s by not being by author(s) <username>.", issueType))
 	issueListCmd.Flags().StringVar(&opts.Search, "search", "", "Search <string> in the fields defined by '--in'.")
-	issueListCmd.Flags().StringVar(&opts.In, "in", "title,description", "search in: title, description.")
+	issueListCmd.Flags().StringVar(&opts.In, "in", "title,description", "Search in: title, description.")
 	issueListCmd.Flags().StringSliceVarP(&opts.Labels, "label", "l", []string{}, fmt.Sprintf("Filter %s by label <name>. Multiple labels can be comma-separated or specified by repeating the flag.", issueType))
 	issueListCmd.Flags().StringSliceVar(&opts.NotLabels, "not-label", []string{}, fmt.Sprintf("Filter %s by lack of label <name>. Multiple labels can be comma-separated or specified by repeating the flag.", issueType))
 	issueListCmd.Flags().StringVarP(&opts.Milestone, "milestone", "m", "", fmt.Sprintf("Filter %s by milestone <id>.", issueType))
