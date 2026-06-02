@@ -22,7 +22,13 @@ func NewCmdIssue(f cmdutils.Factory) *cobra.Command {
 	issueCmd := &cobra.Command{
 		Use:   "issue [command] [flags]",
 		Short: `Work with GitLab issues.`,
-		Long:  ``,
+		Long: heredoc.Docf(`
+			Open issues, list and view them, and manage their lifecycle: assign,
+			label, comment, close, reopen, and more. Work with issue boards under
+			%[1]sissue board%[1]s.
+
+			Use %[1]s--repo%[1]s to target a project other than the current one.
+		`, "`"),
 		Example: heredoc.Doc(`
 			glab issue list
 			glab issue create --label --confidential

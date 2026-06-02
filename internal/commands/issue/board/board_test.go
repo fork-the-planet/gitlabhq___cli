@@ -19,5 +19,5 @@ func TestNewCmdBoard(t *testing.T) {
 
 	require.NoError(t, cmd.Execute())
 
-	assert.Contains(t, buf.String(), "Work with GitLab issue boards in the given project.\n")
+	assert.Contains(t, buf.String(), "Issue boards organize issues into lists")
 }

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"charm.land/huh/v2"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
@@ -48,7 +49,12 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	viewCmd := &cobra.Command{
 		Use:   "view [flags]",
 		Short: `View project issue board.`,
-		Long:  ``,
+		Long: heredoc.Doc(`
+			Opens an interactive view of the project's issue boards in your
+			terminal, where you can browse issues by list.
+		`),
+		Example: heredoc.Doc(`
+			glab issue board view`),
 		Annotations: map[string]string{
 			mcpannotations.Safe: "true",
 		},

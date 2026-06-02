@@ -18,7 +18,13 @@ func NewCmdIncident(f cmdutils.Factory) *cobra.Command {
 	incidentCmd := &cobra.Command{
 		Use:   "incident [command] [flags]",
 		Short: `Work with GitLab incidents.`,
-		Long:  ``,
+		Long: heredoc.Docf(`
+			Incidents track service disruptions and their resolution. List and
+			view incidents, comment on them, and subscribe, close, or reopen
+			them.
+
+			Use %[1]s--repo%[1]s to target a project other than the current one.
+		`, "`"),
 		Example: heredoc.Doc(`
 			glab incident list`),
 		Annotations: map[string]string{

@@ -24,9 +24,12 @@ var deleteIssue = func(client *gitlab.Client, projectID any, issueID int64) erro
 
 func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	issueDeleteCmd := &cobra.Command{
-		Use:     "delete <id>",
-		Short:   `Delete an issue.`,
-		Long:    ``,
+		Use:   "delete <id>",
+		Short: `Delete an issue.`,
+		Long: heredoc.Doc(`
+			Permanently deletes the issue. You can pass an issue ID or a full
+			issue URL.
+		`),
 		Aliases: []string{"del"},
 		Example: heredoc.Doc(`
 			glab issue delete 123

@@ -1,6 +1,7 @@
 package board
 
 import (
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -12,7 +13,11 @@ func NewCmdBoard(f cmdutils.Factory) *cobra.Command {
 	issueCmd := &cobra.Command{
 		Use:   "board [command] [flags]",
 		Short: `Work with GitLab issue boards in the given project.`,
-		Long:  ``,
+		Long: heredoc.Doc(`
+			Issue boards organize issues into lists, similar to a kanban board,
+			so you can track work as it moves between stages. Create a board, or
+			view one interactively in the terminal.
+		`),
 	}
 
 	issueCmd.AddCommand(boardCreateCmd.NewCmdCreate(f))

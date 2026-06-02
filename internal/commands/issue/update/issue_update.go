@@ -20,7 +20,11 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 	issueUpdateCmd := &cobra.Command{
 		Use:   "update <id>",
 		Short: `Update issue.`,
-		Long:  ``,
+		Long: heredoc.Docf(`
+			Change an issue's labels, assignees, milestone, title, or
+			description. Use %[1]s--label%[1]s and %[1]s--unlabel%[1]s to add or remove
+			labels.
+		`, "`"),
 		Example: heredoc.Doc(`
 			glab issue update 42 --label ui,ux
 			glab issue update 42 --unlabel working`),

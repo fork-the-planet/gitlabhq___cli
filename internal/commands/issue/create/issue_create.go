@@ -81,9 +81,18 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		config:       f.Config,
 	}
 	issueCreateCmd := &cobra.Command{
-		Use:     "create [flags]",
-		Short:   `Create an issue.`,
-		Long:    ``,
+		Use:   "create [flags]",
+		Short: `Create an issue.`,
+		Long: heredoc.Docf(`
+			Opens an editor to draft the issue unless you pass a title and
+			description. Use %[1]s--web%[1]s to create the issue in your browser, or
+			%[1]s--template%[1]s to start from an issue template.
+
+			The %[1]s--recover%[1]s flag is an experiment: it might be unstable or
+			removed at any time, and is not ready for production use. For more
+			information, see
+			https://docs.gitlab.com/policy/development_stages_support/.
+		`, "`"),
 		Aliases: []string{"new"},
 		Example: heredoc.Doc(`
 			glab issue create

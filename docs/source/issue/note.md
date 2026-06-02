@@ -26,6 +26,13 @@ glab issue note <issue-id> [flags]
 comment
 ```
 
+## Examples
+
+```console
+glab issue note 123 --message "Looking into this now."
+glab issue note 123
+```
+
 ## Options
 
 ```plaintext

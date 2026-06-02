@@ -3,6 +3,7 @@ package create
 import (
 	"fmt"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go/v2"
@@ -23,9 +24,15 @@ var createIssueBoard = func(client *gitlab.Client, projectID any, opts *gitlab.C
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	var boardName string
 	issueCmd := &cobra.Command{
-		Use:     "create [flags]",
-		Short:   `Create a project issue board.`,
-		Long:    ``,
+		Use:   "create [flags]",
+		Short: `Create a project issue board.`,
+		Long: heredoc.Doc(`
+			Creates a new issue board in the project. If you don't provide a
+			name, you're prompted for one.
+		`),
+		Example: heredoc.Doc(`
+			glab issue board create
+			glab issue board create "Sprint Board"`),
 		Aliases: []string{"new"},
 		Args:    cobra.MaximumNArgs(1),
 		Annotations: map[string]string{

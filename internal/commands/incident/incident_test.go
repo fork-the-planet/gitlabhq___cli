@@ -19,5 +19,5 @@ func TestIncidentCmd(t *testing.T) {
 
 	require.NoError(t, cmd.Execute())
 
-	assert.Contains(t, buf.String(), "Work with GitLab incidents.\n")
+	assert.Contains(t, buf.String(), "Incidents track service disruptions")
 }
