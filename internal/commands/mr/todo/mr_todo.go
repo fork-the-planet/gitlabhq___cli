@@ -23,6 +23,9 @@ func NewCmdTodo(f cmdutils.Factory) *cobra.Command {
 		Long: heredoc.Doc(`
 			Adding a to-do item flags the merge request for follow-up in your To-Do List.
 		`),
+		Example: heredoc.Doc(`
+			glab mr todo 123
+			glab mr todo branch-name`),
 		Args: cobra.MaximumNArgs(1),
 		Annotations: map[string]string{
 			mcpannotations.Destructive: "true",

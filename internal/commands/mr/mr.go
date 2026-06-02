@@ -31,7 +31,13 @@ func NewCmdMR(f cmdutils.Factory) *cobra.Command {
 	mrCmd := &cobra.Command{
 		Use:   "mr <command> [flags]",
 		Short: `Create, view, and manage merge requests.`,
-		Long:  ``,
+		Long: heredoc.Docf(`
+			Open a merge request from your current branch, list and view existing
+			merge requests, and manage them: approve, merge, rebase, comment, and
+			more.
+
+			Use %[1]s--repo%[1]s to target a project other than the current one.
+		`, "`"),
 		Example: heredoc.Doc(`
 			glab mr create --fill --label bugfix
 			glab mr merge 123

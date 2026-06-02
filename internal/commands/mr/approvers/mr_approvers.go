@@ -37,6 +37,9 @@ func NewCmdApprovers(f cmdutils.Factory) *cobra.Command {
 			Lists users and groups eligible to approve, based on the approval
 			rules configured for the project.
 		`),
+		Example: heredoc.Doc(`
+			glab mr approvers 123
+			glab mr approvers branch-name`),
 		Aliases: []string{},
 		Args:    cobra.MaximumNArgs(1),
 		Annotations: map[string]string{

@@ -102,6 +102,11 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			Defaults to the current branch as the source branch. Use %[1]s--fill%[1]s
 			to automatically fill the title and description from the commit history. Use
 			%[1]s--draft%[1]s to create a draft merge request.
+
+			The %[1]s--recover%[1]s flag is an experiment: it might be unstable or
+			removed at any time, and is not ready for production use. For more
+			information, see
+			https://docs.gitlab.com/policy/development_stages_support/.
 		`, "`"),
 		Aliases: []string{"new"},
 		Example: heredoc.Doc(`

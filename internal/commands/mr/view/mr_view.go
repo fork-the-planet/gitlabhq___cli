@@ -51,6 +51,11 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 		Long: heredoc.Docf(`
 			You can use a branch name or ID. Use %[1]s--web%[1]s to open in a browser.
 		`, "`"),
+		Example: heredoc.Doc(`
+			glab mr view 123
+			glab mr view branch-name
+			glab mr view 123 --comments
+			glab mr view 123 --web`),
 		Aliases: []string{"show"},
 		Args:    cobra.MaximumNArgs(1),
 		Annotations: map[string]string{
