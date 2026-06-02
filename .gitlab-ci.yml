@@ -234,8 +234,6 @@ check_go_generated_code:
     key:
       prefix: check-generated
   script:
-    # Workaround config.yaml.lock file permissions
-    - chmod 600 internal/config/config.yaml.lock
     - make generate
     - |
       echo "Checking git status"

@@ -189,10 +189,6 @@ generate: ## Run go generate
 list-todo: ## Detect FIXME, TODO and other comment keywords
 	golangci-lint run --enable=godox --disable-all
 
-.PHONY: gen-config
-gen-config: ## Generate config stub from lockfile
-	cd internal/config && go generate
-
 .PHONY: bootstrap
 bootstrap: ## Install development tools for git hooks
 	@./scripts/bootstrap.sh

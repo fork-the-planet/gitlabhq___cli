@@ -66,55 +66,50 @@ func TestConfigSet(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		config    configStub
-		args      []string
+		cli       string
 		expectKey string
-		stdout    string
-		stderr    string
-		isTTY     bool
 	}{
 		{
 			name:      "set key",
-			config:    configStub{},
-			args:      []string{"editor", "vim"},
+			cli:       "editor vim -g",
 			expectKey: "editor",
-			stdout:    "",
-			stderr:    "",
-			isTTY:     true,
 		},
 		{
 			name:      "set key scoped by host",
-			config:    configStub{},
-			args:      []string{"editor", "vim", "--host", "gitlab.com"},
+			cli:       "editor vim --host gitlab.com -g",
 			expectKey: "gitlab.com:editor",
-			stdout:    "",
-			stderr:    "",
-			isTTY:     true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(tt.isTTY))
+			cfg := configStub{}
+			exec := cmdtest.SetupCmdForTest(t, NewCmdSet, true, cmdtest.WithConfig(cfg))
 
-			f := cmdtest.NewTestFactory(io,
-				cmdtest.WithConfig(tt.config),
-			)
-
-			cmd := NewCmdSet(f)
-			cmd.Flags().BoolP("help", "x", false, "")
-			cmd.SetArgs(append(tt.args, "-g"))
-			cmd.SetOut(stdout)
-			cmd.SetErr(stderr)
-
-			_, err := cmd.ExecuteC()
+			out, err := exec(tt.cli)
 			require.NoError(t, err)
 
-			assert.Equal(t, tt.stdout, stdout.String())
-			assert.Equal(t, tt.stderr, stderr.String())
-			assert.Equal(t, "vim", tt.config[tt.expectKey])
-			assert.Equal(t, "true", tt.config["_written"])
+			assert.Empty(t, out.String())
+			assert.Empty(t, out.Stderr())
+			assert.Equal(t, "vim", cfg[tt.expectKey])
+			assert.Equal(t, "true", cfg["_written"])
 		})
 	}
+}
+
+func TestConfigSet_RejectsUnknownKey(t *testing.T) {
+	t.Parallel()
+
+	cfg := configStub{}
+	exec := cmdtest.SetupCmdForTest(t, NewCmdSet, true, cmdtest.WithConfig(cfg))
+
+	_, err := exec(`oauth_scopes "openid profile" -g`)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), `"oauth_scopes" is not a recognized glab config key`)
+
+	_, present := cfg["oauth_scopes"]
+	assert.False(t, present, "unknown key should not be stored")
+	_, written := cfg["_written"]
+	assert.False(t, written, "config should not be written when key is rejected")
 }

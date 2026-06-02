@@ -15,21 +15,15 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 )
 
-//go:generate go run gen.go
-
-const (
-	defaultGitProtocol  = "ssh"
-	defaultGlamourStyle = "dark"
-	defaultHostname     = "gitlab.com"
-	defaultAPIProtocol  = "https"
-)
-
-// keyringEligibleKeys is a map of config keys that can be stored in the keyring
-var keyringEligibleKeys = map[string]struct{}{
-	"token":                {},
-	"oauth2_refresh_token": {},
-	"job_token":            {},
-}
+var keyringEligibleKeys = func() map[string]struct{} {
+	out := map[string]struct{}{}
+	for i := range KeySchema {
+		if KeySchema[i].Keyring {
+			out[KeySchema[i].Name] = struct{}{}
+		}
+	}
+	return out
+}()
 
 // A Config reads and writes persistent configuration for glab.
 type Config interface {

@@ -27,6 +27,10 @@ infer from reading the tree.
   - `internal/glrepo/` — repository interface.
   - `internal/tableprinter/` — formatted text output.
   - `internal/text/` — `ExperimentalString`, `BetaString`.
+  - `internal/config/schema.go` — every configuration key is registered
+    in `KeySchema`. Add a `KeyDef` entry to introduce a new key (it
+    drives the blank config, `config set` validation, defaults, env-var
+    resolution, legacy aliases, and keyring eligibility).
 - **Copying from a canonical example**:
   - New command: `internal/commands/gpg-key/get/get.go`.
   - Paginated list command: `internal/commands/securefile/list/list.go`.

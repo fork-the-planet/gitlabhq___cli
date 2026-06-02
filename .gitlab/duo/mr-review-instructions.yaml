@@ -355,14 +355,16 @@ instructions:
     fileFilters:
       - 'internal/**/*.go'
     instructions: |
-      1. Bind new environment variables through `EnvKeyEquivalence` in
-         `internal/config/config_mapping.go` so they flow through
-         `config.Get` and get the standard config-file fallback for free.
-         Do not call `os.LookupEnv` / `os.Getenv` in command code for
-         settings that have, or should have, a config-file equivalent.
-      2. New per-host or per-user settings should be added to the config
-         schema (`internal/config/config.yaml.lock`) rather than read ad-hoc
-         from disk or env. Run `make gen-config` after schema changes.
+      1. New configuration keys (global or per-host) are declared in
+         `KeySchema` in `internal/config/schema.go` as a `KeyDef` entry.
+         The schema drives the blank config, `config set` validation,
+         defaults, env-var resolution, legacy aliases, and keyring
+         eligibility — do not read settings ad-hoc from disk or env.
+      2. Set `KeyDef.EnvVars` to declare environment variables that
+         override a key (the uppercase form of the key name is the
+         default when EnvVars is empty). Do not call `os.LookupEnv` /
+         `os.Getenv` in command code for settings that have, or should
+         have, a config-file equivalent.
       3. Document environment variables on the `cobra.Command.Annotations`
          map (key: `help:environment`), not in free-form `Long` text — that
          placement is also surfaced in generated docs.

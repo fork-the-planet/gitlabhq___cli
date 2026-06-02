@@ -7,141 +7,46 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/dbg"
 )
 
-// ConfigKeyEquivalence returns the equivalent key that's actually used in the config file
 func ConfigKeyEquivalence(key string) string {
-	key = strings.ToLower(key)
-	// we only have a set default for one setting right now
-	switch key {
-	case "gitlab_api_host":
-		return "api_host"
-	case "gitlab_subfolder":
-		return "subfolder"
-	case "gitlab_ssh_host":
-		return "ssh_host"
-	case "gitlab_host", "gitlab_uri", "gl_host":
-		return "host"
-	case "gitlab_token", "oauth_token":
-		return "token"
-	case "no_prompt", "prompt_disabled":
-		return "no_prompt"
-	case "telemetry":
-		return "telemetry"
-	case "git_remote_url_var", "git_remote_alias", "remote_alias", "remote_nickname", "git_remote_nickname":
-		return "remote_alias"
-	case "editor", "visual", "glab_editor":
-		return "editor"
-	case "client_id":
-		return "client_id"
-	case "proxy":
-		return "proxy"
-	default:
-		return key
-	}
+	return resolveAlias(key)
 }
 
-// EnvKeyEquivalence returns the equivalent key that's used for environment variables
+// When CI auto-login is on (GLAB_ENABLE_CI_AUTOLOGIN=true and
+// GITLAB_CI=true), these vars REPLACE the schema's EnvVars for the key.
+var ciAutologinEnvOverrides = map[string][]string{
+	"api_host":     {"CI_SERVER_FQDN"},
+	"subfolder":    {"GITLAB_SUBFOLDER", "CI_SERVER_URL"},
+	"ssh_host":     {"GITLAB_SSH_HOST", "CI_SERVER_SHELL_SSH_HOST"},
+	"api_protocol": {"CI_SERVER_PROTOCOL"},
+	"host":         {"CI_SERVER_FQDN"},
+	"job_token":    {"CI_JOB_TOKEN"},
+	"ca_cert":      {"CI_SERVER_TLS_CA_FILE"},
+	"client_cert":  {"CI_SERVER_TLS_CERT_FILE"},
+	"client_key":   {"CI_SERVER_TLS_KEY_FILE"},
+}
+
 func EnvKeyEquivalence(key string) []string {
-	key = strings.ToLower(key)
-	// we only have a set default for one setting right now
+	canonical := resolveAlias(key)
 
-	ciAutologinEnabled := os.Getenv("GLAB_ENABLE_CI_AUTOLOGIN") == "true" && os.Getenv("GITLAB_CI") == "true"
-	if ciAutologinEnabled {
+	if os.Getenv("GLAB_ENABLE_CI_AUTOLOGIN") == "true" && os.Getenv("GITLAB_CI") == "true" {
 		dbg.Debug("CI auto-login is enabled because GLAB_ENABLE_CI_AUTOLOGIN and GITLAB_CI are both true. This enables auto-login using GitLab's predefined CI/CD variables and potentially authenticates with the CI_JOB_TOKEN")
+		if overrides, ok := ciAutologinEnvOverrides[canonical]; ok {
+			return overrides
+		}
 	}
 
-	switch key {
-	case "api_host":
-		if ciAutologinEnabled {
-			return []string{"CI_SERVER_FQDN"}
-		}
-
-		return []string{"GITLAB_API_HOST"}
-	case "subfolder":
-		if ciAutologinEnabled {
-			return []string{"GITLAB_SUBFOLDER", "CI_SERVER_URL"}
-		}
-
-		return []string{"GITLAB_SUBFOLDER"}
-	case "ssh_host":
-		if ciAutologinEnabled {
-			return []string{"GITLAB_SSH_HOST", "CI_SERVER_SHELL_SSH_HOST"}
-		}
-
-		return []string{"GITLAB_SSH_HOST"}
-	case "api_protocol":
-		if ciAutologinEnabled {
-			return []string{"CI_SERVER_PROTOCOL"}
-		}
-
-		return []string{strings.ToUpper(key)}
-	case "host":
-		if ciAutologinEnabled {
-			return []string{"CI_SERVER_FQDN"}
-		}
-
-		return []string{"GITLAB_HOST", "GITLAB_URI", "GL_HOST"}
-	case "token":
-		return []string{"GITLAB_TOKEN", "GITLAB_ACCESS_TOKEN", "OAUTH_TOKEN"}
-	case "job_token":
-		if ciAutologinEnabled {
-			return []string{"CI_JOB_TOKEN"}
-		}
-
-		return []string{strings.ToUpper(key)}
-	case "ca_cert":
-		if ciAutologinEnabled {
-			return []string{"CI_SERVER_TLS_CA_FILE"}
-		}
-
-		return []string{strings.ToUpper(key)}
-	case "client_cert":
-		if ciAutologinEnabled {
-			return []string{"CI_SERVER_TLS_CERT_FILE"}
-		}
-
-		return []string{strings.ToUpper(key)}
-	case "client_key":
-		if ciAutologinEnabled {
-			return []string{"CI_SERVER_TLS_KEY_FILE"}
-		}
-
-		return []string{strings.ToUpper(key)}
-	case "no_prompt":
-		return []string{"NO_PROMPT", "PROMPT_DISABLED"}
-	case "telemetry":
-		return []string{"GLAB_SEND_TELEMETRY"}
-	case "editor", "visual", "glab_editor":
-		return []string{"GLAB_EDITOR", "VISUAL", "EDITOR"}
-	case "remote_alias":
-		return []string{"GIT_REMOTE_URL_VAR", "GIT_REMOTE_ALIAS", "REMOTE_ALIAS", "REMOTE_NICKNAME", "GIT_REMOTE_NICKNAME"}
-	case "client_id":
-		return []string{"GITLAB_CLIENT_ID"}
-	case "is_oauth2":
-		return []string{"GLAB_IS_OAUTH2"}
-	case "duo_cli_binary_path":
-		return []string{"GLAB_DUO_CLI_BINARY_PATH"}
-	case "orbit_local_binary_path":
-		return []string{"GLAB_ORBIT_LOCAL_BINARY_PATH"}
-	case "user":
-		return []string{"GLAB_USER"}
-	default:
-		return []string{strings.ToUpper(key)}
+	if kd := findKeyDef(canonical); kd != nil && len(kd.EnvVars) > 0 {
+		return kd.EnvVars
 	}
+	return []string{strings.ToUpper(canonical)}
 }
 
+// Only KeyDefs marked Fallback contribute a value here; the rest return
+// "" so an absent key surfaces as "not set" rather than the seed default.
 func defaultFor(key string) string {
-	key = strings.ToLower(key)
-	// we only have a set default for one setting right now
-	switch key {
-	case "gitlab_host", "gitlab_uri":
-		return defaultHostname
-	case "git_protocol":
-		return defaultGitProtocol
-	case "api_protocol":
-		return defaultAPIProtocol
-	case "glamour_style":
-		return defaultGlamourStyle
-	default:
-		return ""
+	canonical := resolveAlias(key)
+	if kd := findKeyDef(canonical); kd != nil && kd.Fallback {
+		return kd.Default
 	}
+	return ""
 }

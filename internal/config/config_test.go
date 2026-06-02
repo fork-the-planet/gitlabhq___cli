@@ -5,7 +5,6 @@ package config
 import (
 	"bytes"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -15,34 +14,33 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
-func Test_configLock(t *testing.T) {
-	defaultRoot := NewBlankRoot()
-	cfg := NewConfig(defaultRoot)
-	out, err := yaml.Marshal(defaultRoot)
-	require.NoError(t, err)
+func Test_BlankConfig_RoundTripsAndExposesSchemaKeys(t *testing.T) {
+	root := NewBlankRoot()
+	cfg := NewConfig(root)
 
-	configLockPath := filepath.Join("config.yaml.lock")
+	// The blank config must marshal to valid YAML that parses back to an
+	// equivalent tree.
+	out, err := yaml.Marshal(root)
+	require.NoError(t, err)
+	reparsed, err := parseConfigData(out)
+	require.NoError(t, err)
+	roundTripped, err := yaml.Marshal(reparsed)
+	require.NoError(t, err)
+	assert.Equal(t, string(out), string(roundTripped))
 
-	err = os.Chmod(configLockPath, 0o600)
+	// Hosts and aliases sections must be reachable.
+	hosts, err := cfg.Hosts()
 	require.NoError(t, err)
+	assert.NotEmpty(t, hosts, "blank config should seed at least one host")
 
-	expected, yml, err := ParseConfigFile(configLockPath)
+	aliases, err := cfg.Aliases()
 	require.NoError(t, err)
-	assert.Equal(t, string(expected), string(out))
+	assert.NotEmpty(t, aliases.All(), "blank config should seed default aliases")
 
-	lockCfg := NewConfig(yml)
-
-	expectedHosts, err := cfg.Hosts()
+	// Defaults declared in KeySchema must surface through Get.
+	gitProto, err := cfg.Get("", "git_protocol")
 	require.NoError(t, err)
-	lockHosts, err := lockCfg.Hosts()
-	require.NoError(t, err)
-	assert.Equal(t, expectedHosts, lockHosts)
-
-	expectedAliases, err := cfg.Aliases()
-	require.NoError(t, err)
-	lockAliases, err := lockCfg.Aliases()
-	require.NoError(t, err)
-	assert.Equal(t, expectedAliases.All(), lockAliases.All())
+	assert.Equal(t, "ssh", gitProto)
 }
 
 func Test_fileConfig_Set(t *testing.T) {
@@ -278,7 +276,7 @@ func Test_SetKeyring_StoresTokenInKeyringAndSetsIndicator(t *testing.T) {
 	require.NoError(t, err)
 	configContent := mainBuf.String()
 	assert.NotContains(t, configContent, "glpat-secret-token", "Token should not be in plaintext config")
-	assert.Contains(t, configContent, "use_keyring: \"true\"")
+	assert.Contains(t, configContent, "use_keyring: true")
 }
 
 func Test_SetKeyring_OAuth2RefreshToken(t *testing.T) {

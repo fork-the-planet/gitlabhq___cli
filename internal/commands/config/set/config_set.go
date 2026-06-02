@@ -41,6 +41,9 @@ glab config set check_update false --global`),
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
+			if err := opts.validate(); err != nil {
+				return err
+			}
 			return opts.run()
 		},
 	}
@@ -54,6 +57,13 @@ glab config set check_update false --global`),
 func (o *options) complete(args []string) {
 	o.key = args[0]
 	o.value = args[1]
+}
+
+func (o *options) validate() error {
+	if !config.IsKnownKey(o.key) {
+		return fmt.Errorf("%q is not a recognized glab config key, run `glab config` to see the supported keys", o.key)
+	}
+	return nil
 }
 
 func (o *options) run() error {
