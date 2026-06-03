@@ -95,6 +95,27 @@ var KeySchema = []KeyDef{
 		Description:  "Last update check timestamp, used for checking when the last update check was performed.",
 	},
 	{
+		Name: "show_whats_new", Scope: ScopeGlobal, Type: TypeBool,
+		Default: "true", UserSettable: true,
+		EnvVars:     []string{"GLAB_SHOW_WHATS_NEW"},
+		Description: "Show a one-time post-upgrade banner pointing at 'glab whatsnew' when a new version is detected.",
+	},
+	{
+		Name: "last_seen_version", Scope: ScopeGlobal, Type: TypeString,
+		// Seeded so the post-upgrade banner can surface immediately when
+		// existing users upgrade to the release that ships `glab whatsnew`.
+		// Bump only when intentionally re-announcing the feature.
+		Default: "v1.100.0", UserSettable: true, Fallback: true,
+		Description: "Last glab version a post-upgrade banner was shown for (automatically set).",
+	},
+	{
+		Name: "last_whatsnew_version", Scope: ScopeGlobal, Type: TypeString,
+		// Same seeded default as last_seen_version so the default whatsnew
+		// invocation has a non-empty baseline before the user runs it.
+		Default: "v1.100.0", UserSettable: true, Fallback: true,
+		Description: "Last glab version 'glab whatsnew' rendered notes for (automatically set).",
+	},
+	{
 		Name: "display_hyperlinks", Scope: ScopeGlobal, Type: TypeBool,
 		Default: "true", UserSettable: true,
 		Description: "Whether or not to display hyperlinks in terminal output. Defaults to true (enabled for TTYs). Set to false to disable. Force hyperlinks in non-TTY environments by setting FORCE_HYPERLINKS=1.",
