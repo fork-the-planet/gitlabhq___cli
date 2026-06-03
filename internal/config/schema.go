@@ -116,6 +116,12 @@ var KeySchema = []KeyDef{
 		Description: "Last glab version 'glab whatsnew' rendered notes for (automatically set).",
 	},
 	{
+		Name: "notify_skill_updates", Scope: ScopeGlobal, Type: TypeBool,
+		Default: "true", UserSettable: true,
+		EnvVars:     []string{"GLAB_NOTIFY_SKILL_UPDATES"},
+		Description: "Show a notice when an installed agent skill (bundled or remote) has updates available.",
+	},
+	{
 		Name: "display_hyperlinks", Scope: ScopeGlobal, Type: TypeBool,
 		Default: "true", UserSettable: true,
 		Description: "Whether or not to display hyperlinks in terminal output. Defaults to true (enabled for TTYs). Set to false to disable. Force hyperlinks in non-TTY environments by setting FORCE_HYPERLINKS=1.",

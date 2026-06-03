@@ -49,6 +49,10 @@ func MaybeShowPostUpgradeBanner(io *iostreams.IOStreams, cfg config.Config, buil
 	io.LogError(c.Yellow(fmt.Sprintf("What's new in glab %s", currentVersion)))
 	io.LogError("  Run: glab whatsnew")
 
+	// An upgrade is the only moment a new bundled-skill payload becomes
+	// available, so the skill check piggybacks on the banner.
+	writeSkillUpdateLine(io, bundledSkillUpdates(cfg), true)
+
 	if err := SetLastSeenVersion(cfg, currentVersion); err != nil {
 		// Best-effort: if we can't persist, the banner repeats next run —
 		// don't disrupt the user's actual command for it.
