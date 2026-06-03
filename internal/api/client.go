@@ -330,19 +330,17 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 		return nil, fmt.Errorf("failed to resolve custom headers: %w", err)
 	}
 
-	// GITLAB_DUO_SESSION_ID is an internal contract for GitLab Duo agents that
-	// shell out to glab — it is intentionally not in user-facing env-var docs.
-	// Agents set it so the API server can correlate CLI traffic back to the
-	// originating agent session. Takes precedence over any X-Gitlab-Duo-Session-Id
-	// set via config headers. Read directly rather than via EnvKeyEquivalence
-	// because the value is per-process and has no meaningful config-file equivalent.
-	// Skip the header entirely on malformed input (CR/LF/NUL) so server-side
-	// correlation fails fast rather than seeing a silently-mangled ID.
-	if duoSessionID := os.Getenv("GITLAB_DUO_SESSION_ID"); duoSessionID != "" && !strings.ContainsAny(duoSessionID, "\r\n\x00") {
+	// DUO_WORKFLOW_WORKFLOW_ID is an internal contract intentionally not in user-facing
+	// env-var docs. Set by GitLab's Workflow service so the API server can correlate
+	// CLI traffic back to the originating workflow. Takes precedence over the same
+	// header set via config. Read directly rather than via EnvKeyEquivalence because
+	// the value is per-process with no config-file equivalent. Skip the header entirely
+	// on malformed input (CR/LF/NUL).
+	if duoWorkflowID := os.Getenv("DUO_WORKFLOW_WORKFLOW_ID"); duoWorkflowID != "" && !strings.ContainsAny(duoWorkflowID, "\r\n\x00") {
 		if headers == nil {
 			headers = make(map[string]string)
 		}
-		headers["X-Gitlab-Duo-Session-Id"] = duoSessionID
+		headers["X-Gitlab-Duo-Workflow-Id"] = duoWorkflowID
 	}
 
 	if len(headers) > 0 {
