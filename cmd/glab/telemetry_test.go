@@ -3,6 +3,8 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -159,6 +161,8 @@ func Test_parseCommand(t *testing.T) {
 }
 
 func TestIsTelemetryEnabled(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name           string
 		configYaml     string
@@ -202,14 +206,17 @@ func TestIsTelemetryEnabled(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			restore := config.StubConfig(tt.configYaml, "")
-			defer restore()
+			t.Parallel()
 
-			cfg, err := config.ParseConfig("config.yml")
-			if tt.configYaml == "" {
-				cfg = config.NewBlankConfig()
-			} else {
+			var cfg config.Config
+			if tt.configYaml != "" {
+				dir := t.TempDir()
+				require.NoError(t, os.WriteFile(filepath.Join(dir, "config.yml"), []byte(tt.configYaml), 0o600))
+				var err error
+				cfg, err = config.ParseConfig(filepath.Join(dir, "config.yml"))
 				require.NoError(t, err)
+			} else {
+				cfg = config.NewBlankConfig()
 			}
 
 			result := isTelemetryEnabled(cfg)

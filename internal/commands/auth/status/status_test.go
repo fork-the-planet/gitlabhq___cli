@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -91,7 +93,8 @@ func Test_NewCmdStatus(t *testing.T) {
 }
 
 func Test_statusRun(t *testing.T) {
-	defer config.StubConfig(`---
+	dir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "config.yml"), []byte(`---
 hosts:
   gitlab.example.com:
     token: xxxxxxxxxxxxxxxxxxxx
@@ -109,10 +112,10 @@ hosts:
     token: isinvalid
   test.example:
     token:
-`, "")()
+`), 0o600))
 
 	cfgFile := config.ConfigFile()
-	configs, err := config.ParseConfig("config.yml")
+	configs, err := config.ParseConfig(filepath.Join(dir, "config.yml"))
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -228,13 +231,14 @@ hosts:
 }
 
 func Test_statusRun_authFailureWithEnvToken(t *testing.T) {
-	defer config.StubConfig(`---
+	dir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "config.yml"), []byte(`---
 hosts:
   gitlab.example.com:
     token: xxxxxxxxxxxxxxxxxxxx
     git_protocol: ssh
     api_protocol: https
-`, "")()
+`), 0o600))
 
 	tc := gitlabtesting.NewTestClient(t)
 	tc.MockUsers.EXPECT().CurrentUser(gomock.Any()).Return(nil, &gitlab.Response{Response: &http.Response{StatusCode: http.StatusUnauthorized}}, errors.New("GET https://gitlab.example.com/api/v4/user: 401 {error: invalid_token}"))
@@ -244,7 +248,7 @@ hosts:
 	}
 
 	t.Setenv("GITLAB_TOKEN", "glpat-expired-token")
-	configs, err := config.ParseConfig("config.yml")
+	configs, err := config.ParseConfig(filepath.Join(dir, "config.yml"))
 	require.NoError(t, err)
 	io, _, stdout, stderr := cmdtest.TestIOStreams()
 
@@ -271,7 +275,8 @@ hosts:
 }
 
 func Test_statusRun_noHostnameSpecified(t *testing.T) {
-	defer config.StubConfig(`---
+	dir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "config.yml"), []byte(`---
 hosts:
   gitlab.example.com:
     token: xxxxxxxxxxxxxxxxxxxx
@@ -281,7 +286,7 @@ hosts:
     token: isinvalid
   test.example:
     token:
-`, "")()
+`), 0o600))
 
 	cfgFile := config.ConfigFile()
 
@@ -320,7 +325,7 @@ test.example
 `, cfgFile)
 
 	t.Setenv("GITLAB_TOKEN", "")
-	configs, err := config.ParseConfig("config.yml")
+	configs, err := config.ParseConfig(filepath.Join(dir, "config.yml"))
 	require.NoError(t, err)
 	io, _, stdout, stderr := cmdtest.TestIOStreams()
 
@@ -342,11 +347,12 @@ test.example
 }
 
 func Test_statusRun_noInstance(t *testing.T) {
-	defer config.StubConfig(`---
+	dir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "config.yml"), []byte(`---
 git_protocol: ssh
-`, "")()
+`), 0o600))
 
-	configs, err := config.ParseConfig("config.yml")
+	configs, err := config.ParseConfig(filepath.Join(dir, "config.yml"))
 	require.NoError(t, err)
 	io, _, stdout, _ := cmdtest.TestIOStreams()
 

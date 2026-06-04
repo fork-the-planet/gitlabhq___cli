@@ -17,7 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/test"
 )
@@ -99,12 +98,6 @@ func (s roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 }
 
 func Test_httpRequest(t *testing.T) {
-	defer config.StubConfig(`---
-hosts:
-  gitlab.com:
-    username: monalisa
-    token: OTOKEN
-`, "")()
 	test.ClearEnvironmentVariables(t)
 
 	client := &http.Client{}
@@ -293,12 +286,6 @@ hosts:
 }
 
 func Test_httpRequest_invalidURLReturnsError(t *testing.T) {
-	defer config.StubConfig(`---
-hosts:
-  gitlab.com:
-    username: monalisa
-    token: OTOKEN
-`, "")()
 	test.ClearEnvironmentVariables(t)
 
 	client := &http.Client{}

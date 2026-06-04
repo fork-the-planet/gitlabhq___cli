@@ -24,7 +24,7 @@ func CheckFileExists(filename string) bool {
 }
 
 // BackupConfigFile creates a backup of the provided config file
-var BackupConfigFile = func(filename string) error {
+func BackupConfigFile(filename string) error {
 	return os.Rename(filename, filename+".bak")
 }
 

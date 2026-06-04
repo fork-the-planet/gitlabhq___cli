@@ -205,7 +205,7 @@ func ParseDefaultConfig() (Config, error) {
 	return cfg, cfgErr
 }
 
-var ReadConfigFile = func(filename string) ([]byte, error) {
+func readConfigFile(filename string) ([]byte, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, pathError(err)
@@ -242,7 +242,7 @@ func ParseConfigFile(filename string) ([]byte, *yaml.Node, error) {
 		}
 	}
 
-	data, err := ReadConfigFile(filename)
+	data, err := readConfigFile(filename)
 	if err != nil {
 		return nil, nil, err
 	}
