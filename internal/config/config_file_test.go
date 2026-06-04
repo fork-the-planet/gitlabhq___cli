@@ -53,16 +53,17 @@ func setupXDGHome(t *testing.T) string {
 }
 
 func Test_parseConfig(t *testing.T) {
-	defer StubConfig(`---
+	test.ClearEnvironmentVariables(t)
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", `---
 hosts:
   gitlab.com:
     username: monalisa
     token: OTOKEN
 aliases:
-`, "")()
-	test.ClearEnvironmentVariables(t)
+`)
 
-	config, err := ParseConfig("config.yml")
+	config, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	eq(t, err, nil)
 	username, err := config.Get("gitlab.com", "username")
 	eq(t, err, nil)
@@ -73,7 +74,9 @@ aliases:
 }
 
 func Test_parseConfig_multipleHosts(t *testing.T) {
-	defer StubConfig(`---
+	test.ClearEnvironmentVariables(t)
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", `---
 hosts:
   gitlab.example.com:
     username: wrongusername
@@ -81,10 +84,9 @@ hosts:
   gitlab.com:
     username: monalisa
     token: OTOKEN
-`, "")()
-	test.ClearEnvironmentVariables(t)
+`)
 
-	config, err := ParseConfig("config.yml")
+	config, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	eq(t, err, nil)
 	username, err := config.Get("gitlab.com", "username")
 	eq(t, err, nil)
@@ -95,16 +97,16 @@ hosts:
 }
 
 func Test_parseConfig_Hosts(t *testing.T) {
-	defer StubConfig(`---
+	test.ClearEnvironmentVariables(t)
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", `---
 hosts:
   gitlab.com:
     username: monalisa
     token: OTOKEN
-`, `
-`)()
-	test.ClearEnvironmentVariables(t)
+`)
 
-	config, err := ParseConfig("config.yml")
+	config, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	eq(t, err, nil)
 	username, err := config.Get("gitlab.com", "username")
 	eq(t, err, nil)
@@ -116,16 +118,16 @@ hosts:
 
 func Test_parseConfig_Local(t *testing.T) {
 	test.ClearEnvironmentVariables(t)
-
-	defer StubConfig(`---
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", `---
 git_protocol: ssh
 editor: vim
 local:
   git_protocol: https
   editor: nano
-`, `
-`)()
-	config, err := ParseConfig("config.yml")
+`)
+
+	config, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	eq(t, err, nil)
 	gitProtocol, err := config.Get("", "git_protocol")
 	eq(t, err, nil)
@@ -138,7 +140,8 @@ local:
 func Test_Get_configReadSequence(t *testing.T) {
 	test.ClearEnvironmentVariables(t)
 
-	defer StubConfig(`---
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", `---
 git_protocol: ssh
 editor: vim
 browser: mozilla
@@ -146,11 +149,10 @@ local:
   git_protocol: https
   editor:
   browser: chrome
-`, `
-`)()
+`)
 	t.Setenv("BROWSER", "opera")
 
-	config, err := ParseConfig("config.yml")
+	config, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	eq(t, err, nil)
 	gitProtocol, err := config.Get("", "git_protocol")
 	eq(t, err, nil)
@@ -166,11 +168,13 @@ local:
 }
 
 func Test_parseConfig_AliasesFile(t *testing.T) {
-	defer StubConfig("", `---
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", "")
+	seedFile(t, dir, "aliases.yml", `---
 ci: pipeline ci
 co: mr checkout
-`)()
-	config, err := ParseConfig("aliases.yml")
+`)
+	config, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	eq(t, err, nil)
 	aliases, err := config.Aliases()
 	eq(t, err, nil)
@@ -184,7 +188,8 @@ co: mr checkout
 }
 
 func Test_parseConfig_hostFallback(t *testing.T) {
-	defer StubConfig(`---
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", `---
 git_protocol: ssh
 hosts:
   gitlab.com:
@@ -194,9 +199,8 @@ hosts:
     username: wrongusername
     token: NOTTHIS
     git_protocol: https
-`, `
-`)()
-	config, err := ParseConfig("config.yml")
+`)
+	config, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	eq(t, err, nil)
 	val, err := config.Get("gitlab.example.com", "git_protocol")
 	eq(t, err, nil)
@@ -230,8 +234,13 @@ func Test_parseConfigFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("contents: %q", tt.contents), func(t *testing.T) {
-			defer StubConfig(tt.contents, "")()
-			_, yamlRoot, err := ParseConfigFile("config.yml")
+			dir := t.TempDir()
+			// Empty contents models a missing file (which must error), so only
+			// write the file when there is actual content.
+			if tt.contents != "" {
+				seedFile(t, dir, "config.yml", tt.contents)
+			}
+			_, yamlRoot, err := ParseConfigFile(filepath.Join(dir, "config.yml"))
 			if tt.wantsErr != (err != nil) {
 				t.Fatalf("got error: %v", err)
 			}
@@ -284,13 +293,13 @@ func Test_ParseConfigFilePermissions(t *testing.T) {
 func Test_parseConfigHostEnv(t *testing.T) {
 	t.Setenv("GITLAB_URI", "https://gitlab.mycompany.env")
 
-	defer StubConfig(`---
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", `---
 host: https://gitlab.mycompany.global
 local:
   host: https://gitlab.mycompany.local
-`, `
-`)()
-	config, err := ParseConfig("config.yml")
+`)
+	config, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	eq(t, err, nil)
 
 	val, err := config.Get("", "host")
@@ -299,13 +308,15 @@ local:
 }
 
 func Test_parseConfigHostLocal(t *testing.T) {
-	defer StubConfig(`---
+	t.Parallel()
+
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", `---
 host: https://gitlab.mycompany.global
 local:
   host: https://gitlab.mycompany.local
-`, `
-`)()
-	config, err := ParseConfig("config.yml")
+`)
+	config, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	eq(t, err, nil)
 
 	val, err := config.Get("", "host")
@@ -314,11 +325,13 @@ local:
 }
 
 func Test_parseConfigHostGlobal(t *testing.T) {
-	defer StubConfig(`---
+	t.Parallel()
+
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", `---
 host: https://gitlab.mycompany.org
-`, `
-`)()
-	config, err := ParseConfig("config.yml")
+`)
+	config, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	eq(t, err, nil)
 
 	val, err := config.Get("", "host")

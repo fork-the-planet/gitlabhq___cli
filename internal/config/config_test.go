@@ -53,7 +53,8 @@ func Test_BlankConfig_RoundTripsAndExposesSchemaKeys(t *testing.T) {
 }
 
 func Test_fileConfig_Set(t *testing.T) {
-	defer StubConfig(`---
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", `---
 git_protocol: ssh
 editor: vim
 hosts:
@@ -61,10 +62,8 @@ hosts:
     token:
     git_protocol: https
     username: user
-`, `
-`)()
+`)
 
-	dir := t.TempDir()
 	c, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	require.NoError(t, err)
 
@@ -89,7 +88,8 @@ hosts:
 }
 
 func Test_fileConfig_Set_Empty_Removes(t *testing.T) {
-	defer StubConfig(`---
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", `---
 git_protocol: ssh
 editor: vim
 hosts:
@@ -97,10 +97,8 @@ hosts:
     token: foobar
     git_protocol: https
     username: user
-`, `
-`)()
+`)
 
-	dir := t.TempDir()
 	c, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	require.NoError(t, err)
 
@@ -300,13 +298,14 @@ func Test_SetKeyring_OAuth2RefreshToken(t *testing.T) {
 }
 
 func Test_GetWithSource_RetrievesFromKeyringWhenUseKeyringSet(t *testing.T) {
-	defer StubConfig(heredoc.Doc(`
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", heredoc.Doc(`
 		---
 		hosts:
 		  gitlab.com:
 		    use_keyring: "true"
 		    is_oauth2: true
-	`), ``)()
+	`))
 
 	keyring.MockInit()
 
@@ -318,7 +317,7 @@ func Test_GetWithSource_RetrievesFromKeyringWhenUseKeyringSet(t *testing.T) {
 	err = keyring.Set("glab:gitlab.com:oauth2_refresh_token", "", "refresh-from-keyring")
 	require.NoError(t, err)
 
-	cfg, err := ParseConfig("config.yml")
+	cfg, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	require.NoError(t, err)
 
 	// Retrieve token - should come from keyring, not config
@@ -335,16 +334,17 @@ func Test_GetWithSource_RetrievesFromKeyringWhenUseKeyringSet(t *testing.T) {
 }
 
 func Test_GetWithSource_ErrorsWhenKeyringEnabledButTokenMissing(t *testing.T) {
-	defer StubConfig(`---
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", `---
 hosts:
   gitlab.com:
     use_keyring: "true"
-`, ``)()
+`)
 
 	keyring.MockInit()
 	// Don't store any token in keyring
 
-	cfg, err := ParseConfig("config.yml")
+	cfg, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	require.NoError(t, err)
 
 	// Should error when trying to retrieve from keyring but token doesn't exist
@@ -379,13 +379,13 @@ func Test_SetKeyring_JobToken(t *testing.T) {
 }
 
 func Test_SetKeyring_CleansUpExistingPlaintextToken(t *testing.T) {
-	defer StubConfig(`---
+	dir := t.TempDir()
+	seedFile(t, dir, "config.yml", `---
 hosts:
   gitlab.com:
     token: glpat-old-plaintext-token
-`, ``)()
+`)
 
-	dir := t.TempDir()
 	keyring.MockInit()
 	cfg, err := ParseConfig(filepath.Join(dir, "config.yml"))
 	require.NoError(t, err)
