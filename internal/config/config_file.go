@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"syscall"
 
@@ -215,16 +214,10 @@ func readConfigFile(filename string) ([]byte, error) {
 }
 
 func writeConfigFile(filename string, data []byte) error {
-	err := os.MkdirAll(path.Dir(filename), 0o750)
-	if err != nil {
+	if err := os.MkdirAll(filepath.Dir(filename), 0o750); err != nil {
 		return pathError(err)
 	}
-	_, err = os.ReadFile(filename)
-	if err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	err = WriteFile(filename, data, 0o600)
-	return err
+	return WriteFile(filename, data, 0o600)
 }
 
 func ParseConfigFile(filename string) ([]byte, *yaml.Node, error) {
@@ -348,7 +341,7 @@ func findRegularFile(p string) string {
 		if s, err := os.Stat(p); err == nil && s.Mode().IsRegular() {
 			return p
 		}
-		newPath := path.Dir(p)
+		newPath := filepath.Dir(p)
 		if newPath == p || newPath == "/" || newPath == "." {
 			break
 		}

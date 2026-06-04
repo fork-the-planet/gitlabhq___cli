@@ -14,6 +14,7 @@ import (
 type LocalConfig struct {
 	ConfigMap
 	Parent Config
+	dir    string
 }
 
 // for later use we might prefer relative paths
@@ -107,6 +108,11 @@ func (a *LocalConfig) Delete(key string) error {
 }
 
 func (a *LocalConfig) Write() error {
+	// An empty dir means the config is in-memory only; nothing to persist.
+	if a.dir == "" {
+		return nil
+	}
+
 	// Check if it's a Git repository
 	if !CheckPathExists(filepath.Join(GitDir(true)...)) {
 		return errors.New("not a Git repository")

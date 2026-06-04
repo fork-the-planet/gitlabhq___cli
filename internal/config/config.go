@@ -489,6 +489,7 @@ func (c *fileConfig) Local() (*LocalConfig, error) {
 	return &LocalConfig{
 		Parent:    c,
 		ConfigMap: ConfigMap{Root: valueNode},
+		dir:       c.dir,
 	}, nil
 }
 
