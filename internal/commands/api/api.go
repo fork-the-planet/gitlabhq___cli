@@ -272,7 +272,7 @@ func (o *options) run(ctx context.Context) error {
 		return err
 	}
 	isGraphQL := o.requestPath == "graphql"
-	requestPath, err := fillPlaceholders(o.requestPath, o)
+	requestPath, err := fillPlaceholders(o.requestPath, o, true)
 	if err != nil {
 		return fmt.Errorf("unable to expand placeholder in path: %w", err)
 	}
@@ -492,10 +492,19 @@ func streamNDJSON(body io.Reader, out io.Writer) error {
 
 var placeholderRE = regexp.MustCompile(`:(group/:namespace/:repo|namespace/:repo|fullpath|id|user|username|group|namespace|repo|branch)\b`)
 
-// fillPlaceholders populates `:namespace` and `:repo` placeholders with values from the current repository
-func fillPlaceholders(value string, opts *options) (string, error) {
+// fillPlaceholders populates `:namespace` and `:repo` placeholders with values from the current repository.
+// When escapePath is true, substituted values are URL-encoded so they're safe as a single path segment;
+// callers expanding placeholders into request bodies or query values should pass false to preserve raw values.
+func fillPlaceholders(value string, opts *options, escapePath bool) (string, error) {
 	if !placeholderRE.MatchString(value) {
 		return value, nil
+	}
+
+	maybeEscape := func(s string) string {
+		if escapePath {
+			return url.PathEscape(s)
+		}
+		return s
 	}
 
 	var err error
@@ -521,7 +530,7 @@ func fillPlaceholders(value string, opts *options) (string, error) {
 				err = baseRepoErr
 				return ""
 			}
-			return url.PathEscape(baseRepo.FullName())
+			return maybeEscape(baseRepo.FullName())
 		case ":namespace/:repo":
 			baseRepo, baseRepoErr := opts.baseRepo()
 			if baseRepoErr != nil {
@@ -529,7 +538,7 @@ func fillPlaceholders(value string, opts *options) (string, error) {
 				return ""
 			}
 
-			return url.PathEscape(baseRepo.RepoNamespace() + "/" + baseRepo.RepoName())
+			return maybeEscape(baseRepo.RepoNamespace() + "/" + baseRepo.RepoName())
 		case ":group":
 			baseRepo, baseRepoErr := opts.baseRepo()
 			if baseRepoErr != nil {
@@ -537,12 +546,12 @@ func fillPlaceholders(value string, opts *options) (string, error) {
 				return ""
 			}
 
-			return baseRepo.RepoGroup()
+			return maybeEscape(baseRepo.RepoGroup())
 		case ":user", ":username":
 			h, _ := opts.apiClient("")
 			u, _, e := h.Lab().Users.CurrentUser()
 			if e == nil && u != nil {
-				return u.Username
+				return maybeEscape(u.Username)
 			}
 			err = e
 			return m
@@ -553,7 +562,7 @@ func fillPlaceholders(value string, opts *options) (string, error) {
 				return ""
 			}
 
-			return baseRepo.RepoNamespace()
+			return maybeEscape(baseRepo.RepoNamespace())
 		case ":repo":
 			baseRepo, baseRepoErr := opts.baseRepo()
 			if baseRepoErr != nil {
@@ -561,13 +570,13 @@ func fillPlaceholders(value string, opts *options) (string, error) {
 				return ""
 			}
 
-			return baseRepo.RepoName()
+			return maybeEscape(baseRepo.RepoName())
 		case ":branch":
 			branch, e := opts.branch()
 			if e != nil {
 				err = e
 			}
-			return branch
+			return maybeEscape(branch)
 		default:
 			err = fmt.Errorf("invalid placeholder: %q", m)
 			return ""
@@ -649,7 +658,7 @@ func magicFieldValue(v string, opts *options) (any, error) {
 	case "null":
 		return nil, nil
 	default:
-		return fillPlaceholders(v, opts)
+		return fillPlaceholders(v, opts, false)
 	}
 }
 

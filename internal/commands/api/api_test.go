@@ -1201,6 +1201,23 @@ func Test_magicFieldValue(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "branch placeholder is not URL-encoded in field values",
+			args: args{
+				v: ":branch",
+				opts: &options{
+					io: ios,
+					baseRepo: func() (glrepo.Interface, error) {
+						return glrepo.New("glab-cli", "test", glinstance.DefaultHostname), nil
+					},
+					branch: func() (string, error) {
+						return "feature/foo", nil
+					},
+				},
+			},
+			want:    "feature/foo",
+			wantErr: false,
+		},
+		{
 			name: "file",
 			args: args{
 				v:    "@" + f.Name(),
@@ -1308,6 +1325,22 @@ func Test_fillPlaceholders(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "branch placeholder URL-encodes slashes",
+			args: args{
+				value: "projects/:fullpath/protected_branches/:branch",
+				opts: &options{
+					baseRepo: func() (glrepo.Interface, error) {
+						return glrepo.New("glab-cli", "test", glinstance.DefaultHostname), nil
+					},
+					branch: func() (string, error) {
+						return "feature/foo", nil
+					},
+				},
+			},
+			want:    "projects/glab-cli%2Ftest/protected_branches/feature%2Ffoo",
+			wantErr: false,
+		},
+		{
 			name: "has branch placeholder and git is in detached head",
 			args: args{
 				value: "projects/:fullpath/branches/:branch",
@@ -1337,7 +1370,7 @@ func Test_fillPlaceholders(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := fillPlaceholders(tt.args.value, tt.args.opts)
+			got, err := fillPlaceholders(tt.args.value, tt.args.opts, true)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("fillPlaceholders() error = %v, wantErr %v", err, tt.wantErr)
 				return
