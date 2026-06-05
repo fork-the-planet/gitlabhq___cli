@@ -98,7 +98,7 @@ func NewCmdRoot(f cmdutils.Factory) *cobra.Command {
 
 			NO_COLOR: Set to any value to avoid printing ANSI escape sequences for color output.
 
-			NO_PROMPT: Set to true to disable prompts.
+			GLAB_NO_PROMPT: Set to true (or 1) to disable prompts, or false (or 0) to enable them.
 
 			REMOTE_ALIAS or GIT_REMOTE_URL_VAR: A 'git remote' variable or alias that contains
 			the GitLab URL. Can be set in the config with 'glab config set remote_alias origin'.

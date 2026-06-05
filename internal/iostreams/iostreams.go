@@ -281,7 +281,8 @@ func (s *IOStreams) IsOutputTTY() bool {
 }
 
 // IsInteractive returns true if the environment supports interactive prompts that require user input.
-// This checks if stdin is a TTY and prompts are enabled (stdout/stderr are TTYs and NO_PROMPT is not set).
+// This checks if stdin is a TTY and prompts are enabled (stdout/stderr are TTYs and prompts are not
+// disabled with GLAB_NO_PROMPT or the no_prompt config).
 // Use this before displaying interactive forms/menus that need to read user input (e.g., huh forms).
 func (s *IOStreams) IsInteractive() bool {
 	return s.IsInTTY && s.PromptEnabled()
