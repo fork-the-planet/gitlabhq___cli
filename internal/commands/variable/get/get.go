@@ -37,7 +37,12 @@ func NewCmdGet(f cmdutils.Factory, runE func(opts *options) error) *cobra.Comman
 	cmd := &cobra.Command{
 		Use:   "get <key>",
 		Short: "Get a variable for a project or group.",
-		Args:  cobra.RangeArgs(1, 1),
+		Long: heredoc.Docf(`
+			Prints the value of a single variable by key. Use %[1]s--scope%[1]s to
+			select a variable in a specific environment, or %[1]s--group%[1]s to read a
+			group variable instead.
+		`, "`"),
+		Args: cobra.RangeArgs(1, 1),
 		Example: heredoc.Doc(`
 			glab variable get VAR_KEY
 			glab variable get -g GROUP VAR_KEY

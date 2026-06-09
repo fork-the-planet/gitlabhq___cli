@@ -35,8 +35,13 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:     "delete <key>",
-		Short:   "Delete a variable for a project or group.",
+		Use:   "delete <key>",
+		Short: "Delete a variable for a project or group.",
+		Long: heredoc.Docf(`
+			Deletes a variable by key. Use %[1]s--scope%[1]s to target a
+			variable in a specific environment, or %[1]s--group%[1]s to delete a group
+			variable instead.
+		`, "`"),
 		Aliases: []string{"remove"},
 		Args:    cobra.ExactArgs(1),
 		Example: heredoc.Doc(`
