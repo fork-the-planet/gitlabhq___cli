@@ -1,10 +1,24 @@
+spec:
+  inputs:
+    tag_release_image_version:
+      type: "string"
+      default: "latest"
+      description: "tag for the image used to create new project releases"
+    release_schedule:
+      type: boolean
+      default: false
+      description: "toggle release jobs on/off; set by pipeline schedules only!"
+
+---
+
 variables:
   GO_VERSION: "1.26.4"
   GITLAB_ADVANCED_SAST_ENABLED: "true"
   # glab image version for the weekly tag-release job. Defaults to latest
   # (dogfooding); override on the release schedule to pin a known-good version
   # if a :latest regression ever breaks the release, without a new commit.
-  TAG_RELEASE_IMAGE_VERSION: "latest"
+  TAG_RELEASE_IMAGE_VERSION: $[[ inputs.tag_release_image_version ]]
+  RELEASE_SCHEDULE: $[[ inputs.release_schedule ]]
 
 .code-patterns: &code-patterns
   - ".gitlab/**/*"
