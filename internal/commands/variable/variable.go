@@ -1,6 +1,7 @@
 package variable
 
 import (
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -14,8 +15,14 @@ import (
 
 func NewVariableCmd(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "variable",
-		Short:   "Manage variables for a GitLab project or group.",
+		Use:   "variable",
+		Short: "Manage variables for a GitLab project or group.",
+		Long: heredoc.Docf(`
+			Variables store configuration and secrets used by CI/CD pipelines.
+
+			Each subcommand acts on the current project by default. Use
+			%[1]s--group%[1]s to manage a group's variables instead.
+		`, "`"),
 		Aliases: []string{"var"},
 	}
 
