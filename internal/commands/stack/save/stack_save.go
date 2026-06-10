@@ -23,6 +23,7 @@ var description string
 
 func NewCmdSaveStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetTextUsingEditor) *cobra.Command {
 	var stageAll bool
+	var noVerify bool
 	stackSaveCmd := &cobra.Command{
 		Use:   "save",
 		Short: `Save your progress within a stacked diff. (EXPERIMENTAL)`,
@@ -113,7 +114,7 @@ func NewCmdSaveStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetT
 			}
 
 			// commit files to branch
-			_, err = commitFiles(description)
+			_, err = commitFiles(description, noVerify)
 			if err != nil {
 				return fmt.Errorf("error committing files: %w", err)
 			}
@@ -165,6 +166,7 @@ func NewCmdSaveStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetT
 	stackSaveCmd.Flags().StringVarP(&description, "description", "d", "", "Description of the change.")
 	stackSaveCmd.Flags().StringVarP(&description, "message", "m", "", "Alias for the description flag.")
 	stackSaveCmd.Flags().BoolVarP(&stageAll, "all", "a", false, "Automatically stage modified and deleted tracked files.")
+	stackSaveCmd.Flags().BoolVar(&noVerify, "no-verify", false, "Bypass the pre-commit and commit-msg hooks of git-commit(1).")
 
 	return stackSaveCmd
 }
@@ -246,8 +248,12 @@ func addFiles(args []string, stageAll bool) error {
 	return nil
 }
 
-func commitFiles(message string) (string, error) {
-	commitCmd := git.GitCommand("commit", "-m", message)
+func commitFiles(message string, noVerify bool) (string, error) {
+	args := []string{"commit", "-m", message}
+	if noVerify {
+		args = append(args, "--no-verify")
+	}
+	commitCmd := git.GitCommand(args...)
 	output, err := run.PrepareCmd(commitCmd).Output()
 	if err != nil {
 		return "", fmt.Errorf("error running Git command: %w", err)

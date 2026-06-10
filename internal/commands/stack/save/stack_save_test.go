@@ -119,6 +119,14 @@ func TestSaveNewStack(t *testing.T) {
 			wantErr:  true,
 			expected: "glab stack save -a with no tracked changes should return an error",
 		},
+
+		{
+			desc:     "adding regular files with --no-verify",
+			args:     []string{"testfile", "--no-verify"},
+			files:    []string{"testfile"},
+			message:  "commit with no verify",
+			expected: "• cool-test-feature: Saved with message: \"commit with no verify\".\n",
+		},
 	}
 
 	for _, tc := range tests {
@@ -395,15 +403,22 @@ func Test_checkForChanges(t *testing.T) {
 
 func Test_commitFiles(t *testing.T) {
 	tests := []struct {
-		name    string
-		want    string
-		message string
-		wantErr bool
+		name     string
+		want     string
+		message  string
+		noVerify bool
+		wantErr  bool
 	}{
 		{
 			name:    "a regular commit message",
 			message: "i am a test message",
 			want:    "i am a test message\n 2 files changed, 0 insertions(+), 0 deletions(-)\n create mode 100644 test\n create mode 100644 yo\n",
+		},
+		{
+			name:     "a regular commit message, no verify",
+			message:  "i am a test message",
+			noVerify: true,
+			want:     "i am a test message\n 2 files changed, 0 insertions(+), 0 deletions(-)\n create mode 100644 test\n create mode 100644 yo\n",
 		},
 		{
 			name:    "no message",
@@ -418,7 +433,7 @@ func Test_commitFiles(t *testing.T) {
 			err := addFiles([]string{"."}, false)
 			require.NoError(t, err)
 
-			got, err := commitFiles(tt.message)
+			got, err := commitFiles(tt.message, tt.noVerify)
 
 			if tt.wantErr {
 				require.Error(t, err)
