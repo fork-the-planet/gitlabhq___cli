@@ -18,6 +18,7 @@ import (
 
 func NewCmdAmendStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetTextUsingEditor) *cobra.Command {
 	var amendStageAll bool
+	var noVerify bool
 	stackSaveCmd := &cobra.Command{
 		Use:   "amend",
 		Short: `Save more changes to a stacked diff. (EXPERIMENTAL)`,
@@ -39,7 +40,7 @@ func NewCmdAmendStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.Get
 			mcpannotations.Destructive: "true",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			output, err := amendFunc(cmd.Context(), f, args, getText, description, amendStageAll)
+			output, err := amendFunc(cmd.Context(), f, args, getText, description, amendStageAll, noVerify)
 			if err != nil {
 				return fmt.Errorf("could not run stack amend: %w", err)
 			}
@@ -54,12 +55,13 @@ func NewCmdAmendStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.Get
 	stackSaveCmd.Flags().StringVarP(&description, "description", "d", "", "A description of the change.")
 	stackSaveCmd.Flags().StringVarP(&description, "message", "m", "", "Alias for the description flag.")
 	stackSaveCmd.Flags().BoolVarP(&amendStageAll, "all", "a", false, "Automatically stage modified and deleted tracked files.")
+	stackSaveCmd.Flags().BoolVar(&noVerify, "no-verify", false, "Bypass the pre-commit and commit-msg hooks of git-commit(1).")
 	stackSaveCmd.MarkFlagsMutuallyExclusive("message", "description")
 
 	return stackSaveCmd
 }
 
-func amendFunc(ctx context.Context, f cmdutils.Factory, args []string, getText cmdutils.GetTextUsingEditor, description string, stageAll bool) (string, error) {
+func amendFunc(ctx context.Context, f cmdutils.Factory, args []string, getText cmdutils.GetTextUsingEditor, description string, stageAll, noVerify bool) (string, error) {
 	// check if there are even any changes before we start
 	err := checkForChanges()
 	if err != nil {
@@ -98,7 +100,7 @@ func amendFunc(ctx context.Context, f cmdutils.Factory, args []string, getText c
 	}
 
 	// run the amend commit
-	err = gitAmend(description)
+	err = gitAmend(description, noVerify)
 	if err != nil {
 		return "", fmt.Errorf("error amending commit with Git: %w", err)
 	}
@@ -113,8 +115,12 @@ func amendFunc(ctx context.Context, f cmdutils.Factory, args []string, getText c
 	return output, nil
 }
 
-func gitAmend(description string) error {
-	amendCmd := git.GitCommand("commit", "--amend", "-m", description)
+func gitAmend(description string, noVerify bool) error {
+	args := []string{"commit", "--amend", "-m", description}
+	if noVerify {
+		args = append(args, "--no-verify")
+	}
+	amendCmd := git.GitCommand(args...)
 	output, err := run.PrepareCmd(amendCmd).Output()
 	if err != nil {
 		return fmt.Errorf("error running Git command: %w", err)

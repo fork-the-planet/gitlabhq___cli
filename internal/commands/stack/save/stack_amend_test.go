@@ -37,6 +37,14 @@ func Test_stackAmendCmd(t *testing.T) {
 			expected:     "Amended stack item with description: \"this is a commit message\".\n",
 		},
 		{
+			desc:         "amending regular files with --no-verify",
+			args:         []string{"testfile", "randomfile", "--no-verify"},
+			files:        []string{"testfile", "randomfile"},
+			amendedFiles: []string{"otherfile"},
+			description:  "amend with no verify",
+			expected:     "Amended stack item with description: \"amend with no verify\".\n",
+		},
+		{
 			desc:          "with no message",
 			args:          []string{"testfile", "randomfile"},
 			files:         []string{"testfile", "randomfile"},
@@ -67,9 +75,6 @@ func Test_stackAmendCmd(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.desc, func(t *testing.T) {
-			ios, _, _, _ := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-			f := cmdtest.NewTestFactory(ios)
-
 			dir := git.InitGitRepoWithCommit(t)
 			err := git.SetLocalConfig("glab.currentstack", "cool-test-feature")
 			require.NoError(t, err)
@@ -102,13 +107,24 @@ func Test_stackAmendCmd(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			output, err := amendFunc(t.Context(), f, tc.args, getText, tc.description, false)
+			amendArgs := append([]string{}, tc.args...)
+			if tc.description != "" {
+				amendArgs = append(amendArgs, "-m", "\""+tc.description+"\"")
+			}
+
+			execAmend := cmdtest.SetupCmdForTest(t, func(f cmdutils.Factory) *cobra.Command {
+				return NewCmdAmendStack(f, mockCmd, getText)
+			}, true,
+				cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, nil, "", "gitlab.com").Lab()),
+			)
+
+			output, err := execAmend(strings.Join(amendArgs, " "))
 
 			if tc.wantErr {
 				require.ErrorContains(t, err, tc.expected)
 			} else {
 				require.NoError(t, err)
-				require.Equal(t, tc.expected, output)
+				require.Equal(t, tc.expected, output.String())
 			}
 		})
 	}
