@@ -15,10 +15,26 @@
   #define ExeName "glab.exe"
 #endif
 
+; Arch is the suffix used in the installer filename. Pass via
+; `iscc -DArch=arm64` to build the ARM64 installer; defaults to the
+; legacy x86_64 build so direct `iscc` invocations keep working.
+#ifndef Arch
+  #define Arch "x86_64"
+#endif
+
+; Each architecture gets its own AppId so Windows tracks the installs as
+; distinct products. That's enables safer update path without the risk of 
+; mixing up artifacts from distinct architectures
+#if Arch == "arm64"
+  #define AppGuid "{{43F62295-C40A-4D12-A520-9F46AD177207}"
+#else
+  #define AppGuid "{{679C50AE-F48A-46D1-9493-77F095E9884D}"
+#endif
+
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{679C50AE-F48A-46D1-9493-77F095E9884D}
+AppId={#AppGuid}
 AppName={#MyAppName}
 AppVersion={#Version}
 AppVerName={#MyAppName} v{#Version}
@@ -34,10 +50,17 @@ LicenseFile=LICENSE
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=commandline
 OutputDir=bin
-OutputBaseFilename=glab_{#Version}_Windows_x86_64_installer
+OutputBaseFilename=glab_{#Version}_Windows_{#Arch}_installer
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern dynamic
+; Restrict the ARM64 installer to ARM64 hosts. The x86_64 installer is
+; intentionally left unrestricted so it continues to run on ARM64 under
+; x64 emulation for users who pick it explicitly.
+#if Arch == "arm64"
+ArchitecturesAllowed=arm64
+ArchitecturesInstallIn64BitMode=arm64
+#endif
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
