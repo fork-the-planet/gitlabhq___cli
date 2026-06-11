@@ -61,7 +61,7 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVar(&opts.all, "all", false, "Update every installed skill. (default false)")
+	cmd.Flags().BoolVar(&opts.all, "all", false, "Update every installed skill.")
 
 	return cmd
 }

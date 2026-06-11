@@ -94,7 +94,7 @@ func NewCmdCancel(f cmdutils.Factory) *cobra.Command {
 
 func SetupCommandFlags(flags *pflag.FlagSet) {
 	flags.BoolP(FlagDryRun, "", false, "Show which jobs would be canceled, without canceling them.")
-	flags.BoolP(FlagForce, "f", false, "Force-cancel the job, even if it runs in a protected environment. (default false)")
+	flags.BoolP(FlagForce, "f", false, "Force-cancel the job, even if it runs in a protected environment.")
 }
 
 func runCancelation(

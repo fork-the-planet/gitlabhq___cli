@@ -66,9 +66,9 @@ glab orbit local --update
 ## Options
 
 ```plaintext
-      --install   Install the Orbit local CLI binary without running it. (default false)
-      --update    Check for and install updates to the binary. (default false)
-  -y, --yes       Skip confirmation prompts. (default false)
+      --install   Install the Orbit local CLI binary without running it.
+      --update    Check for and install updates to the binary.
+  -y, --yes       Skip confirmation prompts.
 ```
 
 ## Options inherited from parent commands

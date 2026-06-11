@@ -108,12 +108,12 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 	fl := cmd.Flags()
 	fl.StringVar(&opts.hostname, "hostname", "",
 		"GitLab hostname to verify. Defaults to the current repository's host or `gitlab.com`.")
-	fl.BoolVarP(&opts.yes, "yes", "y", false, "Skip every confirmation prompt. (default false)")
-	fl.BoolVarP(&opts.global, "global", "g", false, "Install the Orbit skill at user scope (`~/.agents/skills/`). (default false)")
+	fl.BoolVarP(&opts.yes, "yes", "y", false, "Skip every confirmation prompt.")
+	fl.BoolVarP(&opts.global, "global", "g", false, "Install the Orbit skill at user scope (`~/.agents/skills/`).")
 	fl.StringVar(&opts.path, "path", "", "Install the Orbit skill to the directory at `<path>`.")
-	fl.BoolVar(&opts.upgrade, "upgrade", false, "Re-fetch the skill and update the local CLI binary in place. (default false)")
-	fl.BoolVar(&opts.skipSkill, "skip-skill", false, "Skip the agent-skill install step. (default false)")
-	fl.BoolVar(&opts.skipLocal, "skip-local", false, "Skip the local CLI binary install step. (default false)")
+	fl.BoolVar(&opts.upgrade, "upgrade", false, "Re-fetch the skill and update the local CLI binary in place.")
+	fl.BoolVar(&opts.skipSkill, "skip-skill", false, "Skip the agent-skill install step.")
+	fl.BoolVar(&opts.skipLocal, "skip-local", false, "Skip the local CLI binary install step.")
 	cmd.MarkFlagsMutuallyExclusive("global", "path")
 
 	return cmd

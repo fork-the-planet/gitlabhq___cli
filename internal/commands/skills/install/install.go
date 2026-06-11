@@ -91,9 +91,9 @@ func NewCmdInstall(f cmdutils.Factory) *cobra.Command {
 	}
 
 	fl := cmd.Flags()
-	fl.BoolVarP(&opts.global, "global", "g", false, "Install skills at user scope (~/.agents/skills/). (default false)")
+	fl.BoolVarP(&opts.global, "global", "g", false, "Install skills at user scope (~/.agents/skills/).")
 	fl.StringVar(&opts.path, "path", "", "Install skills to the directory at <path>.")
-	fl.BoolVarP(&opts.force, "force", "f", false, "Overwrite existing skill files. (default false)")
+	fl.BoolVarP(&opts.force, "force", "f", false, "Overwrite existing skill files.")
 	cmd.MarkFlagsMutuallyExclusive("global", "path")
 
 	return cmd
