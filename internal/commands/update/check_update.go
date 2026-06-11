@@ -130,7 +130,7 @@ func checkUpdate(f cmdutils.Factory, silentSuccess bool, forceCheck bool) error 
 
 	// Piggybacks on the 24h throttle so we don't issue one gitlab.com
 	// request per installed remote skill on every command.
-	writeSkillUpdateLine(f.IO(), remoteSkillUpdates(f.Config()), false)
+	writeSkillUpdateBlock(f.IO(), remoteSkillUpdates(f.Config()))
 	return nil
 }
 
@@ -161,6 +161,9 @@ func writeAgentUpdateLine(io *iostreams.IOStreams, currentVersion, latestVersion
 
 func writeHumanUpdateBlock(io *iostreams.IOStreams, currentVersion, latestVersion, releaseURL string, method InstallMethod) {
 	c := io.Color()
+	// Leading blank line separates the banner from the preceding command
+	// output so the nudge doesn't cram against e.g. `glab mr list` results.
+	fmt.Fprintln(io.StdErr, "")
 	fmt.Fprintln(io.StdErr, c.Yellow("A new version of glab is available"))
 	fmt.Fprintf(io.StdErr, "  %s → %s\n", c.Red(currentVersion), c.Green(latestVersion))
 	if method.UpgradeCommand != "" {
@@ -190,19 +193,36 @@ func CreateUnauthenticatedClient(userAgent string, options ...api.ClientOption) 
 	)
 }
 
-// Don't CheckUpdate if previous command is CheckUpdate
-// or it's Completion, so it doesn't take a noticeably long time
-// to start new shells and we don't encourage users setting
-// `check_update` to false in the config.
-// Also skip for git-credential to avoid interfering with Git operations.
+// ShouldSkipUpdate decides whether to suppress the post-command update
+// banner, "what's new" nudge, and skill-update check.
+//
+// previousCommand is the raw first argument from
+// `expand.ExpandAlias(cfg, os.Args, nil)`, i.e. `os.Args[1]` after alias
+// expansion — not a parsed `cobra.Command.Name()`. That means flag forms
+// like `-v` and `--version` arrive verbatim and can be matched here
+// (see cmd/glab/main.go where `argCommand := expandedArgs[0]` is the
+// value passed in).
+//
+// Skip reasons:
+//   - check-update / update: would re-run the check we just ran, and
+//     adds latency to new shells if users set `check_update=false` to
+//     avoid it.
+//   - completion: same shell-start latency concern.
+//   - git-credential / credential-helper: would interfere with Git's
+//     credential protocol on stderr.
+//   - whatsnew: the user just read the changelog; don't pitch it back.
+//   - version / -v / --version: the user just asked "what version do I
+//     have?" — trailing the answer with a "what's new" and skill-updates
+//     pitch is noise, and also keeps `2>&1`-style automation clean.
 func ShouldSkipUpdate(previousCommand string) bool {
 	isCheckUpdate := previousCommand == commandUse || utils.PresentInStringSlice(commandAliases, previousCommand)
 	isCompletion := previousCommand == "completion"
 	isGitCredential := previousCommand == "git-credential"
 	isCredentialHelper := previousCommand == "credential-helper"
 	isWhatsNew := previousCommand == "whatsnew"
+	isVersion := previousCommand == "version" || previousCommand == "-v" || previousCommand == "--version"
 
-	return isCheckUpdate || isCompletion || isGitCredential || isCredentialHelper || isWhatsNew
+	return isCheckUpdate || isCompletion || isGitCredential || isCredentialHelper || isWhatsNew || isVersion
 }
 
 func isOlderVersion(latestVersion, appVersion string) bool {

@@ -82,7 +82,7 @@ func TestNewCheckUpdateCmd(t *testing.T) {
 			name:          "older version, human, homebrew",
 			version:       "v1.11.0",
 			installMethod: InstallMethod{Name: installMethodHomebrew, UpgradeCommand: homebrewUpgradeCommand},
-			stdErr: "A new version of glab is available\n" +
+			stdErr: "\nA new version of glab is available\n" +
 				"  v1.11.0 → v1.11.1\n" +
 				"  Run: brew upgrade glab\n" +
 				"  Release notes: https://gitlab.com/gitlab-org/cli/-/releases/v1.11.1\n",
@@ -91,7 +91,7 @@ func TestNewCheckUpdateCmd(t *testing.T) {
 			name:          "older version, human, unknown install method",
 			version:       "v1.11.0",
 			installMethod: InstallMethod{Name: installMethodUnknown},
-			stdErr: "A new version of glab is available\n" +
+			stdErr: "\nA new version of glab is available\n" +
 				"  v1.11.0 → v1.11.1\n" +
 				"  Release notes: https://gitlab.com/gitlab-org/cli/-/releases/v1.11.1\n",
 		},
@@ -257,6 +257,18 @@ func TestShouldSkipUpdate_NoRun(t *testing.T) {
 		{
 			name:            "when previous command is git-credential",
 			previousCommand: "git-credential",
+		},
+		{
+			name:            "when previous command is version",
+			previousCommand: "version",
+		},
+		{
+			name:            "when previous command is -v",
+			previousCommand: "-v",
+		},
+		{
+			name:            "when previous command is --version",
+			previousCommand: "--version",
 		},
 	}
 	for _, tt := range tests {

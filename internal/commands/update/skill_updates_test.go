@@ -3,6 +3,7 @@
 package update
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -126,28 +127,30 @@ func TestBundledSkillUpdates_deduplicatesAcrossScopes(t *testing.T) {
 	assert.Equal(t, []string{bs[0].Name}, got, "same name in two scopes should only appear once")
 }
 
-func TestWriteSkillUpdateLine_singularAndPlural(t *testing.T) {
+func TestWriteSkillUpdateBlock_singularAndPlural(t *testing.T) {
 	ios, _, _, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(false))
 
-	writeSkillUpdateLine(ios, nil, false)
+	writeSkillUpdateBlock(ios, nil)
 	assert.Empty(t, stderr.String())
 
 	stderr.Reset()
-	writeSkillUpdateLine(ios, []string{"glab"}, false)
+	writeSkillUpdateBlock(ios, []string{"glab"})
 	got := stderr.String()
-	assert.Contains(t, got, "1 installed agent skill has updates: glab")
-	assert.Contains(t, got, "glab skills update glab")
+	assert.Contains(t, got, "Agent skill updates available")
+	assert.Contains(t, got, "  glab\n")
+	assert.Contains(t, got, "  Run: glab skills update glab\n")
 
 	stderr.Reset()
-	writeSkillUpdateLine(ios, []string{"glab", "glab-stack"}, false)
+	writeSkillUpdateBlock(ios, []string{"glab", "glab-stack"})
 	got = stderr.String()
-	assert.Contains(t, got, "2 installed agent skills have updates: glab, glab-stack")
-	assert.Contains(t, got, "glab skills update --all")
+	assert.Contains(t, got, "Agent skill updates available")
+	assert.Contains(t, got, "  glab, glab-stack\n")
+	assert.Contains(t, got, "  Run: glab skills update --all\n")
 }
 
-func TestWriteSkillUpdateLine_indentMatchesPostUpgradeBanner(t *testing.T) {
+func TestWriteSkillUpdateBlock_leadingBlankLineSeparatesFromPriorOutput(t *testing.T) {
 	ios, _, _, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(false))
-	writeSkillUpdateLine(ios, []string{"glab"}, true)
-	assert.True(t, len(stderr.String()) > 2 && stderr.String()[:2] == "  ",
-		"indent=true should emit a two-space prefix to align with the post-upgrade banner")
+	writeSkillUpdateBlock(ios, []string{"glab"})
+	assert.True(t, strings.HasPrefix(stderr.String(), "\n"),
+		"block should begin with a blank line so it doesn't cram against preceding stderr output")
 }
