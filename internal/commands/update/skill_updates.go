@@ -63,22 +63,24 @@ func skillUpdates(cfg config.Config, source skill.Source, getSource func(string)
 	return out
 }
 
-func writeSkillUpdateLine(io *iostreams.IOStreams, names []string, indent bool) {
+// writeSkillUpdateBlock prints the agent-skill update nudge as its own
+// block, matching the shape of writeHumanUpdateBlock and the post-upgrade
+// banner: a colored header, an indented body listing the skills, and an
+// indented `Run:` line. A leading blank line separates it from whatever
+// preceded it on stderr.
+func writeSkillUpdateBlock(io *iostreams.IOStreams, names []string) {
 	if len(names) == 0 {
 		return
 	}
-	prefix := ""
-	if indent {
-		prefix = "  "
-	}
-	noun := "skill has"
+	c := io.Color()
 	action := "glab skills update " + names[0]
 	if len(names) > 1 {
-		noun = "skills have"
 		action = "glab skills update --all"
 	}
-	io.LogErrorf("%s%d installed agent %s updates: %s. Run: %s\n",
-		prefix, len(names), noun, strings.Join(names, ", "), action)
+	io.LogError("")
+	io.LogError(c.Yellow("Agent skill updates available"))
+	io.LogErrorf("  %s\n", strings.Join(names, ", "))
+	io.LogErrorf("  Run: %s\n", action)
 }
 
 func isSkillNotificationsEnabled(cfg config.Config) bool {
