@@ -91,7 +91,7 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 
 	fl := cmd.Flags()
 	fl.StringVar(&opts.sinceVersion, "since", "", "Show release notes for every release newer than this version.")
-	fl.BoolVar(&opts.showLatest, "latest", false, "Show release notes for the latest published release only. (default false)")
+	fl.BoolVar(&opts.showLatest, "latest", false, "Show release notes for the latest published release only.")
 	cmd.MarkFlagsMutuallyExclusive("since", "latest")
 
 	return cmd

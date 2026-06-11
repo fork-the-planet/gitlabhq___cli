@@ -99,10 +99,10 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 	}
 
 	fl := cmd.Flags()
-	fl.BoolVar(&opts.dryRun, "dry-run", false, "Preview branches that would be deleted without deleting them. (default false)")
-	fl.BoolVarP(&opts.yes, "yes", "y", false, "Skip the confirmation prompt. (default false)")
+	fl.BoolVar(&opts.dryRun, "dry-run", false, "Preview branches that would be deleted without deleting them.")
+	fl.BoolVarP(&opts.yes, "yes", "y", false, "Skip the confirmation prompt.")
 	fl.StringSliceVarP(&opts.excludePatterns, "exclude", "e", nil, "Branch name or glob pattern to exclude. Comma-separated or repeated.")
-	fl.BoolVar(&opts.useMergedFlag, "merged", false, "Use 'git branch --merged' instead of querying GitLab. Detects fast-forward merges only. (default false)")
+	fl.BoolVar(&opts.useMergedFlag, "merged", false, "Use 'git branch --merged' instead of querying GitLab. Detects fast-forward merges only.")
 
 	return cmd
 }

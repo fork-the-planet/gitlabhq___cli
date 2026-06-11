@@ -165,9 +165,9 @@ For more information, see the [Orbit documentation](https://docs.gitlab.com/orbi
 	// Registered for documentation only — DisableFlagParsing means Cobra
 	// never parses these; the RunE switch above handles them manually.
 	fl := cmd.Flags()
-	fl.BoolP("yes", "y", false, "Skip confirmation prompts. (default false)")
-	fl.Bool("install", false, "Install the Orbit local CLI binary without running it. (default false)")
-	fl.Bool("update", false, "Check for and install updates to the binary. (default false)")
+	fl.BoolP("yes", "y", false, "Skip confirmation prompts.")
+	fl.Bool("install", false, "Install the Orbit local CLI binary without running it.")
+	fl.Bool("update", false, "Check for and install updates to the binary.")
 
 	return cmd
 }
