@@ -43,7 +43,6 @@ GLab is an open source GitLab CLI tool. It brings GitLab to your terminal, next 
   - [Token and environment variable precedence](#token-and-environment-variable-precedence)
   - [Debugging](#debugging)
 - [Troubleshooting](#troubleshooting)
-  - [`invalid_client` error during OAuth login](#invalid_client-error-during-oauth-login)
 - [Issues](#issues)
 - [Contributing](#contributing)
   - [Versioning](#versioning)
@@ -109,7 +108,7 @@ Run `glab --help` to view a list of core commands in your terminal.
 
 Commands follow this pattern:
 
-```bash
+```shell
 glab <command> <subcommand> [flags]
 ```
 
@@ -207,7 +206,9 @@ Prerequisites:
   in the GitLab documentation.
 - Your OAuth application is configured with these parameters:
   - **Redirect URI** is `http://localhost:7171/auth/redirect`. Not required if you only intend to use `--device`.
-  - **Confidential** is not selected.
+  - **Confidential** is not selected. If it's selected, `glab auth login` fails with an
+    `invalid_client` error. For more information, see the
+    [troubleshooting section](https://docs.gitlab.com/cli/#error-invalid_client-during-oauth-login).
   - **Scopes** are `openid`, `profile`, `read_user`, `write_repository`, and `api`.
 - To use the OAuth 2.0 device authorization flow (`glab auth login --device`), the application must
   also have `device_code` in its allowed grant types, and the GitLab instance must be running
@@ -453,25 +454,8 @@ When the `GLAB_DEBUG` environment variable is set to `true`, `glab` outputs more
 
 ## Troubleshooting
 
-For troubleshooting information, see the
-[GitLab documentation for the CLI](https://docs.gitlab.com/editor_extensions/gitlab_cli/#troubleshooting).
-
-### `invalid_client` error during OAuth login
-
-When authenticating with an OAuth application, `glab auth login` might fail with an error:
-
-```plaintext
-Oauth2: "invalid_client" "Client authentication failed due to unknown client, no client authentication included, or unsupported authentication method.".
-```
-
-This happens when the OAuth application has the **Confidential** option enabled. `glab` is a
-public client and cannot keep a client secret, so it authenticates without one. Confidential
-applications require a client secret, which causes GitLab to reject the request.
-
-To resolve this, edit your OAuth application and clear the **Confidential** checkbox.
-
-After saving the change, run `glab auth login` again. For the full list of required application
-settings, see [OAuth (GitLab Self-Managed, GitLab Dedicated)](#oauth-gitlab-self-managed-gitlab-dedicated).
+For help with common issues, see the
+[Troubleshooting section](https://docs.gitlab.com/cli/#troubleshooting) of the GitLab CLI documentation.
 
 ## Issues
 
@@ -480,6 +464,9 @@ If you have an issue: report it on the [issue tracker](https://gitlab.com/gitlab
 ## Contributing
 
 Feel like contributing? That's awesome! We have a [contributing guide](https://gitlab.com/gitlab-org/cli/-/blob/main/CONTRIBUTING.md) and [Code of conduct](https://gitlab.com/gitlab-org/cli/-/blob/main/CODE_OF_CONDUCT.md) to help guide you.
+
+When updating command help text or documentation, follow the
+[GitLab CLI documentation style guide](https://docs.gitlab.com/development/documentation/cli_styleguide/).
 
 ### Versioning
 
