@@ -52,7 +52,7 @@ require (
 	golang.org/x/sync v0.21.0
 	golang.org/x/sys v0.45.0
 	golang.org/x/term v0.43.0
-	golang.org/x/text v0.37.0
+	golang.org/x/text v0.38.0
 	k8s.io/apimachinery v0.36.1
 	k8s.io/client-go v0.36.1
 	mvdan.cc/xurls/v2 v2.6.0
