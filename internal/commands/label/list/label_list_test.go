@@ -118,7 +118,8 @@ func TestLabelListJSON(t *testing.T) {
         "open_merge_requests_count": 0,
         "subscribed": false,
         "priority": 0,
-        "is_project_label": true
+        "is_project_label": true,
+        "archived": false
     }
 ]`
 
