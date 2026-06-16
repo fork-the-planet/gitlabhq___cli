@@ -443,9 +443,6 @@ tag-release:
   needs: []
   variables:
     GIT_DEPTH: 0
-    # Reuses the release token; must NOT be CI_JOB_TOKEN, whose tag creation
-    # does not trigger the release pipeline.
-    GITLAB_TOKEN: $GITLAB_TOKEN_RELEASE
     GITLAB_HOST: $CI_SERVER_HOST
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule" && $RELEASE_SCHEDULE == "true"
@@ -453,7 +450,12 @@ tag-release:
     # glab image is Alpine without bash; the script needs it for set -o pipefail.
     - apk add --no-cache bash
   script:
-    - scripts/release/create-release-tag.sh
+    # Assign the release token inline, not via `variables:` above: the
+    # project-level GITLAB_TOKEN CI/CD variable outranks job variables, so
+    # setting GITLAB_TOKEN here is the only way glab uses the release token
+    # (must NOT be CI_JOB_TOKEN, whose tags don't trigger the release pipeline).
+    # Matches notify-issues-on-release.
+    - GITLAB_TOKEN="$GITLAB_TOKEN_RELEASE" scripts/release/create-release-tag.sh
 
 release:
   extends: .release
