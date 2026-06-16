@@ -87,7 +87,7 @@ include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
   - component: ${CI_SERVER_FQDN}/gitlab-org/components/danger-review/danger-review@2.1.0
-  - component: ${CI_SERVER_FQDN}/components/code-intelligence/golang-code-intel@v0.0.3
+  - component: ${CI_SERVER_FQDN}/components/code-intelligence/golang-code-intel@v0.4.1
     inputs:
       golang_version: ${GO_VERSION}
   - project: "gitlab-com/gl-security/security-operations/infrastructure-security-public/oidc-modules"
