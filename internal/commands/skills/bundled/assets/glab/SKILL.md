@@ -1,10 +1,14 @@
 ---
 name: glab
 description: >
-  GitLab CLI (glab) for managing GitLab resources from the command line.
-  Use this skill when you need to work with merge requests, issues, CI/CD
-  pipelines, projects, or any other GitLab resource. Prefer glab over raw
-  API calls for all GitLab operations.
+  GitLab CLI (glab) for working with GitLab from the command line. Read this
+  skill before running any `glab` or GitLab API command — it applies to every
+  GitLab operation, whether reading or writing (for example merge requests,
+  issues, work items, discussions and threaded replies, comments, CI/CD
+  pipelines, releases, packages, members, and project settings). Whenever a
+  task touches GitLab in any way, consult this skill first so you use the
+  correct, safe command on the first try. Prefer glab over raw API calls for
+  all GitLab operations.
 ---
 
 # GitLab CLI (glab)
@@ -128,17 +132,25 @@ glab mr note reopen  <iid> <discussion-id>
 
 ### Threaded replies on issues, incidents, and work items
 
-The CLI does not wrap threaded replies for these. Fall back to `glab api`:
+The CLI does not wrap threaded replies for these, so you fall back to
+`glab api`. **For any non-trivial body, write it to a file and post the file**
+rather than inlining rich Markdown — inlined backticks, `$`, newlines, and a
+leading `@` all break (see [Content-type guidance](#content-type-guidance)):
 
 ```shell
 # Discover the discussion ID
 glab api projects/:id/issues/<iid>/discussions \
   | jq '.[] | {id, body: .notes[0].body}'
 
-# Reply to it
+# Build the body in a file, then post it with -F body=@file
+cat > /tmp/reply.md << 'EOF'
+@user — here's the result, with `code`, a $variable, and an emoji ✅.
+EOF
 glab api projects/:id/issues/<iid>/discussions/<discussion-id>/notes \
-  -f body="reply text"
+  -F body=@/tmp/reply.md
 ```
+
+For a short, plain reply you can still inline it with `-f body="reply text"`.
 
 ## API calls
 
@@ -163,7 +175,11 @@ glab api projects/:id/merge_requests/:iid -X PUT -f "assignee_id=1"
 # -f / --raw-field — literal string value
 glab api projects/:id/issues/:iid/notes -f body="comment text"
 
-# -F / --field — reads @file as a string
+# -F / --field — reads @file as a string. The leading @ means "read this
+# file", so only pass a real path here. A literal body that starts with @
+# (e.g. "@user thanks") must NOT go through -F — it would be read as a
+# filename. Use -f for literal inline text, or write the body to a file and
+# point -F at the file (recommended for rich/markdown bodies).
 glab api projects/:id/issues/:iid/notes -F body=@/tmp/comment.md
 
 # --input — raw request body from a file (or '-' for stdin). Does NOT set
@@ -189,7 +205,8 @@ glab api projects/:id/issues/:iid/notes \
   from stdin instead.
 - **`glab issue note` and `glab incident note` only post root-level
   comments** — use `glab mr note create --reply` for MRs, or
-  `glab api .../discussions/<id>/notes -f body=...` for issues/incidents.
+  `glab api .../discussions/<id>/notes` for issues/incidents (write the body
+  to a file and pass `-F body=@file` for anything non-trivial).
 - **`--input` requires an explicit `Content-Type` header** — `glab api
   --input file.json` sends raw bytes without setting Content-Type, causing
   HTTP 415. Add `-H "Content-Type: application/json"` or use `-f` / `-F`
