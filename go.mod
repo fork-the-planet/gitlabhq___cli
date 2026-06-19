@@ -53,8 +53,8 @@ require (
 	golang.org/x/sys v0.46.0
 	golang.org/x/term v0.44.0
 	golang.org/x/text v0.38.0
-	k8s.io/apimachinery v0.36.1
-	k8s.io/client-go v0.36.1
+	k8s.io/apimachinery v0.36.2
+	k8s.io/client-go v0.36.2
 	mvdan.cc/xurls/v2 v2.6.0
 	oss.terrastruct.com/d2 v0.7.1
 )
