@@ -136,7 +136,7 @@ check_docs_update:
       if [[ $(git add -A --dry-run) ]]; then
         echo '✖ ERROR: Documentation changes detected!';
         git diff --color --ws-error-highlight=all
-        echo '✖ These changes require a documentation update. To regenerate the docs, read https://gitlab.com/gitlab-org/cli/-/tree/main/docs#generating-the-docs.';
+        echo '✖ These changes require a documentation update. Run `make gen-docs` to regenerate the docs and navigation, then commit. See https://gitlab.com/gitlab-org/cli/-/tree/main/docs#generating-the-docs.';
         exit 1;
       else
         echo '✔ No documentation updates detected.';

@@ -87,7 +87,7 @@ manpage: ## Generate manual pages
 	go run ./cmd/gen-docs/docs.go --manpage --path ./share/man/man1
 
 .PHONY: gen-docs
-gen-docs: ## Generate web docs
+gen-docs: ## Generate web docs and the GitLab Docs navigation submenu for glab
 	go run ./cmd/gen-docs/docs.go
 
 .PHONY: check

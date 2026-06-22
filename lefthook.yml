@@ -149,7 +149,7 @@ pre-push:
 
         make gen-docs > /dev/null 2>&1
         if ! git diff --quiet docs/; then
-          echo "✖ Generated docs are out of date. Run 'make gen-docs' and commit."
+          echo "✖ Generated docs or navigation are out of date. Run 'make gen-docs', then commit."
           exit 1
         fi
         echo "✔ Documentation is up to date."
