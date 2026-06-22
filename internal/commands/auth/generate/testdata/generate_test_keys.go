@@ -82,6 +82,23 @@ func main() {
 	}
 }
 
+func generateRsaKey(filename string, bits int) error {
+	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
+	if err != nil {
+		return err
+	}
+
+	// golang.org/x/crypto/ssh rejects RSA keys with a modulus larger than
+	// 8192 bits when parsing OpenSSH-format keys. Save oversized keys in
+	// PKCS#1 format instead so they can still be loaded and exercise the
+	// size check in getSigningMethod.
+	if bits > 8192 {
+		return savePrivateKeyManual(filename, privateKey)
+	}
+
+	return savePrivateKeyAsSSH(filename, privateKey)
+}
+
 func generateEd25519Key(filename string) error {
 	_, privateKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
@@ -107,15 +124,6 @@ func generateEcdsaKeyManual(filename string, curve elliptic.Curve) error {
 	}
 
 	return savePrivateKeyManual(filename, privateKey)
-}
-
-func generateRsaKey(filename string, bits int) error {
-	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
-	if err != nil {
-		return err
-	}
-
-	return savePrivateKeyAsSSH(filename, privateKey)
 }
 
 func savePrivateKeyAsSSH(filename string, privateKey crypto.PrivateKey) error {
