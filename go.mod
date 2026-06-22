@@ -5,9 +5,9 @@ go 1.26.4
 require (
 	charm.land/bubbletea/v2 v2.0.7
 	charm.land/fang/v2 v2.0.1
-	charm.land/glamour/v2 v2.0.0
+	charm.land/glamour/v2 v2.0.1
 	charm.land/huh/v2 v2.0.3
-	charm.land/lipgloss/v2 v2.0.3
+	charm.land/lipgloss/v2 v2.0.4
 	git.sr.ht/~timofurrer/ugh v0.1.1
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
