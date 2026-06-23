@@ -32,7 +32,7 @@ func TestGraphStatus_FullPath_HappyPath(t *testing.T) {
 			assert.Equal(t, "gitlab-org/gitlab", *opts.FullPath)
 			assert.Nil(t, opts.NamespaceID)
 			assert.Nil(t, opts.ProjectID)
-			assert.Nil(t, opts.ResponseFormat, "response_format should not be sent unless --format is given")
+			assert.Nil(t, opts.ResponseFormat, "response_format should not be sent unless --response-format is given")
 
 			return &gitlab.OrbitGraphStatus{
 					Projects: &gitlab.OrbitGraphStatusProjects{Indexed: 5, TotalKnown: 10},
@@ -98,9 +98,9 @@ func TestGraphStatus_NamespaceID(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestGraphStatus_ProjectID_FormatLLM(t *testing.T) {
+func TestGraphStatus_ProjectID_ResponseFormatLLM(t *testing.T) {
 	t.Parallel()
-	// GIVEN the user supplies --project-id and --format llm
+	// GIVEN the user supplies --project-id and --response-format llm
 	testClient := gitlabtesting.NewTestClient(t)
 	testClient.MockOrbit.EXPECT().
 		GetGraphStatus(gomock.AssignableToTypeOf(&gitlab.GetGraphStatusOptions{}), gomock.Any()).
@@ -121,7 +121,7 @@ func TestGraphStatus_ProjectID_FormatLLM(t *testing.T) {
 	)
 
 	// WHEN
-	_, err := exec("--project-id 278964 --format llm")
+	_, err := exec("--project-id 278964 --response-format llm")
 
 	// THEN
 	require.NoError(t, err)
@@ -171,7 +171,7 @@ func TestGraphStatus_MultipleScopeFlags_Errors(t *testing.T) {
 
 func TestGraphStatus_InvalidFormatFlag(t *testing.T) {
 	t.Parallel()
-	// GIVEN an invalid --format value
+	// GIVEN an invalid --response-format value
 	// NewEnumValue rejects unknown values at flag parsing time, before RunE runs.
 	testClient := gitlabtesting.NewTestClient(t)
 	// no API call expected
@@ -184,7 +184,7 @@ func TestGraphStatus_InvalidFormatFlag(t *testing.T) {
 	)
 
 	// WHEN
-	_, err := exec("--full-path gitlab-org/gitlab --format yaml")
+	_, err := exec("--full-path gitlab-org/gitlab --response-format yaml")
 
 	// THEN cobra rejects the flag before RunE executes
 	require.Error(t, err)
@@ -251,4 +251,36 @@ func TestGraphStatus_GKGServiceUnavailable(t *testing.T) {
 	require.ErrorAs(t, err, &exitErr)
 	assert.Equal(t, 1, exitErr.Code)
 	assert.Contains(t, err.Error(), "service unavailable")
+}
+
+// TestGraphStatus_DeprecatedFormatFlagStillWorks verifies that the deprecated
+// --format flag still works via the deprecation shim and produces the
+// correct server-side response_format override.
+func TestGraphStatus_DeprecatedFormatFlagStillWorks(t *testing.T) {
+	t.Parallel()
+	// GIVEN the user supplies --project-id and the deprecated --format llm
+	testClient := gitlabtesting.NewTestClient(t)
+	testClient.MockOrbit.EXPECT().
+		GetGraphStatus(gomock.AssignableToTypeOf(&gitlab.GetGraphStatusOptions{}), gomock.Any()).
+		DoAndReturn(func(opts *gitlab.GetGraphStatusOptions, _ ...gitlab.RequestOptionFunc) (*gitlab.OrbitGraphStatus, *gitlab.Response, error) {
+			require.NotNil(t, opts.ProjectID)
+			assert.Equal(t, int64(278964), *opts.ProjectID)
+			require.NotNil(t, opts.ResponseFormat)
+			assert.Equal(t, gitlab.OrbitResponseFormatLLM, *opts.ResponseFormat)
+			return &gitlab.OrbitGraphStatus{},
+				&gitlab.Response{Response: &http.Response{StatusCode: http.StatusOK}}, nil
+		})
+
+	exec := cmdtest.SetupCmdForTest(
+		t,
+		NewCmd,
+		false,
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, nil, "", "", api.WithGitLabClient(testClient.Client))),
+	)
+
+	// WHEN using the deprecated --format flag
+	_, err := exec("--project-id 278964 --format llm")
+
+	// THEN the deprecated flag still works
+	require.NoError(t, err)
 }

@@ -55,8 +55,8 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 			full path of a project or group. For example, `+"`gitlab-org/gitlab`"+`.
 
 			Unlike `+"`glab orbit remote query`"+`, this endpoint defaults to
-			the `+"`raw`"+` response format. Use `+"`--format llm`"+` for
-			compact output intended for agents.
+			the `+"`raw`"+` response format. Use `+"`--response-format llm`"+`
+			for compact output intended for agents.
 		`) + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			# Look up indexing progress by full path
@@ -67,14 +67,14 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 			$ glab orbit remote graph-status --namespace-id 9970
 
 			# Compact output for agents
-			$ glab orbit remote graph-status --full-path gitlab-org/gitlab --format llm
+			$ glab orbit remote graph-status --full-path gitlab-org/gitlab --response-format llm
 		`),
 		Annotations: map[string]string{
 			mcpannotations.Safe: "true",
 		},
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			opts.formatChanged = cmd.Flags().Changed("format")
+			opts.formatChanged = cmd.Flags().Changed("response-format") || cmd.Flags().Changed("format")
 			return opts.run(cmd.Context())
 		},
 	}
@@ -89,8 +89,13 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 	fl.StringVar(&opts.fullPath, "full-path", "",
 		"Full path of a project or group, such as `gitlab-org/gitlab`. Cannot be used with the ID flags.")
 	fl.VarP(cmdutils.NewEnumValue([]string{formatRaw, formatLLM}, formatRaw, &opts.format),
-		"format", "f",
-		"Response format: `raw` (structured JSON) or `llm` (compact, intended for agents).")
+		"response-format", "",
+		"Server response format: `raw` (structured JSON) or `llm` (compact GOON/TOON for agents).")
+
+	// Deprecated: use --response-format instead.
+	fl.VarP(cmdutils.NewEnumValue([]string{formatRaw, formatLLM}, formatRaw, &opts.format),
+		"format", "f", "Response format: `raw` (structured JSON) or `llm` (compact, intended for agents).")
+	_ = fl.MarkDeprecated("format", "use --response-format instead.")
 
 	cmd.MarkFlagsMutuallyExclusive("namespace-id", "project-id", "full-path")
 	cmd.MarkFlagsOneRequired("namespace-id", "project-id", "full-path")
