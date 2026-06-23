@@ -33,10 +33,18 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 		Use:   "status",
 		Short: `Show GitLab Knowledge Graph cluster health. (EXPERIMENTAL)`,
 		Long: heredoc.Doc(`
-			Calls `+"`GET /api/v4/orbit/status`"+` and prints the cluster health
-			response as pretty-printed JSON. Use this command to confirm Orbit
-			is enabled and reachable for your user. It is the first step in
-			the Orbit discovery workflow.
+			Prints the Orbit cluster health as pretty-printed JSON. Use this
+			command to confirm Orbit is enabled and reachable for your user.
+			It is the first step in the Orbit discovery workflow.
+
+			The output is always the system health object (fields such as
+			status, version, components, error) regardless of the GitLab
+			instance version. On newer instances (19.1+), when the backend
+			cannot reach the gRPC cluster, the output includes an error
+			field (and status is "unknown"). Use --jq to filter health
+			fields directly, for example --jq '.status' or
+			--jq '.components'. The user/system wrapper returned by newer
+			instances is not exposed in the output.
 		`) + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			$ glab orbit remote status
@@ -68,5 +76,23 @@ func (o *options) run(ctx context.Context) error {
 		return orbiterr.Translate(err)
 	}
 
+	// New nested shape: the API returned a "user" wrapper.
+	if status.User != nil {
+		if !status.User.Available {
+			return orbiterr.UnavailableForUser()
+		}
+		if status.System != nil {
+			return o.io.PrintJSON(status.System)
+		}
+		// User has access but the server returned no system health
+		// object. Under the current API contract this is unreachable
+		// (System is present whenever Available is true), but we
+		// surface an explicit error rather than silently printing
+		// the user/system wrapper.
+		return orbiterr.SystemHealthAbsent()
+	}
+
+	// Old flat shape (pre-19.1 instances): print the whole
+	// status object as-is.
 	return o.io.PrintJSON(status)
 }
