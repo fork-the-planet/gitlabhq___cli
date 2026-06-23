@@ -24,10 +24,12 @@ import (
 // have a stable user-facing meaning, so scripting agents can branch on
 // them without parsing stderr.
 const (
-	// ExitOrbitUnavailable is returned when the Knowledge Graph endpoint
-	// returns 404. The most common cause is the `knowledge_graph`
-	// feature flag being off for the user; a typo in the path produces
-	// the same status.
+	// ExitOrbitUnavailable is returned when Orbit is not reachable
+	// for the current user. This covers two cases:
+	//   - The Knowledge Graph endpoint returns HTTP 404 (the
+	//     `knowledge_graph` feature flag is off, or the path is wrong).
+	//   - The new nested response reports `user.available == false`
+	//     (the user lacks the `:orbit` license or the FF is off).
 	ExitOrbitUnavailable = 2
 
 	// ExitUnauthenticated is returned when the request is rejected
@@ -104,6 +106,37 @@ func Translate(err error) error {
 		fmt.Errorf("orbit API error (HTTP %d)%s",
 			errResp.Response.StatusCode, suffix(body)),
 		"",
+	)
+}
+
+// UnavailableForUser returns the exit error for the new nested
+// response shape when `user.available` is false. This typically means
+// the `knowledge_graph` feature flag is disabled for the user or the
+// instance does not have an Orbit license.
+func UnavailableForUser() error {
+	return wrapWithDetails(
+		"Orbit is not available for your user",
+		ExitOrbitUnavailable,
+		"The Orbit status API reports that your user does not have access.\n"+
+			"The most common causes are:\n"+
+			"  - The `knowledge_graph` feature flag is disabled for your user.\n"+
+			"  - The instance does not include the `:orbit` license add-on.\n"+
+			"Contact an instance administrator to enable it.",
+	)
+}
+
+// SystemHealthAbsent returns the exit error for the new nested response
+// shape when `user.available` is true but the `system` object is nil.
+// Under the current API contract this should not happen (system is
+// present whenever available is true), but surfacing an explicit error
+// is safer than silently printing the user/system wrapper.
+func SystemHealthAbsent() error {
+	return wrapWithDetails(
+		"Orbit status: user has access but system health is absent",
+		ExitOrbitUnavailable,
+		"The Orbit status API reports user.available=true but did not include\n"+
+			"the system health object. This is unexpected — it may indicate an API\n"+
+			"contract change. Please update glab or contact your instance administrator.",
 	)
 }
 

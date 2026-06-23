@@ -20,9 +20,114 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
 
-func TestStatus_HappyPath(t *testing.T) {
+func TestStatus_NewShape_HappyPath(t *testing.T) {
 	t.Parallel()
-	// GIVEN the Orbit service reports a healthy cluster
+	// GIVEN the new-shape API returns user.available=true with system health
+	testClient := gitlabtesting.NewTestClient(t)
+	testClient.MockOrbit.EXPECT().
+		GetStatus(gomock.Any(), gomock.Any()).
+		Return(&gitlab.OrbitStatus{
+			User: &gitlab.OrbitStatusUser{Available: true},
+			System: &gitlab.OrbitStatusSystem{
+				Status:    "healthy",
+				Timestamp: "2026-06-20T12:00:00Z",
+				Version:   "0.6.0",
+				Components: []*gitlab.OrbitStatusComponent{
+					{
+						Name:     "clickhouse",
+						Status:   "healthy",
+						Replicas: &gitlab.OrbitStatusReplicas{Ready: 3, Desired: 3},
+					},
+				},
+			},
+			// Flat fields omitted: run() reads only status.System
+			// for the new shape. UnmarshalJSON promotes them in
+			// real usage, but they are not consulted here.
+		}, &gitlab.Response{Response: &http.Response{StatusCode: http.StatusOK}}, nil)
+
+	exec := cmdtest.SetupCmdForTest(
+		t,
+		NewCmd,
+		false,
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, nil, "", "", api.WithGitLabClient(testClient.Client))),
+	)
+
+	// WHEN `glab orbit remote status` runs
+	out, err := exec("")
+
+	// THEN the system health is printed as JSON (not the full wrapper)
+	require.NoError(t, err)
+	assert.Empty(t, out.ErrBuf.String())
+
+	var result gitlab.OrbitStatusSystem
+	require.NoError(t, json.Unmarshal(out.OutBuf.Bytes(), &result))
+	assert.Equal(t, "healthy", result.Status)
+	assert.Equal(t, "0.6.0", result.Version)
+	require.Len(t, result.Components, 1)
+	assert.Equal(t, "clickhouse", result.Components[0].Name)
+}
+
+func TestStatus_NewShape_UserUnavailable(t *testing.T) {
+	t.Parallel()
+	// GIVEN the new-shape API returns user.available=false (no access)
+	testClient := gitlabtesting.NewTestClient(t)
+	testClient.MockOrbit.EXPECT().
+		GetStatus(gomock.Any(), gomock.Any()).
+		Return(&gitlab.OrbitStatus{
+			User:   &gitlab.OrbitStatusUser{Available: false},
+			System: nil,
+		}, &gitlab.Response{Response: &http.Response{StatusCode: http.StatusOK}}, nil)
+
+	exec := cmdtest.SetupCmdForTest(
+		t,
+		NewCmd,
+		false,
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, nil, "", "", api.WithGitLabClient(testClient.Client))),
+	)
+
+	// WHEN `glab orbit remote status` runs
+	_, err := exec("")
+
+	// THEN the error maps to ExitOrbitUnavailable (exit code 2)
+	require.Error(t, err)
+	var exitErr *cmdutils.ExitError
+	require.ErrorAs(t, err, &exitErr)
+	assert.Equal(t, orbiterr.ExitOrbitUnavailable, exitErr.Code)
+	assert.Contains(t, err.Error(), "not available for your user")
+}
+
+func TestStatus_NewShape_UserAvailable_SystemNil(t *testing.T) {
+	t.Parallel()
+	// GIVEN the new-shape API returns user.available=true but no system object
+	testClient := gitlabtesting.NewTestClient(t)
+	testClient.MockOrbit.EXPECT().
+		GetStatus(gomock.Any(), gomock.Any()).
+		Return(&gitlab.OrbitStatus{
+			User:   &gitlab.OrbitStatusUser{Available: true},
+			System: nil,
+		}, &gitlab.Response{Response: &http.Response{StatusCode: http.StatusOK}}, nil)
+
+	exec := cmdtest.SetupCmdForTest(
+		t,
+		NewCmd,
+		false,
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, nil, "", "", api.WithGitLabClient(testClient.Client))),
+	)
+
+	// WHEN `glab orbit remote status` runs
+	_, err := exec("")
+
+	// THEN an explicit error is returned (not the user/system wrapper)
+	require.Error(t, err)
+	var exitErr *cmdutils.ExitError
+	require.ErrorAs(t, err, &exitErr)
+	assert.Equal(t, orbiterr.ExitOrbitUnavailable, exitErr.Code)
+	assert.Contains(t, err.Error(), "system health is absent")
+}
+
+func TestStatus_OldFlatShape(t *testing.T) {
+	t.Parallel()
+	// GIVEN an older instance returns the flat health shape (no User/System)
 	testClient := gitlabtesting.NewTestClient(t)
 	testClient.MockOrbit.EXPECT().
 		GetStatus(gomock.Any(), gomock.Any()).
@@ -49,7 +154,7 @@ func TestStatus_HappyPath(t *testing.T) {
 	// WHEN `glab orbit remote status` runs
 	out, err := exec("")
 
-	// THEN the typed status response is printed as JSON to stdout
+	// THEN the flat status response is printed as JSON (back-compat)
 	require.NoError(t, err)
 	assert.Empty(t, out.ErrBuf.String())
 
