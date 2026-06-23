@@ -68,13 +68,14 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 			}
 			%[2]s
 
-			%[1]s--format%[1]s overrides the body's %[1]sresponse_format%[1]s value,
-			or sets it if absent. If neither the body nor %[1]s--format%[1]s
-			specifies a format, %[1]sllm%[1]s is used by default. The %[1]sllm%[1]s
-			format is compact GOON/TOON text intended for agents; %[1]sraw%[1]s
-			returns structured JSON suitable for %[1]sjq%[1]s. The server's
-			response body is written to stdout verbatim regardless of format —
-			no client-side decoding or re-encoding is performed.
+			%[1]s--response-format%[1]s overrides the body's %[1]sresponse_format%[1]s
+			value, or sets it if absent. If neither the body nor
+			%[1]s--response-format%[1]s specifies a format, %[1]sllm%[1]s is used by
+			default. The %[1]sllm%[1]s format is compact GOON/TOON text intended
+			for agents; %[1]sraw%[1]s returns structured JSON suitable for
+			%[1]sjq%[1]s. The server's response body is written to stdout verbatim
+			regardless of format — no client-side decoding or re-encoding is
+			performed.
 
 			Compatibility note: prior to this change, %[1]s--format raw%[1]s
 			output was re-marshalled through the SDK's typed
@@ -101,7 +102,7 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 			$ cat ./query.json | glab orbit remote query -
 
 			# Force raw output (pipeable into jq)
-			$ glab orbit remote query --format raw ./query.json
+			$ glab orbit remote query --response-format raw ./query.json
 		`),
 		Annotations: map[string]string{
 			mcpannotations.Safe: "true",
@@ -109,7 +110,7 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
-			opts.formatChanged = cmd.Flags().Changed("format")
+			opts.formatChanged = cmd.Flags().Changed("response-format") || cmd.Flags().Changed("format")
 			return opts.run(cmd.Context())
 		},
 	}
@@ -118,8 +119,13 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 	fl.StringVar(&opts.hostname, "hostname", "",
 		"GitLab hostname to query. Defaults to the current repository's host or `gitlab.com`.")
 	fl.VarP(cmdutils.NewEnumValue([]string{formatLLM, formatRaw}, formatLLM, &opts.format),
-		"format", "f",
-		"Response format: `llm` (compact, intended for agents) or `raw` (structured JSON).")
+		"response-format", "",
+		"Server response format: `llm` (compact GOON/TOON for agents) or `raw` (structured JSON).")
+
+	// Deprecated: use --response-format instead.
+	fl.VarP(cmdutils.NewEnumValue([]string{formatLLM, formatRaw}, formatLLM, &opts.format),
+		"format", "f", "Response format: `llm` (compact, intended for agents) or `raw` (structured JSON).")
+	_ = fl.MarkDeprecated("format", "use --response-format instead.")
 
 	return cmd
 }
@@ -254,7 +260,7 @@ func byteAtOffset(body []byte, offset int64) (byte, bool) {
 // buildRequest parses the user-supplied body into an
 // *gitlab.OrbitQueryRequest. The user's query is preserved
 // verbatim; response_format priority is:
-//  1. --format flag (when explicitly passed by the user)
+//  1. --response-format flag (when explicitly passed by the user)
 //  2. body's response_format field
 //  3. "llm" fallback default
 //

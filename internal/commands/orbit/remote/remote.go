@@ -74,7 +74,7 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 
 			# Run a query from stdin (raw output for jq pipelines)
 			$ echo '{"query":{"query_type":"traversal","node":{"id":"p","entity":"Project"},"limit":5}}' \
-			    | glab orbit remote query --format raw -
+			    | glab orbit remote query --response-format raw -
 
 			# Inspect indexing progress
 			$ glab orbit remote graph-status --full-path gitlab-org/gitlab

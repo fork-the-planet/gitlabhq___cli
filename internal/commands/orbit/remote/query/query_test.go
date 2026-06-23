@@ -84,7 +84,7 @@ func (s *orbitServer) apiClientOption(t *testing.T) cmdtest.FactoryOption {
 
 func TestQuery_Stdin_DefaultsToLLM(t *testing.T) {
 	t.Parallel()
-	// GIVEN a body on stdin and no --format flag
+	// GIVEN a body on stdin and no --response-format flag
 	respBody := "@header\nquery_type:traversal\n@nodes\nProject(1):\n278964 name=GitLab\n"
 	srv := newOrbitServer(t, "", func(w http.ResponseWriter, r *http.Request) {
 		// The server uses Content-Type: text/plain for `llm` —
@@ -126,7 +126,7 @@ func TestQuery_Stdin_DefaultsToLLM(t *testing.T) {
 
 func TestQuery_FlagOverridesBodyResponseFormat(t *testing.T) {
 	t.Parallel()
-	// GIVEN the body sets response_format=raw but --format=llm is passed
+	// GIVEN the body sets response_format=raw but --response-format=llm is passed
 	body := `{"query":{"query_type":"neighbors","node_ids":[1]},"response_format":"raw"}`
 	srv := newOrbitServer(t, `{"result":null}`, nil)
 
@@ -138,18 +138,18 @@ func TestQuery_FlagOverridesBodyResponseFormat(t *testing.T) {
 		srv.apiClientOption(t),
 	)
 
-	_, err := exec("--format llm -")
+	_, err := exec("--response-format llm -")
 	require.NoError(t, err)
 
 	require.True(t, srv.called)
 	require.NotNil(t, srv.requestBody.ResponseFormat)
 	assert.Equal(t, gitlab.OrbitResponseFormatLLM, *srv.requestBody.ResponseFormat,
-		"--format must override the body's response_format")
+		"--response-format must override the body's response_format")
 }
 
 func TestQuery_BodyFormatHonoredWhenNoFlag(t *testing.T) {
 	t.Parallel()
-	// GIVEN the body sets response_format=raw and --format is NOT passed
+	// GIVEN the body sets response_format=raw and --response-format is NOT passed
 	body := `{"query":{"query_type":"neighbors","node_ids":[1]},"response_format":"raw"}`
 	srv := newOrbitServer(t, `{"result":null}`, nil)
 
@@ -169,7 +169,7 @@ func TestQuery_BodyFormatHonoredWhenNoFlag(t *testing.T) {
 	require.True(t, srv.called)
 	require.NotNil(t, srv.requestBody.ResponseFormat)
 	assert.Equal(t, gitlab.OrbitResponseFormatRaw, *srv.requestBody.ResponseFormat,
-		"body's response_format must win when --format is not passed")
+		"body's response_format must win when --response-format is not passed")
 }
 
 func TestQuery_FromFile(t *testing.T) {
@@ -196,7 +196,7 @@ func TestQuery_FromFile(t *testing.T) {
 
 func TestQuery_InvalidFormatFlag(t *testing.T) {
 	t.Parallel()
-	// GIVEN a body on stdin and an invalid --format value.
+	// GIVEN a body on stdin and an invalid --response-format value.
 	// NewEnumValue rejects unknown values at flag parsing time,
 	// before RunE runs — so no HTTP call should reach the server.
 	srv := newOrbitServer(t, "", nil)
@@ -209,7 +209,7 @@ func TestQuery_InvalidFormatFlag(t *testing.T) {
 		srv.apiClientOption(t),
 	)
 
-	_, err := exec("--format yaml -")
+	_, err := exec("--response-format yaml -")
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "yaml")
 	assert.False(t, srv.called, "flag-validation errors must not hit the API")
@@ -321,7 +321,7 @@ func TestQuery_LLMResponseStreamedVerbatim(t *testing.T) {
 		srv.apiClientOption(t),
 	)
 
-	out, err := exec("--format llm -")
+	out, err := exec("--response-format llm -")
 	require.NoError(t, err,
 		"`response_format=llm` body must be streamed verbatim — "+
 			"no JSON decode of the response is allowed")
@@ -347,7 +347,7 @@ func TestQuery_RawResponseStreamedVerbatim(t *testing.T) {
 		srv.apiClientOption(t),
 	)
 
-	out, err := exec("--format raw -")
+	out, err := exec("--response-format raw -")
 	require.NoError(t, err)
 	assert.Equal(t, respBody, out.OutBuf.String(),
 		"raw JSON response must reach stdout byte-for-byte unchanged")
@@ -364,14 +364,14 @@ func TestBuildRequest_BodyResponseFormatWinsWhenFlagAbsent(t *testing.T) {
 	assert.Equal(t, gitlab.OrbitResponseFormatRaw, *req.ResponseFormat, "body's response_format must win when formatChanged=false")
 }
 
-// TestBuildRequest_FlagWinsOverBody verifies that an explicit --format overrides body.
+// TestBuildRequest_FlagWinsOverBody verifies that an explicit --response-format overrides body.
 func TestBuildRequest_FlagWinsOverBody(t *testing.T) {
 	t.Parallel()
 	body := []byte(`{"query":{"query_type":"traversal"},"response_format":"raw"}`)
 	req, err := buildRequest(body, formatLLM, true)
 	require.NoError(t, err)
 	require.NotNil(t, req.ResponseFormat)
-	assert.Equal(t, gitlab.OrbitResponseFormatLLM, *req.ResponseFormat, "--format must win when formatChanged=true")
+	assert.Equal(t, gitlab.OrbitResponseFormatLLM, *req.ResponseFormat, "--response-format must win when formatChanged=true")
 }
 
 // TestBuildRequest_PreservesAtInStringLiterals locks in the contract that
@@ -557,4 +557,29 @@ func TestQuery_Stdin_WithAtInStrings(t *testing.T) {
 
 	require.True(t, srv.called)
 	assert.Contains(t, string(srv.requestBody.Query), "user@example.com")
+}
+
+// TestQuery_DeprecatedFormatFlagStillWorks verifies that the deprecated
+// --format flag still works via the deprecation shim and produces the
+// correct server-side response_format override.
+func TestQuery_DeprecatedFormatFlagStillWorks(t *testing.T) {
+	t.Parallel()
+	srv := newOrbitServer(t, `{"result":null}`, nil)
+
+	exec := cmdtest.SetupCmdForTest(
+		t,
+		NewCmd,
+		false,
+		cmdtest.WithStdin(stdinBody),
+		srv.apiClientOption(t),
+	)
+
+	_, err := exec("--format raw -")
+	require.NoError(t, err)
+
+	// The deprecated --format flag must still resolve the format correctly
+	require.True(t, srv.called)
+	require.NotNil(t, srv.requestBody.ResponseFormat)
+	assert.Equal(t, gitlab.OrbitResponseFormatRaw, *srv.requestBody.ResponseFormat,
+		"deprecated --format must still override response_format")
 }
