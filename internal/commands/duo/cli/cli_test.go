@@ -205,6 +205,61 @@ func TestRunE_InstallAndUpdateAreMutuallyExclusive(t *testing.T) {
 	assert.Contains(t, err.Error(), "mutually exclusive")
 }
 
+func TestWarnIfSnapConfined(t *testing.T) {
+	t.Parallel()
+
+	snapSet := func(k string) string {
+		if k == "SNAP" {
+			return "/snap/glab/6032"
+		}
+		return ""
+	}
+	snapUnset := func(string) string { return "" }
+
+	t.Run("warns on stderr when SNAP is set and command is a normal run", func(t *testing.T) {
+		t.Parallel()
+		ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(false))
+
+		warnIfSnapConfined(ios, snapSet, false, false)
+
+		out := stderr.String()
+		assert.Contains(t, out, "snap confinement")
+		assert.Contains(t, out, "glab auth credential-helper")
+		assert.Contains(t, out, "brew install glab")
+		assert.Empty(t, stdout.String(), "warning must not leak onto stdout")
+	})
+
+	t.Run("stays silent when SNAP is unset", func(t *testing.T) {
+		t.Parallel()
+		ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(false))
+
+		warnIfSnapConfined(ios, snapUnset, false, false)
+
+		assert.Empty(t, stderr.String())
+		assert.Empty(t, stdout.String())
+	})
+
+	t.Run("stays silent under --install even when SNAP is set", func(t *testing.T) {
+		t.Parallel()
+		ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(false))
+
+		warnIfSnapConfined(ios, snapSet, true, false)
+
+		assert.Empty(t, stderr.String())
+		assert.Empty(t, stdout.String())
+	})
+
+	t.Run("stays silent under --update even when SNAP is set", func(t *testing.T) {
+		t.Parallel()
+		ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(false))
+
+		warnIfSnapConfined(ios, snapSet, false, true)
+
+		assert.Empty(t, stderr.String())
+		assert.Empty(t, stdout.String())
+	})
+}
+
 func TestShouldForceUpdateCheck(t *testing.T) {
 	tests := []struct {
 		name     string
