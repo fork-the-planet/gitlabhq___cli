@@ -463,7 +463,7 @@ func TestPrintUpdateError(t *testing.T) {
 				cmd:   cmd,
 				debug: false,
 			},
-			wantOut: "ERROR: the app exploded\n",
+			wantOut: "ERROR: the app exploded\n\n",
 		},
 		{
 			name: "DNS error",
@@ -474,7 +474,7 @@ func TestPrintUpdateError(t *testing.T) {
 				cmd:   cmd,
 				debug: false,
 			},
-			wantOut: "x error connecting to https://gitlab.com/api/v4\n",
+			wantOut: "x error connecting to https://gitlab.com/api/v4\n\n",
 		},
 		{
 			name: "DNS error with debug",
@@ -485,7 +485,7 @@ func TestPrintUpdateError(t *testing.T) {
 				cmd:   cmd,
 				debug: true,
 			},
-			wantOut: "x error connecting to https://gitlab.com/api/v4\nx lookup https://gitlab.com/api/v4: \n",
+			wantOut: "x error connecting to https://gitlab.com/api/v4\nx lookup https://gitlab.com/api/v4: \n\n",
 		},
 		{
 			name: "Cobra flag error",
@@ -494,7 +494,7 @@ func TestPrintUpdateError(t *testing.T) {
 				cmd:   cmd,
 				debug: false,
 			},
-			wantOut: "ERROR: unknown flag --foo\n",
+			wantOut: "ERROR: unknown flag --foo\n\n",
 		},
 		{
 			name: "unknown Cobra command error",
@@ -503,7 +503,7 @@ func TestPrintUpdateError(t *testing.T) {
 				cmd:   cmd,
 				debug: false,
 			},
-			wantOut: "ERROR: unknown command foo\n",
+			wantOut: "ERROR: unknown command foo\n\n",
 		},
 	}
 

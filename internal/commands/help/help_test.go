@@ -3,6 +3,7 @@
 package help
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 
@@ -84,16 +85,15 @@ func TestRootHelpFunc(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			streams, _, buf, _ := cmdtest.TestIOStreams()
+			streams, _, stdout, _ := cmdtest.TestIOStreams()
 			cmd := tt.args.command
-			cmd.SetOut(buf)
 			if len(tt.args.args) > 0 {
 				// falsify a parent command
 				alias.NewCmdAlias(cmdtest.NewTestFactory(streams)).AddCommand(cmd)
 			}
-			RootHelpFunc(streams.Color(), cmd, tt.args.args)
+			RootHelpFunc(streams, cmd, tt.args.args)
 
-			output := buf.String()
+			output := stdout.String()
 			// Normalize whitespace for comparison
 			normalizedOutput := strings.Join(strings.Fields(output), " ")
 			normalizedWantOut := strings.Join(strings.Fields(tt.wantOut), " ")
@@ -120,9 +120,11 @@ func TestRootUsageFunc(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := RootUsageFunc(tt.args.command); (err != nil) != tt.wantErr {
+			var out bytes.Buffer
+			if err := RootUsageFunc(&out, tt.args.command); (err != nil) != tt.wantErr {
 				t.Errorf("RootUsageFunc() error = %v, wantErr %v", err, tt.wantErr)
 			}
+			assert.Contains(t, out.String(), "Usage:  alias [command] [flags]")
 		})
 	}
 }

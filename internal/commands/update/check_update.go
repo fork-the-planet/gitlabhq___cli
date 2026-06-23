@@ -341,6 +341,6 @@ func PrintUpdateError(streams *iostreams.IOStreams, err error, cmd *cobra.Comman
 	}
 
 	if cmd != nil {
-		cmd.Print("\n")
+		streams.LogError()
 	}
 }

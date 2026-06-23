@@ -206,7 +206,7 @@ func Map[T1, T2 any](elems []T1, fn func(T1) T2) []T2 {
 }
 
 // IsEnvVarEnabled checks if an environment variable is set
-// and logs an error to stdout if it a boolean value cannot be parsed
+// and logs a warning to stderr if a boolean value cannot be parsed.
 func IsEnvVarEnabled(key string) (bool, bool) {
 	str, found := os.LookupEnv(key)
 	if found {
@@ -214,7 +214,7 @@ func IsEnvVarEnabled(key string) (bool, bool) {
 		// if the environment variable has invalid value we print a warning
 		// otherwise we return the parsed value
 		if err != nil {
-			fmt.Fprintf(os.Stdout, "WARNING: Could not parse %s environment variable value: %s\n", key, err.Error())
+			fmt.Fprintf(os.Stderr, "WARNING: Could not parse %s environment variable value: %s\n", key, err.Error())
 		}
 
 		if !strings.HasPrefix(key, "GLAB_") {
@@ -226,9 +226,11 @@ func IsEnvVarEnabled(key string) (bool, bool) {
 	return false, false
 }
 
-// PrintDeprecationWarning prints a deprecation warning to use the `GLAB_` prefix with environment variables
+// PrintDeprecationWarning prints a deprecation warning to stderr to use the
+// `GLAB_` prefix with environment variables. Diagnostics go to stderr so they
+// do not pollute stdout pipelines — see gitlab-org/cli#8371.
 func PrintDeprecationWarning(key string) {
-	fmt.Fprintf(os.Stdout, "DEPRECATION WARNING: The environment variable %s has been deprecated and will be removed in future releases. Use GLAB_%s instead.\n", key, key)
+	fmt.Fprintf(os.Stderr, "DEPRECATION WARNING: The environment variable %s has been deprecated and will be removed in future releases. Use GLAB_%s instead.\n", key, key)
 }
 
 // FormatDueDate returns an empty string if date is nil

@@ -125,14 +125,22 @@ func NewCmdRoot(f cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	rootCmd.SetOut(f.IO().StdOut)
-	rootCmd.SetErr(f.IO().StdErr)
+	// We deliberately do NOT call rootCmd.SetOut / rootCmd.SetErr here.
+	// Cobra's c.Print() (used for deprecation warnings, "unknown help topic",
+	// usage-on-error, etc.) routes through OutOrStderr, which returns Out when
+	// it is set and falls back to os.Stderr otherwise. Wiring Out to StdOut
+	// pollutes the stdout data channel with diagnostics — see
+	// https://gitlab.com/gitlab-org/cli/-/issues/8371 and
+	// https://github.com/spf13/cobra/issues/1708. Instead, the help and usage
+	// funcs receive the IOStreams explicitly and route their own output.
 
 	rootCmd.PersistentFlags().BoolP("help", "h", false, "Show help for this command.")
 	rootCmd.SetHelpFunc(func(command *cobra.Command, args []string) {
-		help.RootHelpFunc(f.IO().Color(), command, args)
+		help.RootHelpFunc(f.IO(), command, args)
 	})
-	rootCmd.SetUsageFunc(help.RootUsageFunc)
+	rootCmd.SetUsageFunc(func(command *cobra.Command) error {
+		return help.RootUsageFunc(f.IO().StdErr, command)
+	})
 	rootCmd.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
 		if errors.Is(err, pflag.ErrHelp) {
 			return err

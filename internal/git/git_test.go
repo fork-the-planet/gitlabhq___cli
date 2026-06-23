@@ -344,7 +344,13 @@ func TestGitCommonDir(t *testing.T) {
 
 		got, err := GitCommonDir()
 		require.NoError(t, err)
-		require.Equal(t, filepath.Join(repoDir, ".git"), got)
+		// git resolves symlinks in returned paths (macOS: /var → /private/var),
+		// so resolve both sides before comparing.
+		wantResolved, err := filepath.EvalSymlinks(filepath.Join(repoDir, ".git"))
+		require.NoError(t, err)
+		gotResolved, err := filepath.EvalSymlinks(got)
+		require.NoError(t, err)
+		require.Equal(t, wantResolved, gotResolved)
 	})
 }
 

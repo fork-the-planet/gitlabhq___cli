@@ -3,6 +3,7 @@ package help
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -81,25 +82,28 @@ func renderWithGlamour(text string) string {
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-func RootUsageFunc(command *cobra.Command) error {
-	command.Printf("Usage:  %s", command.UseLine())
+// RootUsageFunc renders a command's usage to out. Callers route diagnostic
+// usage messages to stderr; see NewCmdRoot for the wiring and
+// gitlab-org/cli#8371 for why we no longer rely on cobra's c.Print/SetOut.
+func RootUsageFunc(out io.Writer, command *cobra.Command) error {
+	fmt.Fprintf(out, "Usage:  %s", command.UseLine())
 
 	subcommands := command.Commands()
 	if len(subcommands) > 0 {
-		command.Print("\n\nAvailable commands:\n")
+		fmt.Fprint(out, "\n\nAvailable commands:\n")
 		for _, c := range subcommands {
 			if !c.IsAvailableCommand() {
 				continue
 			}
-			command.Printf("  %s\n", c.Name())
+			fmt.Fprintf(out, "  %s\n", c.Name())
 		}
 		return nil
 	}
 
 	flagUsages := command.LocalFlags().FlagUsages()
 	if flagUsages != "" {
-		command.Println("\n\nFlags:")
-		command.Print(utils.Indent(dedent(flagUsages), "  "))
+		fmt.Fprintln(out, "\n\nFlags:")
+		fmt.Fprint(out, utils.Indent(dedent(flagUsages), "  "))
 	}
 	return nil
 }
@@ -114,8 +118,8 @@ func HasFailed() bool {
 // Display helpful error message in case subcommand name was mistyped.
 // This matches Cobra's behavior for root command, which Cobra
 // confusingly doesn't apply to nested commands.
-func nestedSuggestFunc(command *cobra.Command, arg string) {
-	command.Printf("unknown command %q for %q\n", arg, command.CommandPath())
+func nestedSuggestFunc(out io.Writer, command *cobra.Command, arg string) {
+	fmt.Fprintf(out, "unknown command %q for %q\n", arg, command.CommandPath())
 
 	var candidates []string
 	if arg == "help" {
@@ -128,21 +132,26 @@ func nestedSuggestFunc(command *cobra.Command, arg string) {
 	}
 
 	if len(candidates) > 0 {
-		command.Print("\nDid you mean this?\n")
+		fmt.Fprint(out, "\nDid you mean this?\n")
 		for _, c := range candidates {
-			command.Printf("\t%s\n", c)
+			fmt.Fprintf(out, "\t%s\n", c)
 		}
 	}
 
-	command.Print("\n")
-	_ = RootUsageFunc(command)
+	fmt.Fprint(out, "\n")
+	_ = RootUsageFunc(out, command)
 }
 
 func isRootCmd(command *cobra.Command) bool {
 	return command != nil && !command.HasParent()
 }
 
-func RootHelpFunc(c *iostreams.ColorPalette, command *cobra.Command, args []string) {
+// RootHelpFunc renders help text for the given command. Help is a
+// successful-output channel, so it is written to streams.StdOut. The "unknown
+// command" suggestion path is diagnostic and is routed to streams.StdErr. See
+// NewCmdRoot for the wiring and gitlab-org/cli#8371 for the motivation.
+func RootHelpFunc(streams *iostreams.IOStreams, command *cobra.Command, args []string) {
+	c := streams.Color()
 	originalLong := command.Long
 	originalExample := command.Example
 
@@ -154,7 +163,7 @@ func RootHelpFunc(c *iostreams.ColorPalette, command *cobra.Command, args []stri
 	}
 
 	if isRootCmd(command.Parent()) && len(args) >= 2 && args[1] != "--help" && args[1] != "-h" {
-		nestedSuggestFunc(command, args[1])
+		nestedSuggestFunc(streams.StdErr, command, args[1])
 		hasFailed = true
 
 		command.Long = originalLong
@@ -231,17 +240,16 @@ Use 'glab <command> <subcommand> --help' for more information about a command.`}
 		helpEntries = append(helpEntries, helpEntry{"FEEDBACK", command.Annotations["help:feedback"]})
 	}
 
-	out := command.OutOrStdout()
 	for _, e := range helpEntries {
 		if e.Title != "" {
 			// If there is a title, add indentation to each line in the body
-			fmt.Fprintln(out, c.Bold(e.Title))
-			fmt.Fprintln(out, utils.Indent(strings.Trim(e.Body, "\r\n"), "  "))
+			streams.LogInfo(c.Bold(e.Title))
+			streams.LogInfo(utils.Indent(strings.Trim(e.Body, "\r\n"), "  "))
 		} else {
 			// If there is no title print the body as is
-			fmt.Fprintln(out, e.Body)
+			streams.LogInfo(e.Body)
 		}
-		fmt.Fprintln(out)
+		streams.LogInfo()
 	}
 
 	command.Long = originalLong
