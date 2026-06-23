@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"errors"
+	"os"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -188,6 +189,8 @@ For more information, see the [GitLab Duo CLI documentation](https://docs.gitlab
 				return errors.New("the --install and --update flags are mutually exclusive")
 			}
 
+			warnIfSnapConfined(f.IO(), os.Getenv, runner.Install, runner.Update)
+
 			if runner.Install {
 				return runner.HandleInstall(cmd.Context())
 			}
@@ -203,6 +206,38 @@ For more information, see the [GitLab Duo CLI documentation](https://docs.gitlab
 	fl.Bool("update", false, "Check for and install updates to the binary.")
 
 	return cmd
+}
+
+// warnIfSnapConfined prints a clear warning when glab is running inside a
+// snap. The Duo CLI authenticates by spawning `glab auth credential-helper`,
+// but snap's AppArmor profile blocks the downloaded Duo binary from exec'ing
+// back into glab, so the credential lookup fails with a confusing
+// "no credentials found" error even after a successful `glab auth login`.
+//
+// The warning only applies to the actual `glab duo cli` run path: --install
+// and --update don't depend on the credential-helper callback and stay
+// silent. getenv is injected for testability.
+func warnIfSnapConfined(io *iostreams.IOStreams, getenv func(string) string, install, update bool) {
+	if install || update {
+		return
+	}
+	if getenv("SNAP") == "" {
+		return
+	}
+	msg := heredoc.Docf(`
+		%[1]s glab is running under snap confinement.
+
+		The GitLab Duo CLI authenticates by spawning %[2]sglab auth credential-helper%[2]s, but
+		snap's sandbox blocks that callback. Authentication is likely to fail with
+		"no credentials found" even after a successful %[2]sglab auth login%[2]s.
+
+		To use %[2]sglab duo cli%[2]s, install glab from a non-snap source:
+		  - Homebrew:     %[2]sbrew install glab%[2]s
+		  - mise:         %[2]smise use -g glab@latest%[2]s
+		  - Native binary: https://gitlab.com/gitlab-org/cli/-/releases
+
+	`, io.Color().DotWarnIcon(), "`")
+	io.LogError(msg)
 }
 
 // newRunner builds a binarymgr.Runner for the Duo CLI. The Executor is
