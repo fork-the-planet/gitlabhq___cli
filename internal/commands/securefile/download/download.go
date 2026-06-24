@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -19,6 +18,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
 func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
@@ -273,7 +273,9 @@ func saveFile(apiClient *gitlab.Client, stdOut io.Writer, repoName string, fileI
 	}
 	defer root.Close()
 
-	tempFile, err := createTemp(root, fileID, path)
+	dir := filepath.Dir(path)
+	tempBase := filepath.Join(dir, strconv.FormatInt(fileID, 10))
+	tempFile, err := utils.CreateTemp(root, tempBase)
 	if err != nil {
 		return fmt.Errorf("unable to create temporary file for downloaded secure file: %w", err)
 	}
@@ -334,26 +336,4 @@ func ensureDirectoryExists(root *os.Root, path string) error {
 	}
 
 	return nil
-}
-
-// This is a modified implementation of os.CreateTemp() using root.OpenFile.
-func createTemp(root *os.Root, fileID int64, path string) (*os.File, error) {
-	dir := filepath.Dir(path)
-	name := filepath.Join(dir, strconv.FormatInt(fileID, 10))
-
-	// This retry logic is to handle tempfile name collisions with an existing tempfile.
-	// This is probably overkill since the chances of a collision are already extremely unlikely.
-	// But it is taken from the os.CreateTemp implementation, and makes a collision effectively impossible.
-	try := 0
-	for {
-		name = name + strconv.Itoa(rand.Intn(10))
-		f, err := root.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0o600)
-		if os.IsExist(err) {
-			if try++; try < 10000 {
-				continue
-			}
-			return nil, fmt.Errorf("failed to create tempfile after 10000 tries: %w", err)
-		}
-		return f, err
-	}
 }
