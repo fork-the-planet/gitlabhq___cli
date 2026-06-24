@@ -35,6 +35,7 @@ arbitrary files identified by a package name, version, and file name.
 
 ## Subcommands
 
+- [`delete`](delete.md)
 - [`download`](download.md)
 - [`list`](list.md)
 - [`upload`](upload.md)

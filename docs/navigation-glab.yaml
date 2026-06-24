@@ -352,6 +352,8 @@
 - title: glab packages
   url: 'cli/packages/'
   submenu:
+    - title: glab packages delete
+      url: 'cli/packages/delete/'
     - title: glab packages download
       url: 'cli/packages/download/'
     - title: glab packages list
