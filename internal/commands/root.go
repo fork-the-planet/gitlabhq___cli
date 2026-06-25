@@ -117,6 +117,10 @@ func NewCmdRoot(f cmdutils.Factory) *cobra.Command {
 			https://github.com/charmbracelet/glamour#styles
 
 			GLAB_NO_PROMPT: Set to true (or 1) to disable prompts, or false (or 0) to enable them.
+
+			GLAB_SHOW_WHATS_NEW: Set to false to suppress the one-time post-upgrade banner
+			that points at 'glab whatsnew' when a new version is detected.
+			Can be set in the config with 'glab config set show_whats_new false'.
 		`, "`"),
 			"help:feedback": heredoc.Docf(`
 			Encountered a bug or want to suggest a feature?
