@@ -27,6 +27,7 @@ func NewCmdConfig(f cmdutils.Factory) *cobra.Command {
 		- %[1]sglab_pager%[1]s: Your desired pager command to use, such as %[1]sless -R%[1]s.
 		- %[1]sglamour_style%[1]s: Your desired Markdown renderer style. Options are dark, light, notty. Custom styles are available using [glamour](https://github.com/charmbracelet/glamour#styles).
 		- %[1]shost%[1]s: If unset, defaults to %[1]shttps://gitlab.com%[1]s.
+		- %[1]sshow_whats_new%[1]s: If true, shows a one-time post-upgrade banner pointing at %[1]sglab whatsnew%[1]s when a new version is detected. Defaults to %[1]strue%[1]s. Override with environment variable %[1]s$GLAB_SHOW_WHATS_NEW%[1]s.
 		- %[1]stoken%[1]s: Your GitLab access token. Defaults to environment variables.
 		- %[1]svisual%[1]s: Takes precedence over %[1]seditor%[1]s. If unset, uses the default editor. Override with environment variable %[1]s$VISUAL%[1]s.
 		`, "`"),
