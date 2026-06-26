@@ -236,6 +236,9 @@ func warnIfSnapConfined(io *iostreams.IOStreams, getenv func(string) string, ins
 		  - mise:         %[2]smise use -g glab@latest%[2]s
 		  - Native binary: https://gitlab.com/gitlab-org/cli/-/releases
 
+		Or set the GITLAB_TOKEN environment variable (%[2]sGITLAB_TOKEN=glpat-xyz glab duo cli%[2]s).
+		For GitLab Self-Managed, also set GITLAB_URL (%[2]sGITLAB_URL=https://gitlab.example.com GITLAB_TOKEN=glpat-xyz glab duo cli%[2]s).
+
 	`, io.Color().DotWarnIcon(), "`")
 	io.LogError(msg)
 }
