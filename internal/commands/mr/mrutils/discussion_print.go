@@ -34,8 +34,11 @@ func renderBody(ios *iostreams.IOStreams, body string) string {
 	if !ios.IsOutputTTY() {
 		return body
 	}
-	out, _ := utils.RenderMarkdown(body, ios.BackgroundColor())
-	return out
+	rendered, err := utils.RenderMarkdown(body, ios.BackgroundColor())
+	if err != nil {
+		return body
+	}
+	return rendered
 }
 
 // PrintDiscussions renders discussions to out.
