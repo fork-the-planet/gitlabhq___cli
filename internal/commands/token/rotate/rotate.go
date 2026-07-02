@@ -48,6 +48,11 @@ func NewCmdRotate(f cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"rot"},
 		Args:    cobra.RangeArgs(1, 1),
 		Long: heredoc.Docf(`
+			Rotating a token revokes the existing token and creates a new one
+			with a new secret value and expiration date.
+			The old token stops working immediately, so you must update any client that uses
+			it with the new value that this command returns.
+
 			If multiple tokens share the same name, specify the token ID to select the correct one.
 
 			The token expires at 00:00 UTC on a date calculated by adding the duration to today's date.
