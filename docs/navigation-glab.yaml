@@ -502,6 +502,18 @@
       url: 'cli/securefile/list/'
     - title: glab securefile remove
       url: 'cli/securefile/remove/'
+- title: glab security
+  url: 'cli/security/'
+  submenu:
+    - title: glab security config
+      url: 'cli/security/config/'
+      submenu:
+        - title: glab security config disable
+          url: 'cli/security/config/disable/'
+        - title: glab security config enable
+          url: 'cli/security/config/enable/'
+        - title: glab security config status
+          url: 'cli/security/config/status/'
 - title: glab skills
   url: 'cli/skills/'
   submenu:
