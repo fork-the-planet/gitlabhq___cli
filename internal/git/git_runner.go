@@ -1,5 +1,3 @@
-//go:generate go run go.uber.org/mock/mockgen@v0.6.0 -typed -destination=./testing/git_runner.go -package=git gitlab.com/gitlab-org/cli/internal/git GitRunner
-
 package git
 
 import (
