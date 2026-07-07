@@ -18,7 +18,7 @@ import (
 
 // duoMaxCompatibleMajorVersion caps Duo CLI auto-updates to this major
 // version. Bump after validating compatibility against the new major.
-const duoMaxCompatibleMajorVersion = 8
+const duoMaxCompatibleMajorVersion = 9
 
 // Spec returns the binarymgr.Spec describing the Duo CLI binary. It is
 // exported so tests and other consumers can introspect it.
