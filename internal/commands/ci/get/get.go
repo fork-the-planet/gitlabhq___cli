@@ -2,7 +2,6 @@ package get
 
 import (
 	"fmt"
-	"io"
 	"strconv"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -12,6 +11,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 )
@@ -149,7 +149,7 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 			}
 
 			showJobDetails, _ := cmd.Flags().GetBool("with-job-details")
-			printTable(*mergedPipelineObject, f.IO().StdOut, showJobDetails)
+			printTable(f.IO(), *mergedPipelineObject, showJobDetails)
 			return nil
 		},
 	}
@@ -172,20 +172,20 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 	return pipelineGetCmd
 }
 
-func printTable(p PipelineMergedResponse, dest io.Writer, showJobDetails bool) {
-	printPipelineTable(p, dest)
+func printTable(io *iostreams.IOStreams, p PipelineMergedResponse, showJobDetails bool) {
+	printPipelineTable(io, p)
 
 	if showJobDetails {
-		printJobTable(p, dest)
+		printJobTable(io, p)
 	} else {
-		printJobText(p, dest)
+		printJobText(io, p)
 	}
 
-	printVariables(p, dest)
+	printVariables(io, p)
 }
 
-func printPipelineTable(p PipelineMergedResponse, dest io.Writer) {
-	fmt.Fprint(dest, "# Pipeline:\n")
+func printPipelineTable(io *iostreams.IOStreams, p PipelineMergedResponse) {
+	io.LogInfof("%s", "# Pipeline:\n")
 	pipelineTable := tableprinter.NewTablePrinter()
 	pipelineTable.AddRow("id:", strconv.FormatInt(p.ID, 10))
 	pipelineTable.AddRow("status:", p.Status)
@@ -198,39 +198,39 @@ func printPipelineTable(p PipelineMergedResponse, dest io.Writer) {
 	pipelineTable.AddRow("created:", p.CreatedAt)
 	pipelineTable.AddRow("started:", p.StartedAt)
 	pipelineTable.AddRow("updated:", p.UpdatedAt)
-	fmt.Fprintln(dest, pipelineTable.String())
+	io.LogInfo(pipelineTable.String())
 }
 
-func printJobTable(p PipelineMergedResponse, dest io.Writer) {
-	fmt.Fprint(dest, "# Jobs:\n")
+func printJobTable(io *iostreams.IOStreams, p PipelineMergedResponse) {
+	io.LogInfof("%s", "# Jobs:\n")
 	jobTable := tableprinter.NewTablePrinter()
 	jobTable.AddRow("ID", "Name", "Stage", "Status", "Duration", "Failure reason", "URL")
 	for _, j := range p.Jobs {
 		jobTable.AddRow(j.ID, j.Name, j.Stage, j.Status, j.Duration, j.FailureReason, j.WebURL)
 	}
-	fmt.Fprintln(dest, jobTable.String())
+	io.LogInfo(jobTable.String())
 }
 
-func printJobText(p PipelineMergedResponse, dest io.Writer) {
-	fmt.Fprint(dest, "# Jobs:\n")
+func printJobText(io *iostreams.IOStreams, p PipelineMergedResponse) {
+	io.LogInfof("%s", "# Jobs:\n")
 	jobTable := tableprinter.NewTablePrinter()
 	for _, j := range p.Jobs {
 		jobTable.AddRow(j.Name+":", j.Status)
 	}
-	fmt.Fprintln(dest, jobTable.String())
+	io.LogInfo(jobTable.String())
 }
 
-func printVariables(p PipelineMergedResponse, dest io.Writer) {
+func printVariables(io *iostreams.IOStreams, p PipelineMergedResponse) {
 	if p.Variables != nil {
-		fmt.Fprint(dest, "# Variables:\n")
+		io.LogInfof("%s", "# Variables:\n")
 		if len(p.Variables) == 0 {
-			fmt.Fprint(dest, NoVariablesInPipelineMessage)
+			io.LogInfof("%s", NoVariablesInPipelineMessage)
 		}
 
 		varTable := tableprinter.NewTablePrinter()
 		for _, v := range p.Variables {
 			varTable.AddRow(v.Key+":", v.Value)
 		}
-		fmt.Fprintln(dest, varTable.String())
+		io.LogInfo(varTable.String())
 	}
 }

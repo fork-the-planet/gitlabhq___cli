@@ -171,7 +171,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 					}
 
 					if action == cmdutils.CancelAction {
-						fmt.Fprintf(f.IO().StdOut, "Cancelled.\n")
+						f.IO().LogInfo("Cancelled.")
 						return nil
 					}
 				}
@@ -331,7 +331,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				l.Squash = new(!mr.Squash)
 			}
 
-			fmt.Fprintf(f.IO().StdOut, "- Updating merge request !%d\n", mr.IID)
+			f.IO().LogInfof("- Updating merge request !%d\n", mr.IID)
 
 			mr, err = api.UpdateMR(client, repo.FullName(), mr.IID, l)
 			if err != nil {
@@ -339,10 +339,10 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 			}
 
 			for _, s := range actions {
-				fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), s)
+				f.IO().LogInfof("%s %s\n", c.GreenCheck(), s)
 			}
 
-			fmt.Fprintln(f.IO().StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO().IsaTTY))
+			f.IO().LogInfo(mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO().IsaTTY))
 			return nil
 		},
 	}
@@ -378,22 +378,22 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 // writeUpdatePreview prints the proposed title and description to w before asking for confirmation.
 // Multi-line values are indented so continuation lines align with the first line of content.
 func writeUpdatePreview(w io.Writer, title, description string) {
-	fmt.Fprintf(w, "\nProposed changes:\n")
+	fmt.Fprintf(w, "\nProposed changes:\n") //nolint:forbidigo // w is a generic io.Writer, exercised directly with a strings.Builder in tests
 	if title != "" {
 		lines := strings.Split(title, "\n")
-		fmt.Fprintf(w, "  Title: %s\n", lines[0])
+		fmt.Fprintf(w, "  Title: %s\n", lines[0]) //nolint:forbidigo // w is a generic io.Writer, exercised directly with a strings.Builder in tests
 		for _, line := range lines[1:] {
-			fmt.Fprintf(w, "         %s\n", line)
+			fmt.Fprintf(w, "         %s\n", line) //nolint:forbidigo // w is a generic io.Writer, exercised directly with a strings.Builder in tests
 		}
 	}
 	if description != "" {
 		lines := strings.Split(description, "\n")
-		fmt.Fprintf(w, "  Description: %s\n", lines[0])
+		fmt.Fprintf(w, "  Description: %s\n", lines[0]) //nolint:forbidigo // w is a generic io.Writer, exercised directly with a strings.Builder in tests
 		for _, line := range lines[1:] {
-			fmt.Fprintf(w, "              %s\n", line)
+			fmt.Fprintf(w, "              %s\n", line) //nolint:forbidigo // w is a generic io.Writer, exercised directly with a strings.Builder in tests
 		}
 	}
-	fmt.Fprintf(w, "\n")
+	fmt.Fprintf(w, "\n") //nolint:forbidigo // w is a generic io.Writer, exercised directly with a strings.Builder in tests
 }
 
 func confirmUpdateSurvey(ctx context.Context, f cmdutils.Factory) (cmdutils.Action, error) {

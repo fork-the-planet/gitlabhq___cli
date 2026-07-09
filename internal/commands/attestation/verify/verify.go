@@ -226,9 +226,6 @@ func (o *options) verify(ctx context.Context, filename string, repoPath string, 
 
 func (o *options) success() {
 	c := o.io.Color()
-	out := o.io.StdOut
 
-	fmt.Fprint(out, c.Green("VERIFIED"))
-	fmt.Fprintf(out, " • Artifact provenance successfully verified. Signatures confirm %s was attested by %s\n", o.filename, o.project)
-	fmt.Fprintln(out)
+	o.io.LogInfof("%s • Artifact provenance successfully verified. Signatures confirm %s was attested by %s\n\n", c.Green("VERIFIED"), o.filename, o.project)
 }

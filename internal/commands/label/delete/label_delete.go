@@ -1,8 +1,6 @@
 package delete
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -54,7 +52,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Fprintf(f.IO().StdOut, "Label deleted")
+			f.IO().LogInfof("Label deleted")
 
 			return nil
 		},

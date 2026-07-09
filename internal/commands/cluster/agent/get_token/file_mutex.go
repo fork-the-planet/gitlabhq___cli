@@ -81,7 +81,7 @@ func (m *fileMutex) lock(ctx context.Context) error {
 					if err := m.root.Remove(m.filename); err != nil {
 						return fmt.Errorf("failed to remove stale lock file: %w", err)
 					}
-					fmt.Fprintf(os.Stderr, "Removed stale lock at %s from %s in order to re-use it\n", filepath.Join(m.root.Name(), m.filename), info.ModTime().Format(time.RFC3339))
+					fmt.Fprintf(os.Stderr, "Removed stale lock at %s from %s in order to re-use it\n", filepath.Join(m.root.Name(), m.filename), info.ModTime().Format(time.RFC3339)) //nolint:forbidigo // no IOStreams available in this low-level file-lock helper
 				}
 				continue
 			}
@@ -89,7 +89,7 @@ func (m *fileMutex) lock(ctx context.Context) error {
 			m.f = f
 			return nil
 		case <-infoT.C:
-			fmt.Fprintln(os.Stderr, "Trying to acquire lock for token cache ...")
+			fmt.Fprintln(os.Stderr, "Trying to acquire lock for token cache ...") //nolint:forbidigo // no IOStreams available in this low-level file-lock helper
 		}
 	}
 }
@@ -100,7 +100,7 @@ func (m *fileMutex) unlock() error {
 	}
 
 	if err := m.f.Close(); err != nil {
-		fmt.Fprintf(os.Stderr, "unable to close mutex file at %s: %s\n", filepath.Join(m.root.Name(), m.filename), err)
+		fmt.Fprintf(os.Stderr, "unable to close mutex file at %s: %s\n", filepath.Join(m.root.Name(), m.filename), err) //nolint:forbidigo // no IOStreams available in this low-level file-lock helper
 	}
 
 	if err := m.root.Remove(m.filename); err != nil && !os.IsNotExist(err) {

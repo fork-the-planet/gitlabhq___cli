@@ -159,9 +159,9 @@ func (o *options) run() error {
 	}
 
 	// "A capability[] directive must precede any value depending on it and these directives should be the first item announced in the protocol." https://git-scm.com/docs/git-credential
-	fmt.Fprintln(o.io.StdOut, "capability[]=authtype")
+	o.io.LogInfo("capability[]=authtype")
 	for key, v := range output {
-		fmt.Fprintf(o.io.StdOut, "%s=%s\n", key, v)
+		o.io.LogInfof("%s=%s\n", key, v)
 	}
 
 	return nil

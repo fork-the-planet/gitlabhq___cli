@@ -2,7 +2,6 @@ package job
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -83,7 +82,7 @@ func NewCmdCancel(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return runCancelation(jobIDs, dryRunMode, forceMode, f.IO().StdOut, c, client, repo)
+			return runCancelation(f.IO(), jobIDs, dryRunMode, forceMode, c, client, repo)
 		},
 	}
 
@@ -98,17 +97,17 @@ func SetupCommandFlags(flags *pflag.FlagSet) {
 }
 
 func runCancelation(
+	io *iostreams.IOStreams,
 	jobIDs []int,
 	dryRunMode bool,
 	forceMode bool,
-	w io.Writer,
 	c *iostreams.ColorPalette,
 	apiClient *gitlab.Client,
 	repo glrepo.Interface,
 ) error {
 	for _, id := range jobIDs {
 		if dryRunMode {
-			fmt.Fprintf(w, "%s Job #%d will be canceled.\n", c.DotWarnIcon(), id)
+			io.LogInfof("%s Job #%d will be canceled.\n", c.DotWarnIcon(), id)
 		} else {
 			pid, err := repo.Project(apiClient)
 			if err != nil {
@@ -126,7 +125,7 @@ func runCancelation(
 				return err
 			}
 
-			fmt.Fprintf(w, "%s Job #%d is canceled successfully.\n", c.RedCheck(), id)
+			io.LogInfof("%s Job #%d is canceled successfully.\n", c.RedCheck(), id)
 		}
 	}
 	fmt.Println()

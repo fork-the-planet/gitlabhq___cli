@@ -63,30 +63,30 @@ func PrintDiscussions(out io.Writer, ios *iostreams.IOStreams, discussions []*gi
 
 		// Threaded discussions (not individual notes)
 		if !discussion.IndividualNote && len(discussion.Notes) > 1 {
-			fmt.Fprintf(out, "Thread [discussion: %s]", TruncateDiscussionID(discussion.ID))
+			fmt.Fprintf(out, "Thread [discussion: %s]", TruncateDiscussionID(discussion.ID)) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 
 			// Show resolution status if resolvable
 			if firstNote.Resolvable {
 				if firstNote.Resolved {
-					fmt.Fprint(out, c.Green(" ✓ resolved"))
+					fmt.Fprint(out, c.Green(" ✓ resolved")) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 				} else {
-					fmt.Fprint(out, c.Yellow(" ⚠ unresolved"))
+					fmt.Fprint(out, c.Yellow(" ⚠ unresolved")) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 				}
 			}
-			fmt.Fprintln(out)
+			fmt.Fprintln(out) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 
 			// Print first note
 			createdAt := noteTimeAgo(firstNote)
-			fmt.Fprintf(out, "  @%s commented ", noteUsername(firstNote))
-			fmt.Fprintf(out, "%s %s\n", c.Gray(createdAt), c.Gray(fmt.Sprintf("[note #%d]", firstNote.ID)))
+			fmt.Fprintf(out, "  @%s commented ", noteUsername(firstNote))                                   //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
+			fmt.Fprintf(out, "%s %s\n", c.Gray(createdAt), c.Gray(fmt.Sprintf("[note #%d]", firstNote.ID))) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 
 			if firstNote.Position != nil {
 				PrintCommentFileContext(out, c, firstNote.Position)
 			}
 
 			body := renderBody(ios, firstNote.Body)
-			fmt.Fprintln(out, utils.Indent(body, "  "))
-			fmt.Fprintln(out)
+			fmt.Fprintln(out, utils.Indent(body, "  ")) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
+			fmt.Fprintln(out)                           //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 
 			// Print replies (indented)
 			for i, note := range discussion.Notes[1:] {
@@ -94,36 +94,36 @@ func PrintDiscussions(out io.Writer, ios *iostreams.IOStreams, discussions []*gi
 					continue
 				}
 				replyTime := noteTimeAgo(note)
-				fmt.Fprintf(out, "    @%s replied ", noteUsername(note))
-				fmt.Fprintf(out, "%s %s\n", c.Gray(replyTime), c.Gray(fmt.Sprintf("[note #%d]", note.ID)))
+				fmt.Fprintf(out, "    @%s replied ", noteUsername(note))                                   //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
+				fmt.Fprintf(out, "%s %s\n", c.Gray(replyTime), c.Gray(fmt.Sprintf("[note #%d]", note.ID))) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 
 				replyBody := renderBody(ios, note.Body)
-				fmt.Fprintln(out, utils.Indent(replyBody, "    "))
+				fmt.Fprintln(out, utils.Indent(replyBody, "    ")) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 				if i < len(discussion.Notes[1:])-1 {
-					fmt.Fprintln(out)
+					fmt.Fprintln(out) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 				}
 			}
-			fmt.Fprintln(out)
+			fmt.Fprintln(out) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 		} else {
 			// Individual note (not a thread)
 			note := firstNote
 			createdAt := noteTimeAgo(note)
-			fmt.Fprint(out, "@", noteUsername(note))
+			fmt.Fprint(out, "@", noteUsername(note)) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 			if note.System {
-				fmt.Fprintf(out, " %s ", note.Body)
-				fmt.Fprintln(out, c.Gray(createdAt))
+				fmt.Fprintf(out, " %s ", note.Body)  //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
+				fmt.Fprintln(out, c.Gray(createdAt)) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 			} else {
 				body := renderBody(ios, note.Body)
-				fmt.Fprint(out, " commented ")
-				fmt.Fprintf(out, "%s %s\n", c.Gray(createdAt), c.Gray(fmt.Sprintf("[note #%d]", note.ID)))
+				fmt.Fprint(out, " commented ")                                                             //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
+				fmt.Fprintf(out, "%s %s\n", c.Gray(createdAt), c.Gray(fmt.Sprintf("[note #%d]", note.ID))) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 
 				if note.Position != nil {
 					PrintCommentFileContext(out, c, note.Position)
 				}
 
-				fmt.Fprintln(out, utils.Indent(body, " "))
+				fmt.Fprintln(out, utils.Indent(body, " ")) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 			}
-			fmt.Fprintln(out)
+			fmt.Fprintln(out) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 		}
 	}
 }
@@ -151,9 +151,9 @@ func PrintCommentFileContext(out io.Writer, c *iostreams.ColorPalette, pos *gitl
 			}
 			if filePath != "" {
 				if startLine != endLine {
-					fmt.Fprintf(out, " on %s:%d-%d\n", c.Cyan(filePath), startLine, endLine)
+					fmt.Fprintf(out, " on %s:%d-%d\n", c.Cyan(filePath), startLine, endLine) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 				} else {
-					fmt.Fprintf(out, " on %s:%d\n", c.Cyan(filePath), startLine)
+					fmt.Fprintf(out, " on %s:%d\n", c.Cyan(filePath), startLine) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 				}
 				return
 			}
@@ -162,8 +162,8 @@ func PrintCommentFileContext(out io.Writer, c *iostreams.ColorPalette, pos *gitl
 
 	// Fall back to single-line comment
 	if pos.NewPath != "" && pos.NewLine > 0 {
-		fmt.Fprintf(out, " on %s:%d\n", c.Cyan(pos.NewPath), pos.NewLine)
+		fmt.Fprintf(out, " on %s:%d\n", c.Cyan(pos.NewPath), pos.NewLine) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 	} else if pos.OldPath != "" && pos.OldLine > 0 {
-		fmt.Fprintf(out, " on %s:%d\n", c.Cyan(pos.OldPath), pos.OldLine)
+		fmt.Fprintf(out, " on %s:%d\n", c.Cyan(pos.OldPath), pos.OldLine) //nolint:forbidigo // out is a generic io.Writer also used with non-stdout writers (strings.Builder, bytes.Buffer)
 	}
 }

@@ -107,7 +107,7 @@ func NewCmdRunTrig(f cmdutils.Factory) *cobra.Command {
 				c.Ref = new(currentBranch)
 			} else {
 				// `ci run-trig` is running out of a git repo
-				fmt.Fprintln(f.IO().StdOut, "not in a Git repository. Using repository argument.")
+				f.IO().LogInfo("not in a Git repository. Using repository argument.")
 				c.Ref = new(ciutils.GetDefaultBranch(repo, client))
 			}
 
@@ -129,7 +129,7 @@ func NewCmdRunTrig(f cmdutils.Factory) *cobra.Command {
 			}
 
 			output := fmt.Sprintf("Created pipeline (ID: %d), status: %s, ref: %s, weburl: %s", pipe.ID, pipe.Status, pipe.Ref, pipe.WebURL)
-			fmt.Fprintln(f.IO().StdOut, output)
+			f.IO().LogInfo(output)
 
 			return nil
 		},

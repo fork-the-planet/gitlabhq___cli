@@ -124,7 +124,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 			if jsonOut {
 				return f.IO().PrintJSON(pipes)
 			} else {
-				fmt.Fprintf(f.IO().StdOut, "%s\n%s\n", title.Describe(), ciutils.DisplayMultiplePipelines(f.IO(), pipes, repo.FullName()))
+				f.IO().LogInfof("%s\n%s\n", title.Describe(), ciutils.DisplayMultiplePipelines(f.IO(), pipes, repo.FullName()))
 			}
 			return nil
 		},

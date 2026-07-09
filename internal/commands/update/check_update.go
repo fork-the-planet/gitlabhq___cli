@@ -124,7 +124,7 @@ func checkUpdate(f cmdutils.Factory, silentSuccess bool, forceCheck bool) error 
 		writeUpdateAvailable(f.IO(), version, latestRelease.TagName, releaseURL, installMethodDetector(), buildInfo.CodingAgent)
 	} else if !silentSuccess {
 		c := f.IO().Color()
-		fmt.Fprintf(f.IO().StdErr, "%v",
+		f.IO().LogErrorf("%v",
 			c.Green("You are already using the latest version of glab!\n"))
 	}
 
@@ -149,27 +149,27 @@ func writeUpdateAvailable(io *iostreams.IOStreams, currentVersion, latestVersion
 
 func writeAgentUpdateLine(io *iostreams.IOStreams, currentVersion, latestVersion, releaseURL string, method InstallMethod) {
 	var b strings.Builder
-	fmt.Fprintf(&b, "[glab] Update available: %s → %s", currentVersion, latestVersion)
+	fmt.Fprintf(&b, "[glab] Update available: %s → %s", currentVersion, latestVersion) //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
 	if method.UpgradeCommand != "" {
-		fmt.Fprintf(&b, " (installed via %s). Suggested upgrade command: `%s`.", method.Name, method.UpgradeCommand)
+		fmt.Fprintf(&b, " (installed via %s). Suggested upgrade command: `%s`.", method.Name, method.UpgradeCommand) //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
 	} else {
 		b.WriteString(".")
 	}
-	fmt.Fprintf(&b, " Release notes: %s\n", releaseURL)
-	fmt.Fprint(io.StdErr, b.String())
+	fmt.Fprintf(&b, " Release notes: %s\n", releaseURL) //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
+	io.LogErrorf("%s", b.String())
 }
 
 func writeHumanUpdateBlock(io *iostreams.IOStreams, currentVersion, latestVersion, releaseURL string, method InstallMethod) {
 	c := io.Color()
 	// Leading blank line separates the banner from the preceding command
 	// output so the nudge doesn't cram against e.g. `glab mr list` results.
-	fmt.Fprintln(io.StdErr, "")
-	fmt.Fprintln(io.StdErr, c.Yellow("A new version of glab is available"))
-	fmt.Fprintf(io.StdErr, "  %s → %s\n", c.Red(currentVersion), c.Green(latestVersion))
+	io.LogError("")
+	io.LogError(c.Yellow("A new version of glab is available"))
+	io.LogErrorf("  %s → %s\n", c.Red(currentVersion), c.Green(latestVersion))
 	if method.UpgradeCommand != "" {
-		fmt.Fprintf(io.StdErr, "  Run: %s\n", method.UpgradeCommand)
+		io.LogErrorf("  Run: %s\n", method.UpgradeCommand)
 	}
-	fmt.Fprintf(io.StdErr, "  Release notes: %s\n", releaseURL)
+	io.LogErrorf("  Release notes: %s\n", releaseURL)
 }
 
 // CreateUnauthenticatedClient creates an API client without authentication for accessing

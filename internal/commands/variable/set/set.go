@@ -151,7 +151,7 @@ func (o *options) run() error {
 			return err
 		}
 
-		fmt.Fprintf(o.io.StdOut, "%s Created variable %s for group %s.\n", c.GreenCheck(), o.key, o.group)
+		o.io.LogInfof("%s Created variable %s for group %s.\n", c.GreenCheck(), o.key, o.group)
 		return nil
 	}
 
@@ -176,6 +176,6 @@ func (o *options) run() error {
 		return err
 	}
 
-	fmt.Fprintf(o.io.StdOut, "%s Created variable %s for %s with scope %s.\n", c.GreenCheck(), o.key, baseRepo.FullName(), o.scope)
+	o.io.LogInfof("%s Created variable %s for %s with scope %s.\n", c.GreenCheck(), o.key, baseRepo.FullName(), o.scope)
 	return nil
 }

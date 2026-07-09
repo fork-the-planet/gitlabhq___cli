@@ -2,7 +2,6 @@ package unlock
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -71,6 +70,6 @@ func (o *options) run(ctx context.Context) error {
 		return err
 	}
 
-	fmt.Fprintf(o.io.StdOut, "Unlocked state %s\n", o.stateName)
+	o.io.LogInfof("Unlocked state %s\n", o.stateName)
 	return nil
 }

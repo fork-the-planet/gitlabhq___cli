@@ -373,7 +373,7 @@ func (o *options) run(ctx context.Context) error {
 		}
 
 		if hasNextPage && o.showResponseHeaders {
-			fmt.Fprint(o.io.StdOut, "\n")
+			o.io.LogInfo()
 		}
 	}
 
@@ -382,9 +382,9 @@ func (o *options) run(ctx context.Context) error {
 
 func processResponse(resp *http.Response, opts *options, headersOutputStream io.Writer) (string, error) {
 	if opts.showResponseHeaders {
-		fmt.Fprintln(headersOutputStream, resp.Proto, resp.Status)
+		fmt.Fprintln(headersOutputStream, resp.Proto, resp.Status) //nolint:forbidigo // headersOutputStream is a generic io.Writer, passed io.Discard in tests
 		printHeaders(headersOutputStream, resp.Header, opts.io.ColorEnabled())
-		fmt.Fprint(headersOutputStream, "\r\n")
+		fmt.Fprint(headersOutputStream, "\r\n") //nolint:forbidigo // headersOutputStream is a generic io.Writer, passed io.Discard in tests
 	}
 
 	if resp.StatusCode == http.StatusNoContent {
@@ -419,7 +419,7 @@ func processResponse(resp *http.Response, opts *options, headersOutputStream io.
 		_, err = io.Copy(out, responseBody)
 		if err == nil {
 			result := jsonPretty.Color(jsonPretty.Pretty(out.Bytes()), nil)
-			_, err = fmt.Fprintln(opts.io.StdOut, string(result))
+			_, err = fmt.Fprintln(opts.io.StdOut, string(result)) //nolint:forbidigo // write error must propagate to the caller
 		}
 	} else {
 		_, err = io.Copy(opts.io.StdOut, responseBody)
@@ -429,10 +429,10 @@ func processResponse(resp *http.Response, opts *options, headersOutputStream io.
 	}
 
 	if serverError != "" {
-		fmt.Fprintf(opts.io.StdErr, "glab: %s\n", serverError)
+		opts.io.LogErrorf("glab: %s\n", serverError)
 		return "", cmdutils.SilentError
 	} else if resp.StatusCode > 299 {
-		fmt.Fprintf(opts.io.StdErr, "glab: HTTP %d\n", resp.StatusCode)
+		opts.io.LogErrorf("glab: HTTP %d\n", resp.StatusCode)
 		return "", cmdutils.SilentError
 	}
 
@@ -466,7 +466,7 @@ func streamNDJSON(body io.Reader, out io.Writer) error {
 			if err := dec.Decode(&element); err != nil {
 				return err
 			}
-			if _, err := fmt.Fprintln(out, string(element)); err != nil {
+			if _, err := fmt.Fprintln(out, string(element)); err != nil { //nolint:forbidigo // out is a generic io.Writer parameter for streaming, not IOStreams directly
 				return err
 			}
 		}
@@ -615,7 +615,7 @@ func printHeaders(w io.Writer, headers http.Header, colorize bool) {
 		headerColorReset = "\x1b[m"
 	}
 	for _, name := range names {
-		fmt.Fprintf(w, "%s%s%s: %s\r\n", headerColor, name, headerColorReset, strings.Join(headers[name], ", "))
+		fmt.Fprintf(w, "%s%s%s: %s\r\n", headerColor, name, headerColorReset, strings.Join(headers[name], ", ")) //nolint:forbidigo // w is a generic io.Writer, passed io.Discard in tests
 	}
 }
 

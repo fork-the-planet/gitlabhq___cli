@@ -169,8 +169,6 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	c := o.io.Color()
-	out := o.io.StdOut
-
 	emptyMsg := "No local branches found with merged merge requests."
 	header := fmt.Sprintf("Found %d branch(es) with merged merge requests:", len(candidates))
 	if o.useMergedFlag {
@@ -179,49 +177,49 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	if len(candidates) == 0 {
-		fmt.Fprintf(out, "%s %s\n", c.GreenCheck(), emptyMsg)
+		o.io.LogInfof("%s %s\n", c.GreenCheck(), emptyMsg)
 		return nil
 	}
 
-	fmt.Fprintln(out, header)
+	o.io.LogInfo(header)
 	for _, cand := range candidates {
 		switch {
 		case cand.mrIID != 0:
-			fmt.Fprintf(out, "  %s %s (MR !%d → %s)\n", c.GreenCheck(), cand.branch, cand.mrIID, cand.targetBranch)
+			o.io.LogInfof("  %s %s (MR !%d → %s)\n", c.GreenCheck(), cand.branch, cand.mrIID, cand.targetBranch)
 		default:
-			fmt.Fprintf(out, "  %s %s (merged into %s)\n", c.GreenCheck(), cand.branch, cand.targetBranch)
+			o.io.LogInfof("  %s %s (merged into %s)\n", c.GreenCheck(), cand.branch, cand.targetBranch)
 		}
 	}
 
 	if o.dryRun {
-		fmt.Fprintln(out)
-		fmt.Fprintln(out, "Dry run: no branches were deleted.")
+		o.io.LogInfo()
+		o.io.LogInfo("Dry run: no branches were deleted.")
 		return nil
 	}
 
 	if !o.yes {
-		fmt.Fprintln(o.io.StdErr)
+		o.io.LogError()
 		confirmed := false
 		if err := o.io.Confirm(ctx, &confirmed, fmt.Sprintf("Delete these %d local branch(es)?", len(candidates))); err != nil {
 			return err
 		}
 		if !confirmed {
-			fmt.Fprintln(o.io.StdErr, "aborted by user")
+			o.io.LogError("aborted by user")
 			return nil
 		}
 	}
 
-	fmt.Fprintln(out)
+	o.io.LogInfo()
 	deleted := 0
 	for _, cand := range candidates {
 		if err := git.DeleteLocalBranch(cand.branch, o.gitRunner); err != nil {
-			fmt.Fprintf(out, "  %s %s: %s\n", c.FailedIcon(), cand.branch, err)
+			o.io.LogInfof("  %s %s: %s\n", c.FailedIcon(), cand.branch, err)
 			continue
 		}
-		fmt.Fprintf(out, "  %s deleted %s\n", c.GreenCheck(), cand.branch)
+		o.io.LogInfof("  %s deleted %s\n", c.GreenCheck(), cand.branch)
 		deleted++
 	}
-	fmt.Fprintf(out, "\n%d branch(es) deleted.\n", deleted)
+	o.io.LogInfof("\n%d branch(es) deleted.\n", deleted)
 	return nil
 }
 

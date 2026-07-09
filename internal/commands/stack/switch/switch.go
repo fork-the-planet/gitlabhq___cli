@@ -102,6 +102,6 @@ func switchFunc(cmd *cobra.Command, f cmdutils.Factory, args []string) error {
 		return fmt.Errorf("error setting local Git config: %w", err)
 	}
 
-	fmt.Fprintf(f.IO().StdOut, "Switched to stack %s.\n", name)
+	f.IO().LogInfof("Switched to stack %s.\n", name)
 	return nil
 }

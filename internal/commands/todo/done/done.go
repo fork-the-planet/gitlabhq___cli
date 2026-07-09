@@ -101,7 +101,7 @@ func (o *options) run() error {
 		if err != nil {
 			return cmdutils.WrapError(err, "failed to mark all to-do items as done.")
 		}
-		fmt.Fprintln(o.io.StdOut, cs.GreenCheck(), "All to-do items marked as done.")
+		o.io.LogInfo(cs.GreenCheck(), "All to-do items marked as done.")
 		return nil
 	}
 
@@ -109,7 +109,7 @@ func (o *options) run() error {
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to mark to-do item as done.")
 	}
-	fmt.Fprintf(o.io.StdOut, "%s To-do item %d marked as done.\n", cs.GreenCheck(), o.todoID)
+	o.io.LogInfof("%s To-do item %d marked as done.\n", cs.GreenCheck(), o.todoID)
 
 	return nil
 }

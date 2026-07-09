@@ -70,6 +70,6 @@ func (o *options) run() error {
 		return fmt.Errorf("failed to delete alias '%s': %w", o.name, err)
 	}
 	redCheck := c.Red("✓")
-	fmt.Fprintf(o.io.StdErr, "%s Deleted alias '%s'; was '%s'.\n", redCheck, o.name, expansion)
+	o.io.LogErrorf("%s Deleted alias '%s'; was '%s'.\n", redCheck, o.name, expansion)
 	return nil
 }

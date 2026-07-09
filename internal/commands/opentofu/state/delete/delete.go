@@ -114,14 +114,14 @@ func (o *options) run(ctx context.Context) error {
 			return err
 		}
 
-		fmt.Fprintf(o.io.StdOut, "Deleted state %s\n", o.stateName)
+		o.io.LogInfof("Deleted state %s\n", o.stateName)
 	default:
 		_, err := client.TerraformStates.DeleteVersion(repo.FullName(), o.stateName, *o.serial, gitlab.WithContext(ctx))
 		if err != nil {
 			return err
 		}
 
-		fmt.Fprintf(o.io.StdOut, "Deleted version with serial %d of state %s\n", *o.serial, o.stateName)
+		o.io.LogInfof("Deleted version with serial %d of state %s\n", *o.serial, o.stateName)
 	}
 
 	return nil

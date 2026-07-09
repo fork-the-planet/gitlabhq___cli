@@ -99,7 +99,7 @@ func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintf(f.IO().StdOut, "%s Successfully transferred repository %s to %s.\n",
+			f.IO().LogInfof("%s Successfully transferred repository %s to %s.\n",
 				c.GreenCheck(), c.Yellow(repo.FullName()), c.Yellow(project.PathWithNamespace))
 
 			return nil

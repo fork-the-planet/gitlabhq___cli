@@ -365,7 +365,7 @@ func RebaseMR(ios *iostreams.IOStreams, apiClient *gitlab.Client, repo glrepo.In
 	if errorMSG != "" {
 		return errors.New(errorMSG)
 	}
-	fmt.Fprintln(ios.StdOut, ios.Color().GreenCheck(), "Rebase successful!")
+	ios.LogInfof("%s %s\n", ios.Color().GreenCheck(), "Rebase successful!")
 	return nil
 }
 
@@ -376,14 +376,14 @@ func PrintMRApprovalState(ios *iostreams.IOStreams, mrApprovals *gitlab.MergeReq
 	c := ios.Color()
 
 	if mrApprovals.ApprovalRulesOverwritten {
-		fmt.Fprintln(ios.StdOut, c.Yellow("Approval rules overwritten."))
+		ios.LogInfo(c.Yellow("Approval rules overwritten."))
 	}
 	for _, rule := range mrApprovals.Rules {
 		table := tableprinter.NewTablePrinter()
 		if rule.Approved {
-			fmt.Fprintln(ios.StdOut, c.Green(fmt.Sprintf("Rule %q sufficient approvals (%d/%d required):", rule.Name, len(rule.ApprovedBy), rule.ApprovalsRequired)))
+			ios.LogInfo(c.Green(fmt.Sprintf("Rule %q sufficient approvals (%d/%d required):", rule.Name, len(rule.ApprovedBy), rule.ApprovalsRequired)))
 		} else {
-			fmt.Fprintln(ios.StdOut, c.Yellow(fmt.Sprintf("Rule %q insufficient approvals (%d/%d required):", rule.Name, len(rule.ApprovedBy), rule.ApprovalsRequired)))
+			ios.LogInfo(c.Yellow(fmt.Sprintf("Rule %q insufficient approvals (%d/%d required):", rule.Name, len(rule.ApprovedBy), rule.ApprovalsRequired)))
 		}
 
 		eligibleApprovers := rule.EligibleApprovers
@@ -418,7 +418,7 @@ func PrintMRApprovalState(ios *iostreams.IOStreams, mrApprovals *gitlab.MergeReq
 			approver := approvedBy[name]
 			table.AddRow(approver.Name, approver.Username, approvedIcon, "")
 		}
-		fmt.Fprintln(ios.StdOut, table)
+		ios.LogInfo(table)
 	}
 }
 
@@ -476,7 +476,7 @@ func GenerateMRCommitListBody(commits []*git.Commit, fillCommitBody bool) (strin
 
 	for _, commit := range slices.Backward(commits) {
 		// adds 2 spaces for markdown line wrapping
-		fmt.Fprintf(&body, "- %s  \n", commit.Title)
+		fmt.Fprintf(&body, "- %s  \n", commit.Title) //nolint:forbidigo // writing to a strings.Builder, not stdout/stderr
 
 		if fillCommitBody {
 			commitBody, err := git.CommitBody(commit.Sha)
@@ -486,10 +486,10 @@ func GenerateMRCommitListBody(commits []*git.Commit, fillCommitBody bool) (strin
 
 			if strings.TrimSpace(commitBody) != "" {
 				commitBody = re.ReplaceAllString(commitBody, "  \n")
-				fmt.Fprintf(&body, "%s\n", commitBody)
+				fmt.Fprintf(&body, "%s\n", commitBody) //nolint:forbidigo // writing to a strings.Builder, not stdout/stderr
 			} else {
 				// Add extra newline when commit has no body to match original behavior
-				fmt.Fprintf(&body, "\n")
+				fmt.Fprintf(&body, "\n") //nolint:forbidigo // writing to a strings.Builder, not stdout/stderr
 			}
 		}
 	}

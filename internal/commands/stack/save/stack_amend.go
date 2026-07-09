@@ -50,7 +50,7 @@ func NewCmdAmendStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.Get
 			}
 
 			if f.IO().IsOutputTTY() {
-				fmt.Fprint(f.IO().StdOut, output)
+				f.IO().LogInfof("%s", output)
 			}
 
 			return nil

@@ -2,7 +2,6 @@ package mirror
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -165,8 +164,7 @@ func (o *options) validate() error {
 	}
 
 	if o.direction == "pull" && o.allowDivergence {
-		fmt.Fprintf(
-			o.io.StdOut,
+		o.io.LogInfof(
 			"[Warning] the 'allow-divergence' flag has no effect for pull mirroring, and is ignored.\n",
 		)
 	}
@@ -193,8 +191,7 @@ func (o *options) createPushMirror() error {
 		return cmdutils.WrapError(err, "Failed to create push mirror. Check if the project exists and ensure you have the necessary permissions.")
 	}
 	greenCheck := o.io.Color().Green("✓")
-	fmt.Fprintf(
-		o.io.StdOut,
+	o.io.LogInfof(
 		"%s Created push mirror for %s (%d) on GitLab at %s (%d).\n",
 		greenCheck, pm.URL, pm.ID, o.baseRepo.FullName(), o.projectID,
 	)
@@ -211,8 +208,7 @@ func (o *options) createPullMirror() error {
 		return cmdutils.WrapError(err, "Failed to create pull mirror. Check if the project exists and ensure you have the necessary permissions.")
 	}
 	greenCheck := o.io.Color().Green("✓")
-	fmt.Fprintf(
-		o.io.StdOut,
+	o.io.LogInfof(
 		"%s Created pull mirror for %s on GitLab at %s (%d).\n",
 		greenCheck, o.url, o.baseRepo.FullName(), o.projectID,
 	)

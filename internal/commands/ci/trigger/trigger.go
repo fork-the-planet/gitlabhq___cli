@@ -68,7 +68,7 @@ func NewCmdTrigger(f cmdutils.Factory) *cobra.Command {
 			})
 			if err != nil {
 				if jobName != "" {
-					fmt.Fprintln(f.IO().StdErr, "invalid job ID:", jobName)
+					f.IO().LogError("invalid job ID:", jobName)
 				}
 				return err
 			}
@@ -82,7 +82,7 @@ func NewCmdTrigger(f cmdutils.Factory) *cobra.Command {
 				return cmdutils.WrapError(err, fmt.Sprintf("Could not trigger job with ID: %d", jobID))
 			}
 			output := fmt.Sprintf("Triggered job (ID: %d), status: %s, ref: %s, weburl: %s", job.ID, job.Status, job.Ref, job.WebURL)
-			fmt.Fprintln(f.IO().StdOut, output)
+			f.IO().LogInfo(output)
 
 			return nil
 		},

@@ -1,8 +1,6 @@
 package delete
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -72,7 +70,7 @@ func (o *options) run() error {
 	}
 
 	cs := o.io.Color()
-	fmt.Fprintf(o.io.StdOut, "%s GPG key deleted.", cs.GreenCheck())
+	o.io.LogInfof("%s GPG key deleted.", cs.GreenCheck())
 
 	return nil
 }

@@ -67,17 +67,17 @@ func NewCmdClose(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 			for _, issue := range issues {
 				valid, msg := issuable.ValidateIncidentCmd(issueType, "close", issue)
 				if !valid {
-					fmt.Fprintln(f.IO().StdOut, msg)
+					f.IO().LogInfo(msg)
 					continue
 				}
 
-				fmt.Fprintf(f.IO().StdOut, "- %s...\n", closingMessage[issueType])
+				f.IO().LogInfof("- %s...\n", closingMessage[issueType])
 				issue, err := api.UpdateIssue(client, repo.FullName(), issue.IID, l)
 				if err != nil {
 					return err
 				}
-				fmt.Fprintf(f.IO().StdOut, "%s %s #%d\n", c.RedCheck(), closedMessage[issueType], issue.IID)
-				fmt.Fprintln(f.IO().StdOut, issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
+				f.IO().LogInfof("%s %s #%d\n", c.RedCheck(), closedMessage[issueType], issue.IID)
+				f.IO().LogInfo(issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
 			}
 			return nil
 		},

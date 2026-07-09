@@ -101,7 +101,7 @@ func (o *options) run() error {
 	}
 
 	if o.io.IsaTTY && o.io.IsErrTTY {
-		fmt.Fprintf(o.io.StdErr, "- Adding alias for %s: %s.\n", c.Bold(o.name), c.Bold(o.expansion))
+		o.io.LogErrorf("- Adding alias for %s: %s.\n", c.Bold(o.name), c.Bold(o.expansion))
 	}
 
 	expansion := o.expansion
@@ -134,7 +134,7 @@ func (o *options) run() error {
 		return fmt.Errorf("could not create alias: %w", err)
 	}
 
-	fmt.Fprintln(o.io.StdErr, successMsg)
+	o.io.LogError(successMsg)
 	return nil
 }
 

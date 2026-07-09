@@ -2,7 +2,6 @@ package events
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -11,6 +10,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 )
@@ -94,8 +94,8 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 				title.CurrentPageTotal = len(events)
 				title.RepoName = "all projects"
 
-				fmt.Fprintf(f.IO().StdOut, "%s\n", title.Describe())
-				DisplayAllEvents(f.IO().StdOut, events, projects)
+				f.IO().LogInfof("%s\n", title.Describe())
+				DisplayAllEvents(f.IO(), events, projects)
 				return nil
 			}
 
@@ -104,7 +104,7 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			DisplayProjectEvents(f.IO().StdOut, events, project)
+			DisplayProjectEvents(f.IO(), events, project)
 			return nil
 		},
 	}
@@ -117,49 +117,49 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 	return cmd
 }
 
-func DisplayProjectEvents(w io.Writer, events []*gitlab.ContributionEvent, project *gitlab.Project) {
+func DisplayProjectEvents(io *iostreams.IOStreams, events []*gitlab.ContributionEvent, project *gitlab.Project) {
 	for _, e := range events {
 		if e.ProjectID != project.ID {
 			continue
 		}
-		printEvent(w, e, project)
+		printEvent(io, e, project)
 	}
 }
 
-func DisplayAllEvents(w io.Writer, events []*gitlab.ContributionEvent, projects map[int64]*gitlab.Project) {
+func DisplayAllEvents(io *iostreams.IOStreams, events []*gitlab.ContributionEvent, projects map[int64]*gitlab.Project) {
 	for _, e := range events {
-		printEvent(w, e, projects[e.ProjectID])
+		printEvent(io, e, projects[e.ProjectID])
 	}
 }
 
-func printEvent(w io.Writer, e *gitlab.ContributionEvent, project *gitlab.Project) {
+func printEvent(io *iostreams.IOStreams, e *gitlab.ContributionEvent, project *gitlab.Project) {
 	switch e.ActionName {
 	case "pushed to":
-		fmt.Fprintf(w, "Pushed to %s %s at %s\n%q.\n", e.PushData.RefType, e.PushData.Ref, project.NameWithNamespace, e.PushData.CommitTitle)
+		io.LogInfof("Pushed to %s %s at %s\n%q.\n", e.PushData.RefType, e.PushData.Ref, project.NameWithNamespace, e.PushData.CommitTitle)
 	case "deleted":
-		fmt.Fprintf(w, "Deleted %s %s at %s.\n", e.PushData.RefType, e.PushData.Ref, project.NameWithNamespace)
+		io.LogInfof("Deleted %s %s at %s.\n", e.PushData.RefType, e.PushData.Ref, project.NameWithNamespace)
 	case "pushed new":
-		fmt.Fprintf(w, "Pushed new %s %s at %s.\n", e.PushData.RefType, e.PushData.Ref, project.NameWithNamespace)
+		io.LogInfof("Pushed new %s %s at %s.\n", e.PushData.RefType, e.PushData.Ref, project.NameWithNamespace)
 	case "commented on":
-		fmt.Fprintf(w, "Commented on %s #%s at %s.\n%q\n", e.Note.NoteableType, e.Note.Title, project.NameWithNamespace, e.Note.Body)
+		io.LogInfof("Commented on %s #%s at %s.\n%q\n", e.Note.NoteableType, e.Note.Title, project.NameWithNamespace, e.Note.Body)
 	case "accepted":
-		fmt.Fprintf(w, "Accepted %s %s at %s.\n", e.TargetType, e.TargetTitle, project.NameWithNamespace)
+		io.LogInfof("Accepted %s %s at %s.\n", e.TargetType, e.TargetTitle, project.NameWithNamespace)
 	case "opened":
-		fmt.Fprintf(w, "Opened %s %s at %s.\n", e.TargetType, e.TargetTitle, project.NameWithNamespace)
+		io.LogInfof("Opened %s %s at %s.\n", e.TargetType, e.TargetTitle, project.NameWithNamespace)
 	case "closed":
-		fmt.Fprintf(w, "Closed %s %s at %s.\n", e.TargetType, e.TargetTitle, project.NameWithNamespace)
+		io.LogInfof("Closed %s %s at %s.\n", e.TargetType, e.TargetTitle, project.NameWithNamespace)
 	case "joined":
-		fmt.Fprintf(w, "Joined %s.\n", project.NameWithNamespace)
+		io.LogInfof("Joined %s.\n", project.NameWithNamespace)
 	case "left":
-		fmt.Fprintf(w, "Left %s.\n", project.NameWithNamespace)
+		io.LogInfof("Left %s.\n", project.NameWithNamespace)
 	case "created":
 		targetType := e.TargetType
 		if e.TargetType == "WikiPage::Meta" {
 			targetType = "Wiki page"
 		}
-		fmt.Fprintf(w, "Created %s %s at %s.\n", targetType, e.TargetTitle, project.NameWithNamespace)
+		io.LogInfof("Created %s %s at %s.\n", targetType, e.TargetTitle, project.NameWithNamespace)
 	default:
-		fmt.Fprintf(w, "%s %q", e.TargetType, e.Title)
+		io.LogInfof("%s %q", e.TargetType, e.Title)
 	}
-	fmt.Fprintln(w) // to leave a blank line
+	io.LogInfo() // to leave a blank line
 }

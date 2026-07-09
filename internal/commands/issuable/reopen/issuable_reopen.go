@@ -56,7 +56,7 @@ func NewCmdReopen(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Comma
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			out := f.IO().StdOut
+			io := f.IO()
 			c := f.IO().Color()
 
 			client, err := f.GitLabClient()
@@ -75,18 +75,18 @@ func NewCmdReopen(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Comma
 			for _, issue := range issues {
 				valid, msg := issuable.ValidateIncidentCmd(issueType, "reopen", issue)
 				if !valid {
-					fmt.Fprintln(f.IO().StdOut, msg)
+					io.LogInfo(msg)
 					continue
 				}
 
-				fmt.Fprintf(out, "- %s...\n", reopeningMessage[issueType])
+				io.LogInfof("- %s...\n", reopeningMessage[issueType])
 				issue, err := api.UpdateIssue(client, repo.FullName(), issue.IID, l)
 				if err != nil {
 					return err
 				}
 
-				fmt.Fprintf(out, "%s %s #%d.\n", c.GreenCheck(), reopenedMessage[issueType], issue.IID)
-				fmt.Fprintln(out, issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
+				io.LogInfof("%s %s #%d.\n", c.GreenCheck(), reopenedMessage[issueType], issue.IID)
+				io.LogInfo(issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
 			}
 			return nil
 		},

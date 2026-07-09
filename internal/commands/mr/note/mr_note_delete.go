@@ -143,14 +143,14 @@ func (o *deleteOptions) run(ctx context.Context) error {
 			author = fmt.Sprintf(" by @%s", o.note.Author.Username)
 		}
 
-		fmt.Fprintf(o.io.StdOut, "Note %d%s: %s\n", o.noteID, author, body)
+		o.io.LogInfof("Note %d%s: %s\n", o.noteID, author, body)
 
 		var confirmed bool
 		if err := o.io.Confirm(ctx, &confirmed, "Are you sure you want to delete this note?"); err != nil {
 			return err
 		}
 		if !confirmed {
-			fmt.Fprintln(o.io.StdOut, "Aborted.")
+			o.io.LogInfo("Aborted.")
 			return nil
 		}
 	}
@@ -166,6 +166,6 @@ func (o *deleteOptions) run(ctx context.Context) error {
 		return fmt.Errorf("failed to delete note: %w", err)
 	}
 
-	fmt.Fprintf(o.io.StdOut, "✓ Deleted note %d from !%d\n", o.noteID, o.mr.IID)
+	o.io.LogInfof("✓ Deleted note %d from !%d\n", o.noteID, o.mr.IID)
 	return nil
 }

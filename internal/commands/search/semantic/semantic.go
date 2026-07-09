@@ -157,7 +157,7 @@ func (o *options) run(ctx context.Context) error {
 	req.URL.RawQuery = q.Encode()
 
 	if o.outputFormat != "json" {
-		fmt.Fprintf(o.io.StdOut, "Searching for %q in %s...\n", o.query, o.projectID)
+		o.io.LogInfof("Searching for %q in %s...\n", o.query, o.projectID)
 	}
 
 	var result semanticSearchResponse
@@ -175,24 +175,24 @@ func (o *options) run(ctx context.Context) error {
 
 func (o *options) printText(result *semanticSearchResponse) error {
 	c := o.io.Color()
-	fmt.Fprintf(o.io.StdOut, "Confidence: %s\n", result.Confidence)
+	o.io.LogInfof("Confidence: %s\n", result.Confidence)
 
 	if len(result.Results) == 0 {
-		fmt.Fprintln(o.io.StdOut, "\nNo results found.")
+		o.io.LogInfo("\nNo results found.")
 		return nil
 	}
 
-	fmt.Fprintln(o.io.StdOut)
+	o.io.LogInfo()
 	for _, r := range result.Results {
-		fmt.Fprintf(o.io.StdOut, "%s  (score: %.2f)\n",
+		o.io.LogInfof("%s  (score: %.2f)\n",
 			c.Bold(r.Path), r.Score)
 		for _, chunk := range r.SnippetRanges {
-			fmt.Fprintf(o.io.StdOut, "  Lines %d–%d:\n", chunk.StartLine, chunk.EndLine)
+			o.io.LogInfof("  Lines %d–%d:\n", chunk.StartLine, chunk.EndLine)
 			for line := range strings.SplitSeq(chunk.Content, "\n") {
-				fmt.Fprintf(o.io.StdOut, "    %s\n", line)
+				o.io.LogInfof("    %s\n", line)
 			}
 		}
-		fmt.Fprintln(o.io.StdOut)
+		o.io.LogInfo()
 	}
 
 	return nil

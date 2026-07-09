@@ -1,8 +1,6 @@
 package list
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -183,7 +181,7 @@ func (o *options) run() error {
 	}
 
 	if o.outputFormat != "json" {
-		fmt.Fprint(o.io.StdOut, table.String())
+		o.io.LogInfof("%s", table.String())
 	}
 	return nil
 }

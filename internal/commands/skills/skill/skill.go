@@ -56,7 +56,7 @@ func ContentHash(files map[string][]byte) string {
 	h := sha256.New()
 	for _, p := range paths {
 		// Length-prefix so two different (path, body) splits can't collide.
-		fmt.Fprintf(h, "%d:%s\n%d:", len(p), p, len(files[p]))
+		fmt.Fprintf(h, "%d:%s\n%d:", len(p), p, len(files[p])) //nolint:forbidigo // writing to a sha256 hasher, not stdout/stderr
 		h.Write(files[p])
 		h.Write([]byte{'\n'})
 	}

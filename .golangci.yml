@@ -54,6 +54,10 @@ linters:
           linters:
             - dupword
             - forbidigo
+        - path-except: internal/commands/
+          linters:
+            - forbidigo
+          text: "stdout and stderr output"
     settings:
       forbidigo:
         forbid:
@@ -61,6 +65,8 @@ linters:
             msg: "Use IOStreams.PrintJSON for stdout output. For non-stdout serialization (request bodies, disk, protocols), add //nolint:forbidigo with a reason."
           - pattern: ^json\.NewEncoder$
             msg: "Use IOStreams.PrintJSON for stdout output. For non-stdout serialization (request bodies, disk, protocols), add //nolint:forbidigo with a reason."
+          - pattern: ^fmt\.F(print|printf|println|scan|scanf|scanln)$
+            msg: "Use IOStreams LogInfo, LogInfof, Error, and Errorf for stdout and stderr output."
       govet:
         enable-all: true
         disable:

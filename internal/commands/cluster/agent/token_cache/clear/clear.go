@@ -109,36 +109,36 @@ func (o *options) run(ctx context.Context) error {
 	tokens = agentutils.FilterByAgents(tokens, o.agents)
 
 	if len(tokens) == 0 {
-		fmt.Fprintln(o.io.StdOut, "No cached tokens found to clear.")
+		o.io.LogInfo("No cached tokens found to clear.")
 		for _, err := range errors {
-			fmt.Fprintf(o.io.StdErr, "Warning: %v\n", err)
+			o.io.LogErrorf("Warning: %v\n", err)
 		}
 		return nil
 	}
 
 	for _, err := range errors {
-		fmt.Fprintf(o.io.StdErr, "Warning: %v\n", err)
+		o.io.LogErrorf("Warning: %v\n", err)
 	}
 
-	fmt.Fprintf(o.io.StdOut, "Found %d cached token(s) to clear.\n", len(tokens))
+	o.io.LogInfof("Found %d cached token(s) to clear.\n", len(tokens))
 
 	// Revoke tokens if requested
 	if o.revoke {
-		fmt.Fprintln(o.io.StdOut, "Revoking tokens on GitLab server...")
+		o.io.LogInfo("Revoking tokens on GitLab server...")
 		revokeErrors := o.revokeTokens(ctx, tokens)
 		for _, err := range revokeErrors {
-			fmt.Fprintf(o.io.StdErr, "Warning: %v\n", err)
+			o.io.LogErrorf("Warning: %v\n", err)
 		}
 	}
 
 	// Clear tokens from cache
-	fmt.Fprintln(o.io.StdOut, "Clearing tokens from cache...")
+	o.io.LogInfo("Clearing tokens from cache...")
 	clearErrors := o.clearTokens(tokens)
 	for _, err := range clearErrors {
-		fmt.Fprintf(o.io.StdErr, "Error: %v\n", err)
+		o.io.LogErrorf("Error: %v\n", err)
 	}
 
-	fmt.Fprintf(o.io.StdOut, "Successfully cleared %d token(s) from cache.\n", len(tokens))
+	o.io.LogInfof("Successfully cleared %d token(s) from cache.\n", len(tokens))
 	return nil
 }
 
@@ -241,7 +241,7 @@ func (o *options) getFilesystemTokens() ([]cachedToken, error) {
 
 		token, err := o.readTokenFromFile(root, entry.Name())
 		if err != nil {
-			fmt.Fprintf(o.io.StdErr, "Warning: Failed to read token from %s: %v\n", entry.Name(), err)
+			o.io.LogErrorf("Warning: Failed to read token from %s: %v\n", entry.Name(), err)
 			continue
 		}
 		tokens = append(tokens, *token)
@@ -306,17 +306,17 @@ func (o *options) revokeTokens(ctx context.Context, tokens []cachedToken) []erro
 	for _, token := range tokens {
 		// Skip already revoked tokens
 		if token.Token.Revoked {
-			fmt.Fprintf(o.io.StdOut, "Token for agent %d is already revoked, skipping.\n", token.AgentID)
+			o.io.LogInfof("Token for agent %d is already revoked, skipping.\n", token.AgentID)
 			continue
 		}
 
 		// Skip expired tokens (they're effectively revoked)
 		if token.Token.ExpiresAt != nil && time.Time(*token.Token.ExpiresAt).Before(time.Now().UTC()) {
-			fmt.Fprintf(o.io.StdOut, "Token for agent %d is expired, skipping revocation.\n", token.AgentID)
+			o.io.LogInfof("Token for agent %d is expired, skipping revocation.\n", token.AgentID)
 			continue
 		}
 
-		fmt.Fprintf(o.io.StdOut, "Revoking token for agent %d...\n", token.AgentID)
+		o.io.LogInfof("Revoking token for agent %d...\n", token.AgentID)
 
 		_, err := client.PersonalAccessTokens.RevokePersonalAccessTokenByID(token.Token.ID, gitlab.WithContext(ctx))
 		if err != nil {
@@ -324,7 +324,7 @@ func (o *options) revokeTokens(ctx context.Context, tokens []cachedToken) []erro
 			continue
 		}
 
-		fmt.Fprintf(o.io.StdOut, "Successfully revoked token for agent %d.\n", token.AgentID)
+		o.io.LogInfof("Successfully revoked token for agent %d.\n", token.AgentID)
 	}
 
 	return errors
@@ -365,7 +365,7 @@ func (o *options) clearTokens(tokens []cachedToken) []error {
 						errs = append(errs, fmt.Errorf("failed to delete token file for agent %d: %w", token.AgentID, err))
 						continue
 					}
-					fmt.Fprintf(o.io.StdOut, "Cleared token for agent %d from filesystem.\n", token.AgentID)
+					o.io.LogInfof("Cleared token for agent %d from filesystem.\n", token.AgentID)
 				}
 			}
 		}
@@ -381,7 +381,7 @@ func (o *options) clearTokens(tokens []cachedToken) []error {
 			errs = append(errs, fmt.Errorf("failed to delete token from keyring for agent %d: %w", token.AgentID, err))
 			continue
 		}
-		fmt.Fprintf(o.io.StdOut, "Cleared token for agent %d from keyring.\n", token.AgentID)
+		o.io.LogInfof("Cleared token for agent %d from keyring.\n", token.AgentID)
 	}
 
 	return errs

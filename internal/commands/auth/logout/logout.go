@@ -1,8 +1,6 @@
 package logout
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -69,6 +67,6 @@ func (o *options) run() error {
 		return err
 	}
 
-	fmt.Fprintf(o.io.StdOut, "Successfully logged out of %s\n", o.hostname)
+	o.io.LogInfof("Successfully logged out of %s\n", o.hostname)
 	return nil
 }

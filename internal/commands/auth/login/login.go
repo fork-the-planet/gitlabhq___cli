@@ -218,7 +218,7 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 		}
 
 		if token := config.GetFromEnv("token"); token != "" {
-			fmt.Fprintf(opts.IO.StdErr, "%s One of %s environment variables is set. If you don't want to use it for glab, unset it.\n", c.Yellow("WARNING:"), strings.Join(config.EnvKeyEquivalence("token"), ", "))
+			opts.IO.LogErrorf("%s One of %s environment variables is set. If you don't want to use it for glab, unset it.\n", c.Yellow("WARNING:"), strings.Join(config.EnvKeyEquivalence("token"), ", "))
 		}
 
 		if opts.ApiHost != "" {
@@ -424,10 +424,10 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 		}
 	}
 
-	fmt.Fprintf(opts.IO.StdErr, "- Signing into %s\n", hostname)
+	opts.IO.LogErrorf("- Signing into %s\n", hostname)
 
 	if token := config.GetFromEnv("token"); token != "" {
-		fmt.Fprintf(opts.IO.StdErr, "%s One of %s environment variables is set. If you don't want to use it for glab, unset it.\n", c.Yellow("WARNING:"), strings.Join(config.EnvKeyEquivalence("token"), ", "))
+		opts.IO.LogErrorf("%s One of %s environment variables is set. If you don't want to use it for glab, unset it.\n", c.Yellow("WARNING:"), strings.Join(config.EnvKeyEquivalence("token"), ", "))
 	}
 	existingToken, _, _ := cfg.GetWithSource(hostname, "token", false)
 
@@ -622,19 +622,19 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 			}
 		}
 
-		fmt.Fprintf(opts.IO.StdErr, "- glab config set -h %s git_protocol %s\n", hostname, gitProtocol)
+		opts.IO.LogErrorf("- glab config set -h %s git_protocol %s\n", hostname, gitProtocol)
 		if err := cfg.Set(hostname, "git_protocol", gitProtocol); err != nil {
 			return err
 		}
 
-		fmt.Fprintf(opts.IO.StdErr, "%s Configured Git protocol.\n", c.GreenCheck())
+		opts.IO.LogErrorf("%s Configured Git protocol.\n", c.GreenCheck())
 
-		fmt.Fprintf(opts.IO.StdErr, "- glab config set -h %s api_protocol %s\n", hostname, apiProtocol)
+		opts.IO.LogErrorf("- glab config set -h %s api_protocol %s\n", hostname, apiProtocol)
 		if err := cfg.Set(hostname, "api_protocol", apiProtocol); err != nil {
 			return err
 		}
 
-		fmt.Fprintf(opts.IO.StdErr, "%s Configured API protocol.\n", c.GreenCheck())
+		opts.IO.LogErrorf("%s Configured API protocol.\n", c.GreenCheck())
 	}
 	apiClient, err := opts.apiClient(hostname)
 	if err != nil {
@@ -665,14 +665,14 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 		}
 	}
 
-	fmt.Fprintf(opts.IO.StdErr, "%s Logged in as %s\n", c.GreenCheck(), c.Bold(username))
-	fmt.Fprintf(opts.IO.StdErr, "%s Configuration saved to %s\n", c.GreenCheck(), config.ConfigFile())
-	fmt.Fprintf(opts.IO.StdErr, "  - Host: %s\n", hostname)
+	opts.IO.LogErrorf("%s Logged in as %s\n", c.GreenCheck(), c.Bold(username))
+	opts.IO.LogErrorf("%s Configuration saved to %s\n", c.GreenCheck(), config.ConfigFile())
+	opts.IO.LogErrorf("  - Host: %s\n", hostname)
 	if subfolder != "" {
-		fmt.Fprintf(opts.IO.StdErr, "  - Subfolder: %s\n", subfolder)
+		opts.IO.LogErrorf("  - Subfolder: %s\n", subfolder)
 	}
 	if sshHostValue, _ := cfg.Get(hostname, "ssh_host"); sshHostValue != "" {
-		fmt.Fprintf(opts.IO.StdErr, "  - SSH host: %s\n", sshHostValue)
+		opts.IO.LogErrorf("  - SSH host: %s\n", sshHostValue)
 	}
 
 	return nil
@@ -708,8 +708,8 @@ func getAccessTokenTip(hostname string) string {
 }
 
 func showTokenPrompt(ctx context.Context, io *iostreams.IOStreams, hostname string) (string, error) {
-	fmt.Fprintln(io.StdErr)
-	fmt.Fprintln(io.StdErr, heredoc.Doc(getAccessTokenTip(hostname)))
+	io.LogError()
+	io.LogError(heredoc.Doc(getAccessTokenTip(hostname)))
 
 	var token string
 	tokenInput := huh.NewInput().

@@ -171,15 +171,15 @@ func (opts *options) run(ctx context.Context) error {
 	case "text":
 		// display a table
 		if len(workItems) == 0 {
-			fmt.Fprintf(opts.io.StdOut, "No work items found in %s\n", scope.Path)
+			opts.io.LogInfof("No work items found in %s\n", scope.Path)
 			return nil
 		}
 
 		table := utils.DisplayWorkItemList(opts.io, workItems)
-		fmt.Fprint(opts.io.StdOut, table)
+		opts.io.LogInfof("%s", table)
 
 		if pageInfo != nil && pageInfo.HasNextPage {
-			fmt.Fprintf(opts.io.StdOut, "\nNext page: %s\n", buildNextPageCommand(opts, pageInfo.EndCursor))
+			opts.io.LogInfof("\nNext page: %s\n", buildNextPageCommand(opts, pageInfo.EndCursor))
 		}
 		return nil
 	default:
@@ -195,31 +195,31 @@ func buildNextPageCommand(opts *options, cursor string) string {
 
 	// preserve group flag
 	if opts.group != "" {
-		fmt.Fprintf(&b, " -g %s", opts.group)
+		fmt.Fprintf(&b, " -g %s", opts.group) //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
 	}
 
 	// preserve type filters
 	if len(opts.types) > 0 {
-		fmt.Fprintf(&b, " --type %s", strings.Join(opts.types, ","))
+		fmt.Fprintf(&b, " --type %s", strings.Join(opts.types, ",")) //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
 	}
 
 	// preserve state filter (only if non-default)
 	if opts.state != "opened" {
-		fmt.Fprintf(&b, " --state %s", opts.state)
+		fmt.Fprintf(&b, " --state %s", opts.state) //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
 	}
 
 	// preserve per-page (only if non-default)
 	if opts.perPage != 20 {
-		fmt.Fprintf(&b, " --per-page %d", opts.perPage)
+		fmt.Fprintf(&b, " --per-page %d", opts.perPage) //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
 	}
 
 	// preserve output format (only if non-default)
 	if opts.outputFormat != "text" {
-		fmt.Fprintf(&b, " --output %s", opts.outputFormat)
+		fmt.Fprintf(&b, " --output %s", opts.outputFormat) //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
 	}
 
 	// add the cursor
-	fmt.Fprintf(&b, " --after %q", cursor)
+	fmt.Fprintf(&b, " --after %q", cursor) //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
 
 	return b.String()
 }

@@ -2,7 +2,6 @@ package get
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -102,7 +101,7 @@ func (o *options) printDetails(controller *gitlab.RunnerControllerDetails) error
 	table.AddRow(c.Bold("Connected"), formatConnected(c, controller.Connected))
 	table.AddRow(c.Bold("Created At"), controller.CreatedAt)
 	table.AddRow(c.Bold("Updated At"), controller.UpdatedAt)
-	fmt.Fprint(o.io.StdOut, table.Render())
+	o.io.LogInfof("%s", table.Render())
 	return nil
 }
 

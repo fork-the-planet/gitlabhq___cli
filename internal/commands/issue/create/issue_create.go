@@ -139,8 +139,8 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			}
 
 			if !opts.baseProject.IssuesEnabled { //nolint:staticcheck
-				fmt.Fprintf(opts.io.StdErr, "Issues are disabled for project %q or require project membership. ", opts.baseProject.PathWithNamespace)
-				fmt.Fprintf(opts.io.StdErr, "Make sure issues are enabled for the %q project, and if required, you are a member of the project.\n",
+				opts.io.LogErrorf("Issues are disabled for project %q or require project membership. ", opts.baseProject.PathWithNamespace)
+				opts.io.LogErrorf("Make sure issues are enabled for the %q project, and if required, you are a member of the project.\n",
 					opts.baseProject.PathWithNamespace)
 				return cmdutils.SilentError
 			}
@@ -149,7 +149,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 				// always save options to file
 				recoverErr := createRecoverSaveFile(repo.FullName(), opts)
 				if recoverErr != nil {
-					fmt.Fprintf(opts.io.StdErr, "Could not create recovery file: %v", recoverErr)
+					opts.io.LogErrorf("Could not create recovery file: %v", recoverErr)
 				}
 
 				return err
@@ -234,10 +234,10 @@ var createRun = func(ctx context.Context, opts *options) error {
 		if err := recovery.FromFile(repo.FullName(), "issue.json", opts); err != nil {
 			// if the file to recover doesn't exist, we can just ignore the error and move on
 			if !errors.Is(err, os.ErrNotExist) {
-				fmt.Fprintf(opts.io.StdErr, "Failed to recover from file: %v", err)
+				opts.io.LogErrorf("Failed to recover from file: %v", err)
 			}
 		} else {
-			fmt.Fprintln(opts.io.StdOut, "Recovered create options from file.")
+			opts.io.LogInfo("Recovered create options from file.")
 		}
 	}
 
@@ -412,7 +412,7 @@ var createRun = func(ctx context.Context, opts *options) error {
 	}
 
 	if action == cmdutils.CancelAction {
-		fmt.Fprintln(opts.io.StdErr, "Discarded.")
+		opts.io.LogError("Discarded.")
 		return nil
 	}
 
@@ -454,7 +454,7 @@ var createRun = func(ctx context.Context, opts *options) error {
 			}
 			issueCreateOpts.AssigneeIDs = cmdutils.IDsFromUsers(users)
 		}
-		fmt.Fprintln(opts.io.StdErr, "- Creating issue in", repo.FullName())
+		opts.io.LogError("- Creating issue in", repo.FullName())
 		issue, err := createIssue(apiClient, repo.FullName(), issueCreateOpts)
 		if err != nil {
 			return err
@@ -463,7 +463,7 @@ var createRun = func(ctx context.Context, opts *options) error {
 			return err
 		}
 
-		fmt.Fprintln(opts.io.StdOut, issueutils.DisplayIssue(opts.io.Color(), issue, opts.io.IsaTTY))
+		opts.io.LogInfo(issueutils.DisplayIssue(opts.io.Color(), issue, opts.io.IsaTTY))
 		return nil
 	}
 
@@ -473,7 +473,7 @@ var createRun = func(ctx context.Context, opts *options) error {
 func postCreateActions(apiClient *gitlab.Client, issue *gitlab.Issue, opts *options, repo glrepo.Interface) error {
 	if len(opts.LinkedIssues) > 0 {
 		for _, targetIssueIID := range opts.LinkedIssues {
-			fmt.Fprintln(opts.io.StdErr, "- Linking to issue ", targetIssueIID)
+			opts.io.LogError("- Linking to issue ", targetIssueIID)
 			issueLink, _, err := apiClient.IssueLinks.CreateIssueLink(repo.FullName(), issue.IID, &gitlab.CreateIssueLinkOptions{
 				TargetIssueIID: new(strconv.Itoa(targetIssueIID)),
 				LinkType:       new(opts.IssueLinkType),
@@ -485,14 +485,14 @@ func postCreateActions(apiClient *gitlab.Client, issue *gitlab.Issue, opts *opti
 		}
 	}
 	if opts.TimeEstimate != "" {
-		fmt.Fprintln(opts.io.StdErr, "- Adding time estimate ", opts.TimeEstimate)
+		opts.io.LogError("- Adding time estimate ", opts.TimeEstimate)
 		_, _, err := apiClient.Issues.SetTimeEstimate(repo.FullName(), issue.IID, &gitlab.SetTimeEstimateOptions{Duration: new(opts.TimeEstimate)})
 		if err != nil {
 			return err
 		}
 	}
 	if opts.TimeSpent != "" {
-		fmt.Fprintln(opts.io.StdErr, "- Adding time spent ", opts.TimeSpent)
+		opts.io.LogError("- Adding time spent ", opts.TimeSpent)
 		_, _, err := apiClient.Issues.AddSpentTime(repo.FullName(), issue.IID, &gitlab.AddSpentTimeOptions{Duration: new(opts.TimeSpent)})
 		if err != nil {
 			return err
@@ -515,7 +515,7 @@ func previewIssue(opts *options) error {
 	}
 
 	if opts.io.IsOutputTTY() {
-		fmt.Fprintf(opts.io.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(openURL))
+		opts.io.LogErrorf("Opening %s in your browser.\n", utils.DisplayURL(openURL))
 	}
 	browser, _ := cfg.Get(repo.RepoHost(), "browser")
 	return utils.OpenInBrowser(openURL, browser)
@@ -572,6 +572,6 @@ func createRecoverSaveFile(repoName string, opts *options) error {
 		return err
 	}
 
-	fmt.Fprintf(opts.io.StdErr, "Failed to create issue. Created recovery file: %s\nRun the command again with the '--recover' option to retry", recoverFile)
+	opts.io.LogErrorf("Failed to create issue. Created recovery file: %s\nRun the command again with the '--recover' option to retry", recoverFile)
 	return nil
 }

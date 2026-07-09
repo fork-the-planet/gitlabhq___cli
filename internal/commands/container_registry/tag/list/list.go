@@ -127,12 +127,12 @@ func (o *options) run(ctx context.Context) error {
 		title.Total = int(resp.TotalItems)
 	}
 
-	fmt.Fprintf(o.io.StdOut, "%s\n", title.Describe())
+	o.io.LogInfof("%s\n", title.Describe())
 	if len(tags) > 0 {
 		if o.details {
-			fmt.Fprintf(o.io.StdOut, "%s\n", registryutils.DisplayTagsWithDetails(o.io, tags))
+			o.io.LogInfof("%s\n", registryutils.DisplayTagsWithDetails(o.io, tags))
 		} else {
-			fmt.Fprintf(o.io.StdOut, "%s\n", registryutils.DisplayTags(tags))
+			o.io.LogInfof("%s\n", registryutils.DisplayTags(tags))
 		}
 	}
 

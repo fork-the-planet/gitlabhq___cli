@@ -302,30 +302,24 @@ instructions:
       - 'internal/commands/**/*.go'
       - '!**/*_test.go'
     instructions: |
-      Direct `json.Marshal` / `json.NewEncoder` use is forbidden by
-      `forbidigo` in `.golangci.yml`. The rules below are the
-      project-specific output conventions.
-      1. Never call `fmt.Fprintf(os.Stdout, ...)` / `os.Stderr` / `fmt.Println`
-         directly. Always go through `opts.io` (from `f.IO()`):
-         - `opts.io.LogInfo(...)` / `opts.io.LogInfof(format, ...)` →  stdout
-         - `opts.io.LogError(...)` / `opts.io.LogErrorf(format, ...)` → stderr
-      2. For JSON output, use `opts.io.PrintJSON(v)` from
+      The rules below are the project-specific output conventions.
+      1. For JSON output, use `opts.io.PrintJSON(v)` from
          `internal/iostreams/print_json.go`. `PrintJSON` handles `--jq`
          filtering and the nil-slice-to-`[]` normalization.
-      3. To register the canonical `-F/--output [text | json]` flag plus
+      2. To register the canonical `-F/--output [text | json]` flag plus
          `--jq`, use `cmdutils.EnableJSONOutput(cmd)` from
          `internal/cmdutils/output_format.go`. Do not invent a separate
          `--json` boolean.
-      4. **JSON output is for machines, not humans.** Do not pretty-print or
+      3. **JSON output is for machines, not humans.** Do not pretty-print or
          wrap it. Users can pipe to `jq` themselves.
-      5. For table output, use `internal/tableprinter` (`NewTablePrinter()`,
+      4. For table output, use `internal/tableprinter` (`NewTablePrinter()`,
          `AddRow(...)`, `String()`, `SetIsTTY(...)`).
-      6. For interactive prompts, use the helpers on `IOStreams`:
+      5. For interactive prompts, use the helpers on `IOStreams`:
          `Confirm`, `Input`, `Select`, `MultiSelect`, `Password`, `Multiline`,
          `Editor`, `DirectEditor`. Do not hand-roll `fmt.Scanln` confirmation
          loops. Check `io.PromptEnabled()` / `io.IsInteractive()` before
          prompting so `NO_PROMPT` and non-TTY users are respected.
-      7. For terminal hyperlinks, use `io.Hyperlink(displayText, targetURL)`.
+      6. For terminal hyperlinks, use `io.Hyperlink(displayText, targetURL)`.
 
   - name: API client and pagination
     fileFilters:

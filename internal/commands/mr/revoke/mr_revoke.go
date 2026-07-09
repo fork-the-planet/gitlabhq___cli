@@ -1,8 +1,6 @@
 package revoke
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -54,14 +52,14 @@ func NewCmdRevoke(f cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				fmt.Fprintf(f.IO().StdOut, "- Revoking approval for merge request !%d...\n", mr.IID)
+				f.IO().LogInfof("- Revoking approval for merge request !%d...\n", mr.IID)
 
 				_, err := client.MergeRequestApprovals.UnapproveMergeRequest(repo.FullName(), mr.IID)
 				if err != nil {
 					return err
 				}
 
-				fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), "Merge request approval revoked.")
+				f.IO().LogInfof("%s %s\n", c.GreenCheck(), "Merge request approval revoked.")
 			}
 
 			return nil

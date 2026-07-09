@@ -2,7 +2,6 @@ package pipeline
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -76,7 +75,7 @@ func NewCmdCancel(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return runCancelation(pipelineIDs, dryRunMode, f.IO().StdOut, c, client, repo)
+			return runCancelation(f.IO(), pipelineIDs, dryRunMode, c, client, repo)
 		},
 	}
 
@@ -89,16 +88,16 @@ func SetupCommandFlags(flags *pflag.FlagSet) {
 }
 
 func runCancelation(
+	io *iostreams.IOStreams,
 	pipelineIDs []int,
 	dryRunMode bool,
-	w io.Writer,
 	c *iostreams.ColorPalette,
 	apiClient *gitlab.Client,
 	repo glrepo.Interface,
 ) error {
 	for _, id := range pipelineIDs {
 		if dryRunMode {
-			fmt.Fprintf(w, "%s Pipeline #%d will be canceled.\n", c.DotWarnIcon(), id)
+			io.LogInfof("%s Pipeline #%d will be canceled.\n", c.DotWarnIcon(), id)
 		} else {
 			pid, err := repo.Project(apiClient)
 			if err != nil {
@@ -108,7 +107,7 @@ func runCancelation(
 			if err != nil {
 				return err
 			}
-			fmt.Fprintf(w, "%s Pipeline #%d is canceled successfully.\n", c.RedCheck(), id)
+			io.LogInfof("%s Pipeline #%d is canceled successfully.\n", c.RedCheck(), id)
 		}
 	}
 	fmt.Println()

@@ -2,7 +2,6 @@ package list
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -111,7 +110,7 @@ func (o *options) printTable(tokens []*gitlab.RunnerControllerToken) error {
 	for _, t := range tokens {
 		table.AddRow(t.ID, formatDescription(t.Description), formatLastUsedAt(c, t.LastUsedAt), t.CreatedAt, t.UpdatedAt)
 	}
-	fmt.Fprint(o.io.StdOut, table.Render())
+	o.io.LogInfof("%s", table.Render())
 	return nil
 }
 

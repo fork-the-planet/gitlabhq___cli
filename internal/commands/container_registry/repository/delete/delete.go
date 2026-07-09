@@ -97,7 +97,7 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	if !o.forceDelete && o.io.PromptEnabled() {
-		fmt.Fprintf(o.io.StdErr, "This action will permanently delete container registry repository %d on %s, including all images and tags.\n\n", o.repositoryID, repo.FullName())
+		o.io.LogErrorf("This action will permanently delete container registry repository %d on %s, including all images and tags.\n\n", o.repositoryID, repo.FullName())
 		err = o.io.Confirm(ctx, &o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete container registry repository %d?", o.repositoryID))
 		if err != nil {
 			return cmdutils.WrapError(err, "could not prompt")

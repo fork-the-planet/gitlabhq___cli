@@ -1,8 +1,6 @@
 package view
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -100,6 +98,6 @@ func (o *options) run() error {
 		return o.io.PrintJSON(registryutils.NewTagJSON(tag, true))
 	}
 
-	fmt.Fprintln(o.io.StdOut, registryutils.DisplayTag(o.io, tag))
+	o.io.LogInfo(registryutils.DisplayTag(o.io, tag))
 	return nil
 }

@@ -3,7 +3,6 @@ package delete
 import (
 	"errors"
 	"fmt"
-	"io"
 	"strconv"
 	"strings"
 	"time"
@@ -105,7 +104,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				return runDeletion(pipelineIDs, dryRunMode, f.IO().StdOut, c, client, repo)
+				return runDeletion(f.IO(), pipelineIDs, dryRunMode, c, client, repo)
 			}
 
 			paginate, _ := cmd.Flags().GetBool(FlagPaginate)
@@ -115,7 +114,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			if err := runDeletion(pipelineIDs, dryRunMode, f.IO().StdOut, c, client, repo); err != nil {
+			if err := runDeletion(f.IO(), pipelineIDs, dryRunMode, c, client, repo); err != nil {
 				return err
 			}
 
@@ -126,11 +125,11 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 				}
 				// GitLab omits X-Total for result sets larger than 10,000, so totalAvailable may be 0 even when truncated.
 				if totalAvailable > int64(len(pipelineIDs)) {
-					fmt.Fprintf(f.IO().StdErr,
+					f.IO().LogErrorf(
 						"%s %d of %d matching pipelines. Pass --paginate to act on all matches, or --per-page to fetch more per request.\n",
 						verb, len(pipelineIDs), totalAvailable)
 				} else {
-					fmt.Fprintf(f.IO().StdErr,
+					f.IO().LogErrorf(
 						"%s %d matching pipelines; more matches exist. Pass --paginate to act on all matches, or --per-page to fetch more per request.\n",
 						verb, len(pipelineIDs))
 				}
@@ -199,10 +198,10 @@ func parseRawPipelineIDs(rawPipelineIDs string) ([]int, error) {
 	return inputPipelineIDs, nil
 }
 
-func runDeletion(pipelineIDs []int, dryRunMode bool, w io.Writer, c *iostreams.ColorPalette, apiClient *gitlab.Client, repo glrepo.Interface) error {
+func runDeletion(io *iostreams.IOStreams, pipelineIDs []int, dryRunMode bool, c *iostreams.ColorPalette, apiClient *gitlab.Client, repo glrepo.Interface) error {
 	for _, id := range pipelineIDs {
 		if dryRunMode {
-			fmt.Fprintf(w, "%s Pipeline #%d will be deleted.\n", c.DotWarnIcon(), id)
+			io.LogInfof("%s Pipeline #%d will be deleted.\n", c.DotWarnIcon(), id)
 			continue
 		}
 
@@ -211,7 +210,7 @@ func runDeletion(pipelineIDs []int, dryRunMode bool, w io.Writer, c *iostreams.C
 			return err
 		}
 
-		fmt.Fprintf(w, "%s Pipeline #%d deleted successfully.\n", c.RedCheck(), id)
+		io.LogInfof("%s Pipeline #%d deleted successfully.\n", c.RedCheck(), id)
 	}
 	fmt.Println()
 

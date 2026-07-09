@@ -106,6 +106,6 @@ func (o *options) run() error {
 		table.EndRow()
 	}
 
-	fmt.Fprintf(o.io.StdOut, "%s\n%s\n", title, table.Render())
+	o.io.LogInfof("%s\n%s\n", title, table.Render())
 	return nil
 }

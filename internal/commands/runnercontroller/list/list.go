@@ -2,7 +2,6 @@ package list
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -96,7 +95,7 @@ func (o *options) printTable(controllers []*gitlab.RunnerController) error {
 	for _, rc := range controllers {
 		table.AddRow(rc.ID, rc.Description, formatState(c, rc.State), rc.CreatedAt, rc.UpdatedAt)
 	}
-	fmt.Fprint(o.io.StdOut, table.Render())
+	o.io.LogInfof("%s", table.Render())
 	return nil
 }
 

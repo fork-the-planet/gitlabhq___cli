@@ -36,7 +36,6 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 			var err error
 			var actions []string
 			var ua *cmdutils.UserAssignments
-			out := f.IO().StdOut
 			c := f.IO().Color()
 
 			if cmd.Flags().Changed("unassign") && cmd.Flags().Changed("assignee") {
@@ -187,7 +186,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				l.DueDate = new(dueDate)
 			}
 
-			fmt.Fprintf(out, "- Updating issue #%d\n", issue.IID)
+			f.IO().LogInfof("- Updating issue #%d\n", issue.IID)
 
 			issue, err = api.UpdateIssue(client, repo.FullName(), issue.IID, l)
 			if err != nil {
@@ -195,10 +194,10 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 			}
 
 			for _, s := range actions {
-				fmt.Fprintln(out, c.GreenCheck(), s)
+				f.IO().LogInfo(c.GreenCheck(), s)
 			}
 
-			fmt.Fprintln(out, issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
+			f.IO().LogInfo(issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
 			return nil
 		},
 	}

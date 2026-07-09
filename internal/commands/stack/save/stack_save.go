@@ -149,8 +149,7 @@ func NewCmdSaveStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetT
 			if f.IO().IsOutputTTY() {
 				color := f.IO().Color()
 
-				fmt.Fprintf(
-					f.IO().StdOut,
+				f.IO().LogInfof(
 					"%s %s: Saved with message: \"%s\".\n",
 					color.ProgressIcon(),
 					color.Blue(title),

@@ -190,20 +190,20 @@ func (o *options) renderReleases(releases []*gitlab.Release) error {
 	c := o.io.Color()
 	for i, r := range releases {
 		if i > 0 {
-			fmt.Fprintln(o.io.StdOut)
+			o.io.LogInfo()
 		}
-		fmt.Fprintln(o.io.StdOut, c.Bold(fmt.Sprintf("## %s", r.TagName)))
+		o.io.LogInfo(c.Bold(fmt.Sprintf("## %s", r.TagName)))
 		body := strings.TrimSpace(r.Description)
 		if body == "" {
-			fmt.Fprintln(o.io.StdOut, "(no release notes)")
+			o.io.LogInfo("(no release notes)")
 			continue
 		}
 		rendered, err := utils.RenderMarkdown(body, o.io.BackgroundColor())
 		if err != nil {
-			fmt.Fprintln(o.io.StdOut, body)
+			o.io.LogInfo(body)
 			continue
 		}
-		fmt.Fprint(o.io.StdOut, rendered)
+		o.io.LogInfof("%s", rendered)
 	}
 	return nil
 }

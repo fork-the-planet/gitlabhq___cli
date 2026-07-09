@@ -195,7 +195,7 @@ func runTrace(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid an
 	var once sync.Once
 	var offset int64
 
-	fmt.Fprintln(w, "Getting job trace...")
+	fmt.Fprintln(w, "Getting job trace...") //nolint:forbidigo // w is a generic io.Writer, not always StdOut/StdErr
 	ticker := time.NewTicker(pollInterval)
 	defer ticker.Stop()
 	for {
@@ -210,16 +210,16 @@ func runTrace(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid an
 		}
 		switch job.Status {
 		case "pending":
-			fmt.Fprintf(w, "%s is pending... waiting for job to start.\n", job.Name)
+			fmt.Fprintf(w, "%s is pending... waiting for job to start.\n", job.Name) //nolint:forbidigo // w is a generic io.Writer, not always StdOut/StdErr
 			continue
 		case "manual":
-			fmt.Fprintf(w, "Manual job %s not started, waiting for job to start.\n", job.Name)
+			fmt.Fprintf(w, "Manual job %s not started, waiting for job to start.\n", job.Name) //nolint:forbidigo // w is a generic io.Writer, not always StdOut/StdErr
 			continue
 		case "skipped":
-			fmt.Fprintf(w, "%s has been skipped.\n", job.Name)
+			fmt.Fprintf(w, "%s has been skipped.\n", job.Name) //nolint:forbidigo // w is a generic io.Writer, not always StdOut/StdErr
 		}
 		once.Do(func() {
-			fmt.Fprintf(w, "Showing logs for %s job #%d.\n", job.Name, job.ID)
+			fmt.Fprintf(w, "Showing logs for %s job #%d.\n", job.Name, job.ID) //nolint:forbidigo // w is a generic io.Writer, not always StdOut/StdErr
 		})
 		trace, _, err := apiClient.Jobs.GetTraceFile(pid, jobId)
 		if err != nil {
@@ -347,7 +347,7 @@ func getJobIdInteractive(ctx context.Context, inputs *JobInputs, opts *JobOption
 		return 0, err
 	}
 
-	fmt.Fprintf(opts.IO.StdOut, "Getting jobs for pipeline %d...\n\n", pipelineId)
+	opts.IO.LogInfof("Getting jobs for pipeline %d...\n\n", pipelineId)
 
 	listOptions := &gitlab.ListJobsOptions{
 		ListOptions: gitlab.ListOptions{
@@ -382,7 +382,7 @@ func getJobIdInteractive(ctx context.Context, inputs *JobInputs, opts *JobOption
 
 		c := opts.IO.Color()
 
-		fmt.Fprint(opts.IO.StdOut, "Getting external jobs...\n")
+		opts.IO.LogInfof("%s", "Getting external jobs...\n")
 		for _, status := range cs {
 			var s string
 
@@ -394,10 +394,10 @@ func getJobIdInteractive(ctx context.Context, inputs *JobInputs, opts *JobOption
 			default:
 				s = c.Gray(status.Status)
 			}
-			fmt.Fprintf(opts.IO.StdOut, "(%s) %s\nURL: %s\n\n", s, c.Bold(status.Name), c.Gray(status.TargetURL))
+			opts.IO.LogInfof("(%s) %s\nURL: %s\n\n", s, c.Bold(status.Name), c.Gray(status.TargetURL))
 		}
 
-		fmt.Fprintln(opts.IO.StdErr, "Pipeline has no jobs or external statuses. "+
+		opts.IO.LogError("Pipeline has no jobs or external statuses. " +
 			"Check for errors in your '.gitlab-ci.yml' and your pipeline configuration.")
 		return 0, nil
 	}
@@ -440,7 +440,7 @@ type JobOptions struct {
 func TraceJob(ctx context.Context, inputs *JobInputs, opts *JobOptions) error {
 	jobID, err := GetJobId(ctx, inputs, opts)
 	if err != nil {
-		fmt.Fprintln(opts.IO.StdErr, "invalid job ID:", inputs.JobName)
+		opts.IO.LogError("invalid job ID:", inputs.JobName)
 		return err
 	}
 	if jobID == 0 {
@@ -450,7 +450,7 @@ func TraceJob(ctx context.Context, inputs *JobInputs, opts *JobOptions) error {
 	if pollInterval == 0 {
 		pollInterval = 3 * time.Second
 	}
-	fmt.Fprintln(opts.IO.StdOut)
+	opts.IO.LogInfo()
 	return runTrace(ctx, opts.Client, opts.IO.StdOut, opts.Repo.FullName(), jobID, pollInterval)
 }
 

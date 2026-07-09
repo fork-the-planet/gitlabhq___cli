@@ -56,7 +56,7 @@ func (o *options) run() error {
 
 	if aliasCfg.Empty() {
 
-		fmt.Fprintf(o.io.StdErr, "no aliases configured.\n")
+		o.io.LogErrorf("no aliases configured.\n")
 		return nil
 	}
 
@@ -74,7 +74,7 @@ func (o *options) run() error {
 	for _, alias := range keys {
 		table.AddRow(alias, aliasMap[alias])
 	}
-	fmt.Fprintf(o.io.StdOut, "%s", table.Render())
+	o.io.LogInfof("%s", table.Render())
 
 	return nil
 }

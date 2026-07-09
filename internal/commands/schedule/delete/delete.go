@@ -1,7 +1,6 @@
 package delete
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -87,7 +86,7 @@ func (o *options) run() error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(o.io.StdOut, "Deleted schedule with ID", o.scheduleID)
+	o.io.LogInfo("Deleted schedule with ID", o.scheduleID)
 
 	return nil
 }

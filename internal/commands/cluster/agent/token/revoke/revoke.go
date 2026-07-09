@@ -97,8 +97,7 @@ func (o *options) run(ctx context.Context) error {
 		return fmt.Errorf("failed to revoke token: %w", err)
 	}
 
-	fmt.Fprintf(
-		o.io.StdOut,
+	o.io.LogInfof(
 		"Successfully revoked token %d of agent %d\n",
 		o.tokenID,
 		o.agentID,

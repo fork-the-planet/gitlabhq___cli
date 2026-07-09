@@ -70,6 +70,6 @@ func (o *options) run(ctx context.Context) error {
 
 	// Trailing newline so the shell prompt doesn't glue to the last byte
 	// of the body when the server response itself doesn't end in one.
-	_, err = fmt.Fprintln(o.io.StdOut, dsl)
+	_, err = fmt.Fprintln(o.io.StdOut, dsl) //nolint:forbidigo // write error must propagate to the caller
 	return err
 }

@@ -57,7 +57,7 @@ func configureDocker(iostreams *iostreams.IOStreams, cfg config.Config) error {
 	}
 
 	for _, domain := range configuredDomains {
-		fmt.Fprintf(iostreams.StdOut, "%s Configured Docker credential helper for %s\n", iostreams.Color().GreenCheck(), domain)
+		iostreams.LogInfof("%s Configured Docker credential helper for %s\n", iostreams.Color().GreenCheck(), domain)
 	}
 
 	err = dockerConfig.Save()

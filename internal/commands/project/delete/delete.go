@@ -108,7 +108,7 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	if !o.forceDelete && o.io.PromptEnabled() {
-		fmt.Fprintf(o.io.StdErr, "This action will permanently delete the project %s immediately, including its repositories and all content: issues, merge requests, wiki, CI/CD data, and all other project resources.\n\n", o.repoName)
+		o.io.LogErrorf("This action will permanently delete the project %s immediately, including its repositories and all content: issues, merge requests, wiki, CI/CD data, and all other project resources.\n\n", o.repoName)
 		err = o.io.Confirm(ctx, &o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete %s?", o.repoName))
 		if err != nil {
 			return err
@@ -117,7 +117,7 @@ func (o *options) run(ctx context.Context) error {
 
 	if o.forceDelete {
 		if o.io.IsErrTTY && o.io.IsaTTY {
-			fmt.Fprintf(o.io.StdErr, "- Deleting project %s\n", o.repoName)
+			o.io.LogErrorf("- Deleting project %s\n", o.repoName)
 		}
 		resp, err := gitlabClient.Projects.DeleteProject(o.repoName, nil)
 		if err != nil && resp == nil {
@@ -128,6 +128,6 @@ func (o *options) run(ctx context.Context) error {
 		}
 		return err
 	}
-	fmt.Fprintln(o.io.StdErr, "aborted by user")
+	o.io.LogError("aborted by user")
 	return nil
 }

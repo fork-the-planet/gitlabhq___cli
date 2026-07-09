@@ -1,7 +1,6 @@
 package list
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -143,7 +142,7 @@ func (o *options) run() error {
 				return err
 			}
 		} else {
-			fmt.Fprintf(o.io.StdOut, "Showing label %d of %d for group %s.\n\n", len(labels), len(labels), o.group)
+			o.io.LogInfof("Showing label %d of %d for group %s.\n\n", len(labels), len(labels), o.group)
 			for _, label := range labels {
 				pl = append(pl, printLabel{ID: strconv.FormatInt(label.ID, 10), Name: label.Name, Description: label.Description, Color: label.Color})
 			}
@@ -164,7 +163,7 @@ func (o *options) run() error {
 				return err
 			}
 		} else {
-			fmt.Fprintf(o.io.StdOut, "Showing label %d of %d on %s.\n\n", len(labels), len(labels), repo.FullName())
+			o.io.LogInfof("Showing label %d of %d on %s.\n\n", len(labels), len(labels), repo.FullName())
 			for _, label := range labels {
 				pl = append(pl, printLabel{ID: strconv.FormatInt(label.ID, 10), Name: label.Name, Description: label.Description, Color: label.Color})
 			}

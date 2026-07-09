@@ -340,98 +340,98 @@ type environmentConfiguration struct {
 
 func (c *bootstrapCmd) run() error {
 	// 1. Register the agent
-	fmt.Fprintf(c.stderr, "Registering Agent ... ")
+	fmt.Fprintf(c.stderr, "Registering Agent ... ") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	agent, err := c.registerAgent()
 	if err != nil {
-		fmt.Fprintf(c.stderr, "[FAILED]\n")
+		fmt.Fprintf(c.stderr, "[FAILED]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 		return err
 	}
-	fmt.Fprintf(c.stderr, "[OK]\n")
+	fmt.Fprintf(c.stderr, "[OK]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 
 	// 2. Configure the Agent
-	fmt.Fprintf(c.stderr, "Configuring Agent ... ")
+	fmt.Fprintf(c.stderr, "Configuring Agent ... ") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	err = c.configureAgent(agent)
 	if err != nil {
-		fmt.Fprintf(c.stderr, "[FAILED]\n")
+		fmt.Fprintf(c.stderr, "[FAILED]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 		return err
 	}
-	fmt.Fprintf(c.stderr, "[OK]\n")
+	fmt.Fprintf(c.stderr, "[OK]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 
 	// 3. Configure Environment for Agent
-	fmt.Fprintf(c.stderr, "Configuring Environment with Dashboard for Agent ... ")
+	fmt.Fprintf(c.stderr, "Configuring Environment with Dashboard for Agent ... ") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	if c.agentEnvironmentCfg != nil {
 		err = c.configureEnvironment(agent, c.agentEnvironmentCfg)
 		if err != nil {
-			fmt.Fprintf(c.stderr, "[FAILED]\n")
+			fmt.Fprintf(c.stderr, "[FAILED]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 			return err
 		}
-		fmt.Fprintf(c.stderr, "[OK]\n")
+		fmt.Fprintf(c.stderr, "[OK]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	} else {
-		fmt.Fprintf(c.stderr, "[SKIPPED]\n")
+		fmt.Fprintf(c.stderr, "[SKIPPED]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	}
 
 	// 4. Configure Environment for FluxCD
-	fmt.Fprintf(c.stderr, "Configuring Environment with Dashboard for FluxCD ... ")
+	fmt.Fprintf(c.stderr, "Configuring Environment with Dashboard for FluxCD ... ") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	if c.fluxEnvironmentCfg != nil {
 		err = c.configureEnvironment(agent, c.fluxEnvironmentCfg)
 		if err != nil {
-			fmt.Fprintf(c.stderr, "[FAILED]\n")
+			fmt.Fprintf(c.stderr, "[FAILED]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 			return err
 		}
-		fmt.Fprintf(c.stderr, "[OK]\n")
+		fmt.Fprintf(c.stderr, "[OK]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	} else {
-		fmt.Fprintf(c.stderr, "[SKIPPED]\n")
+		fmt.Fprintf(c.stderr, "[SKIPPED]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	}
 
 	// 5. Create a token for the registered agent
-	fmt.Fprintf(c.stderr, "Creating Agent Token ... ")
+	fmt.Fprintf(c.stderr, "Creating Agent Token ... ") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	agentToken, err := c.createAgentToken(agent)
 	if err != nil {
-		fmt.Fprintf(c.stderr, "[FAILED]\n")
+		fmt.Fprintf(c.stderr, "[FAILED]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 		return err
 	}
-	fmt.Fprintf(c.stderr, "[OK]\n")
+	fmt.Fprintf(c.stderr, "[OK]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 
 	// 6. Push token in Kubernetes secret to cluster
-	fmt.Fprintf(c.stderr, "Creating Kubernetes Secret with Agent Token ... ")
+	fmt.Fprintf(c.stderr, "Creating Kubernetes Secret with Agent Token ... ") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	err = c.createAgentTokenKubernetesSecret(agentToken)
 	if err != nil {
-		fmt.Fprintf(c.stderr, "[FAILED]\n")
+		fmt.Fprintf(c.stderr, "[FAILED]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 		return err
 	}
-	fmt.Fprintf(c.stderr, "[OK]\n")
+	fmt.Fprintf(c.stderr, "[OK]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 
 	// 7. Create Flux Helm Resources
-	fmt.Fprintf(c.stderr, "Creating Flux Helm Resources ... ")
+	fmt.Fprintf(c.stderr, "Creating Flux Helm Resources ... ") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	helmResourceFiles, err := c.createFluxHelmResources()
 	if err != nil {
-		fmt.Fprintf(c.stderr, "[FAILED]\n")
+		fmt.Fprintf(c.stderr, "[FAILED]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 		return err
 	}
-	fmt.Fprintf(c.stderr, "[OK]\n")
+	fmt.Fprintf(c.stderr, "[OK]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 
 	// 8. Sync Flux Helm Resources
-	fmt.Fprintf(c.stderr, "Syncing Flux Helm Resources ... ")
+	fmt.Fprintf(c.stderr, "Syncing Flux Helm Resources ... ") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	err = c.syncFluxHelmResourceFiles(helmResourceFiles)
 	if err != nil {
-		fmt.Fprintf(c.stderr, "[FAILED]\n")
+		fmt.Fprintf(c.stderr, "[FAILED]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 		return err
 	}
-	fmt.Fprintf(c.stderr, "[OK]\n")
+	fmt.Fprintf(c.stderr, "[OK]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 
 	// 9. Flux Reconcile
-	fmt.Fprintf(c.stderr, "Reconciling Flux Helm Resources ... ")
+	fmt.Fprintf(c.stderr, "Reconciling Flux Helm Resources ... ") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	if !c.noReconcile {
-		fmt.Fprintln(c.stderr, "Output from flux command:")
+		fmt.Fprintln(c.stderr, "Output from flux command:") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 		err = c.fluxReconcile()
 		if err != nil {
 			return fmt.Errorf("%w:\n%w", reconcileErr, err)
 		}
 	} else {
-		fmt.Fprintf(c.stderr, "[SKIPPED]\n")
+		fmt.Fprintf(c.stderr, "[SKIPPED]\n") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	}
 
-	fmt.Fprintln(c.stderr, "Successfully bootstrapped the GitLab Agent")
+	fmt.Fprintln(c.stderr, "Successfully bootstrapped the GitLab Agent") //nolint:forbidigo // c.stderr is an io.Writer mocked directly in tests, not IOStreams
 	return nil
 }
 

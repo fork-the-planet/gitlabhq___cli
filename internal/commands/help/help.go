@@ -86,24 +86,24 @@ func renderWithGlamour(text string) string {
 // usage messages to stderr; see NewCmdRoot for the wiring and
 // gitlab-org/cli#8371 for why we no longer rely on cobra's c.Print/SetOut.
 func RootUsageFunc(out io.Writer, command *cobra.Command) error {
-	fmt.Fprintf(out, "Usage:  %s", command.UseLine())
+	fmt.Fprintf(out, "Usage:  %s", command.UseLine()) //nolint:forbidigo // out is a generic io.Writer shared with test buffers
 
 	subcommands := command.Commands()
 	if len(subcommands) > 0 {
-		fmt.Fprint(out, "\n\nAvailable commands:\n")
+		fmt.Fprint(out, "\n\nAvailable commands:\n") //nolint:forbidigo // out is a generic io.Writer shared with test buffers
 		for _, c := range subcommands {
 			if !c.IsAvailableCommand() {
 				continue
 			}
-			fmt.Fprintf(out, "  %s\n", c.Name())
+			fmt.Fprintf(out, "  %s\n", c.Name()) //nolint:forbidigo // out is a generic io.Writer shared with test buffers
 		}
 		return nil
 	}
 
 	flagUsages := command.LocalFlags().FlagUsages()
 	if flagUsages != "" {
-		fmt.Fprintln(out, "\n\nFlags:")
-		fmt.Fprint(out, utils.Indent(dedent(flagUsages), "  "))
+		fmt.Fprintln(out, "\n\nFlags:")                         //nolint:forbidigo // out is a generic io.Writer shared with test buffers
+		fmt.Fprint(out, utils.Indent(dedent(flagUsages), "  ")) //nolint:forbidigo // out is a generic io.Writer shared with test buffers
 	}
 	return nil
 }
@@ -119,7 +119,7 @@ func HasFailed() bool {
 // This matches Cobra's behavior for root command, which Cobra
 // confusingly doesn't apply to nested commands.
 func nestedSuggestFunc(out io.Writer, command *cobra.Command, arg string) {
-	fmt.Fprintf(out, "unknown command %q for %q\n", arg, command.CommandPath())
+	fmt.Fprintf(out, "unknown command %q for %q\n", arg, command.CommandPath()) //nolint:forbidigo // out is a generic io.Writer shared with test buffers
 
 	var candidates []string
 	if arg == "help" {
@@ -132,13 +132,13 @@ func nestedSuggestFunc(out io.Writer, command *cobra.Command, arg string) {
 	}
 
 	if len(candidates) > 0 {
-		fmt.Fprint(out, "\nDid you mean this?\n")
+		fmt.Fprint(out, "\nDid you mean this?\n") //nolint:forbidigo // out is a generic io.Writer shared with test buffers
 		for _, c := range candidates {
-			fmt.Fprintf(out, "\t%s\n", c)
+			fmt.Fprintf(out, "\t%s\n", c) //nolint:forbidigo // out is a generic io.Writer shared with test buffers
 		}
 	}
 
-	fmt.Fprint(out, "\n")
+	fmt.Fprint(out, "\n") //nolint:forbidigo // out is a generic io.Writer shared with test buffers
 	_ = RootUsageFunc(out, command)
 }
 
@@ -283,7 +283,7 @@ func dedent(s string) string {
 
 	var buf bytes.Buffer
 	for _, l := range lines {
-		fmt.Fprintln(&buf, strings.TrimPrefix(l, strings.Repeat(" ", minIndent)))
+		fmt.Fprintln(&buf, strings.TrimPrefix(l, strings.Repeat(" ", minIndent))) //nolint:forbidigo // writing to a bytes.Buffer, not stdout/stderr
 	}
 	return strings.TrimSuffix(buf.String(), "\n")
 }

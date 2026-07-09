@@ -94,15 +94,15 @@ func (o *options) run() error {
 	tokens = agentutils.FilterByAgents(tokens, o.agents)
 
 	if len(tokens) == 0 {
-		fmt.Fprintln(o.io.StdOut, "No cached tokens found.")
+		o.io.LogInfo("No cached tokens found.")
 		for _, err := range errors {
-			fmt.Fprintf(o.io.StdErr, "Warning: %v\n", err)
+			o.io.LogErrorf("Warning: %v\n", err)
 		}
 		return nil
 	}
 
 	for _, err := range errors {
-		fmt.Fprintf(o.io.StdErr, "Warning: %v\n", err)
+		o.io.LogErrorf("Warning: %v\n", err)
 	}
 
 	o.displayTokens(tokens)
@@ -162,7 +162,7 @@ func (o *options) getFilesystemTokens() ([]cachedToken, error) {
 
 		token, err := o.readTokenFromRoot(root, entry.Name())
 		if err != nil {
-			fmt.Fprintf(o.io.StdErr, "Warning: Failed to read token from %s: %v\n", entry.Name(), err)
+			o.io.LogErrorf("Warning: Failed to read token from %s: %v\n", entry.Name(), err)
 			continue
 		}
 
@@ -236,5 +236,5 @@ func (o *options) displayTokens(tokens []cachedToken) {
 		tp.AddRow(token.AgentID, token.GitLabURL, token.Token.Name, token.Source, expiresAt, status)
 	}
 
-	fmt.Fprint(o.io.StdOut, tp.Render())
+	o.io.LogInfof("%s", tp.Render())
 }

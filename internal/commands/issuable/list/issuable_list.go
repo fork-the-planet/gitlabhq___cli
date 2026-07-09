@@ -331,14 +331,14 @@ func listRun(opts *ListOptions) error {
 
 	if opts.OutputFormat == "ids" {
 		for _, i := range issues {
-			fmt.Fprintf(opts.IO.StdOut, "%d\n", i.IID)
+			opts.IO.LogInfof("%d\n", i.IID)
 		}
 		return nil
 	}
 
 	if opts.OutputFormat == "urls" {
 		for _, i := range issues {
-			fmt.Fprintf(opts.IO.StdOut, "%s\n", i.WebURL)
+			opts.IO.LogInfof("%s\n", i.WebURL)
 		}
 		return nil
 	}
@@ -348,7 +348,7 @@ func listRun(opts *ListOptions) error {
 	}
 	defer opts.IO.StopPager()
 
-	fmt.Fprintf(opts.IO.StdOut, "%s\n%s\n", title.Describe(), issueutils.DisplayIssueList(opts.IO, issues, title.RepoName))
+	opts.IO.LogInfof("%s\n%s\n", title.Describe(), issueutils.DisplayIssueList(opts.IO, issues, title.RepoName))
 	return nil
 }
 

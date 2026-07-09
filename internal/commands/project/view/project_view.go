@@ -159,8 +159,7 @@ func (o *options) run() error {
 		projectURL := project.WebURL
 
 		if o.io.IsaTTY {
-			fmt.Fprintf(
-				o.io.StdOut,
+			o.io.LogInfof(
 				"Opening %s in your browser.\n",
 				generateProjectOpenURL(utils.DisplayURL(projectURL), project.DefaultBranch, o.branch),
 			)
@@ -254,31 +253,31 @@ func printProjectContentTTY(opts *options, project *gitlab.Project, readme *gitl
 
 	c := opts.io.Color()
 	// Header
-	fmt.Fprint(opts.io.StdOut, c.Bold(fullName))
-	fmt.Fprint(opts.io.StdOut, c.Gray(description))
+	opts.io.LogInfof("%s", c.Bold(fullName))
+	opts.io.LogInfof("%s", c.Gray(description))
 
 	// Readme
 	if readme != nil {
-		fmt.Fprint(opts.io.StdOut, readmeContent)
+		opts.io.LogInfof("%s", readmeContent)
 	} else {
-		fmt.Fprintln(opts.io.StdOut, c.Gray("(This repository does not have a README file.)"))
+		opts.io.LogInfo(c.Gray("(This repository does not have a README file.)"))
 	}
 
-	fmt.Fprintln(opts.io.StdOut)
-	fmt.Fprintf(opts.io.StdOut, c.Gray("View this project on GitLab: %s\n"), project.WebURL)
+	opts.io.LogInfo()
+	opts.io.LogInfof(c.Gray("View this project on GitLab: %s\n"), project.WebURL)
 }
 
 func printProjectContentRaw(opts *options, project *gitlab.Project, readme *gitlab.File) {
 	fullName := project.NameWithNamespace
 	description := project.Description
 
-	fmt.Fprintf(opts.io.StdOut, "name:\t%s\n", fullName)
-	fmt.Fprintf(opts.io.StdOut, "description:\t%s\n", description)
+	opts.io.LogInfof("name:\t%s\n", fullName)
+	opts.io.LogInfof("description:\t%s\n", description)
 
 	if readme != nil {
-		fmt.Fprintln(opts.io.StdOut, "---")
-		fmt.Fprint(opts.io.StdOut, readme.Content)
-		fmt.Fprintln(opts.io.StdOut)
+		opts.io.LogInfo("---")
+		opts.io.LogInfof("%s", readme.Content)
+		opts.io.LogInfo()
 	}
 }
 

@@ -107,7 +107,7 @@ func (o *options) run(ctx context.Context, f cmdutils.Factory, args []string) er
 
 	if o.openInBrowser { // open in browser if --web flag is specified
 		if o.io.IsOutputTTY() {
-			fmt.Fprintf(o.io.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(mr.WebURL))
+			o.io.LogErrorf("Opening %s in your browser.\n", utils.DisplayURL(mr.WebURL))
 		}
 
 		browser, _ := cfg.Get(baseRepo.RepoHost(), "browser")
@@ -204,46 +204,46 @@ func printTTYMRPreview(opts *options, mr *gitlab.MergeRequest, mrApprovals *gitl
 	out := opts.io.StdOut
 	mrTimeAgo := utils.TimeToPrettyTimeAgo(*mr.CreatedAt)
 	// Header
-	fmt.Fprint(out, mrState(c, mr))
-	fmt.Fprintf(out, c.Gray(" • opened by @%s %s\n"), mr.Author.Username, mrTimeAgo)
-	fmt.Fprint(out, mr.Title)
-	fmt.Fprintf(out, c.Gray(" !%d"), mr.IID)
-	fmt.Fprintln(out)
+	opts.io.LogInfof("%s", mrState(c, mr))
+	opts.io.LogInfof(c.Gray(" • opened by @%s %s\n"), mr.Author.Username, mrTimeAgo)
+	opts.io.LogInfof("%s", mr.Title)
+	opts.io.LogInfof(c.Gray(" !%d"), mr.IID)
+	opts.io.LogInfo()
 
 	// Description
 	if mr.Description != "" {
 		mr.Description, _ = utils.RenderMarkdown(mr.Description, opts.io.BackgroundColor())
-		fmt.Fprintln(out, mr.Description)
+		opts.io.LogInfo(mr.Description)
 	}
 
-	fmt.Fprintf(out, c.Gray("\n%d upvotes • %d downvotes • %d comments\n"), mr.Upvotes, mr.Downvotes, mr.UserNotesCount)
+	opts.io.LogInfof(c.Gray("\n%d upvotes • %d downvotes • %d comments\n"), mr.Upvotes, mr.Downvotes, mr.UserNotesCount)
 
 	// Meta information
 	if labels := labelsList(mr); labels != "" {
-		fmt.Fprint(out, c.Bold("Labels: "))
-		fmt.Fprintln(out, labels)
+		opts.io.LogInfof("%s", c.Bold("Labels: "))
+		opts.io.LogInfo(labels)
 	}
 	if assignees := assigneesList(mr); assignees != "" {
-		fmt.Fprint(out, c.Bold("Assignees: "))
-		fmt.Fprintln(out, assignees)
+		opts.io.LogInfof("%s", c.Bold("Assignees: "))
+		opts.io.LogInfo(assignees)
 	}
 	if reviewers := reviewersList(mr); reviewers != "" {
-		fmt.Fprint(out, c.Bold("Reviewers: "))
-		fmt.Fprintln(out, reviewers)
+		opts.io.LogInfof("%s", c.Bold("Reviewers: "))
+		opts.io.LogInfo(reviewers)
 	}
 	if mr.Milestone != nil {
-		fmt.Fprint(out, c.Bold("Milestone: "))
-		fmt.Fprintln(out, mr.Milestone.Title)
+		opts.io.LogInfof("%s", c.Bold("Milestone: "))
+		opts.io.LogInfo(mr.Milestone.Title)
 	}
 	if mr.State == "closed" {
 		if mr.ClosedBy != nil {
-			fmt.Fprintf(out, "Closed by: %s %s\n", mr.ClosedBy.Username, mrTimeAgo)
+			opts.io.LogInfof("Closed by: %s %s\n", mr.ClosedBy.Username, mrTimeAgo)
 		} else {
-			fmt.Fprintf(out, "Closed %s\n", mrTimeAgo)
+			opts.io.LogInfof("Closed %s\n", mrTimeAgo)
 		}
 	}
 	if mr.Pipeline != nil {
-		fmt.Fprint(out, c.Bold("Pipeline status: "))
+		opts.io.LogInfof("%s", c.Bold("Pipeline status: "))
 		var status string
 		switch s := mr.Pipeline.Status; s {
 		case "failed":
@@ -253,28 +253,28 @@ func printTTYMRPreview(opts *options, mr *gitlab.MergeRequest, mrApprovals *gitl
 		default:
 			status = c.Gray(s)
 		}
-		fmt.Fprintf(out, "%s (View pipeline with `%s`)\n", status, c.Bold("glab ci view "+mr.SourceBranch))
+		opts.io.LogInfof("%s (View pipeline with `%s`)\n", status, c.Bold("glab ci view "+mr.SourceBranch))
 
 		if mr.MergeWhenPipelineSucceeds && mr.Pipeline.Status != "success" {
-			fmt.Fprintf(out, "%s Requires pipeline to succeed before merging.\n", c.WarnIcon())
+			opts.io.LogInfof("%s Requires pipeline to succeed before merging.\n", c.WarnIcon())
 		}
 	}
 	if mrApprovals != nil {
-		fmt.Fprintln(out, c.Bold("Approvals status:"))
+		opts.io.LogInfo(c.Bold("Approvals status:"))
 		mrutils.PrintMRApprovalState(opts.io, mrApprovals)
 	}
-	fmt.Fprintf(out, "%s This merge request has %s changes.\n", c.GreenCheck(), c.Yellow(mr.ChangesCount))
+	opts.io.LogInfof("%s This merge request has %s changes.\n", c.GreenCheck(), c.Yellow(mr.ChangesCount))
 	if mr.State == "merged" && mr.MergedBy != nil { //nolint:staticcheck
-		fmt.Fprintf(out, "%s The changes were merged into %s by %s %s.\n", c.GreenCheck(), mr.TargetBranch, mr.MergedBy.Name, utils.TimeToPrettyTimeAgo(*mr.MergedAt)) //nolint:staticcheck
+		opts.io.LogInfof("%s The changes were merged into %s by %s %s.\n", c.GreenCheck(), mr.TargetBranch, mr.MergedBy.Name, utils.TimeToPrettyTimeAgo(*mr.MergedAt)) //nolint:staticcheck
 	}
 
 	if mr.HasConflicts {
-		fmt.Fprintf(out, c.Red("%s This branch has conflicts that must be resolved.\n"), c.FailedIcon())
+		opts.io.LogInfof(c.Red("%s This branch has conflicts that must be resolved.\n"), c.FailedIcon())
 	}
 
 	// Comments
 	if opts.showComments {
-		fmt.Fprintln(out, heredoc.Doc(`
+		opts.io.LogInfo(heredoc.Doc(`
 			--------------------------------------------
 			Discussions
 			--------------------------------------------
@@ -284,21 +284,21 @@ func printTTYMRPreview(opts *options, mr *gitlab.MergeRequest, mrApprovals *gitl
 		} else {
 			// Provide specific message based on filter flags
 			if opts.showResolved && !opts.showUnresolved {
-				fmt.Fprintln(out, "This merge request has no resolved threads.")
+				opts.io.LogInfo("This merge request has no resolved threads.")
 			} else if opts.showUnresolved && !opts.showResolved {
-				fmt.Fprintln(out, "This merge request has no unresolved threads.")
+				opts.io.LogInfo("This merge request has no unresolved threads.")
 			} else {
-				fmt.Fprintln(out, "This merge request has no comments.")
+				opts.io.LogInfo("This merge request has no comments.")
 			}
 		}
 	}
 
-	fmt.Fprintln(out)
-	fmt.Fprintf(out, c.Gray("View this merge request on GitLab: %s\n"), mr.WebURL)
+	opts.io.LogInfo()
+	opts.io.LogInfof(c.Gray("View this merge request on GitLab: %s\n"), mr.WebURL)
 }
 
 func printRawMRPreview(opts *options, mr *gitlab.MergeRequest, discussions []*gitlab.Discussion) {
-	fmt.Fprint(opts.io.StdOut, rawMRPreview(opts, mr, discussions))
+	opts.io.LogInfof("%s", rawMRPreview(opts, mr, discussions))
 }
 
 func rawMRPreview(opts *options, mr *gitlab.MergeRequest, discussions []*gitlab.Discussion) string {
@@ -308,26 +308,26 @@ func rawMRPreview(opts *options, mr *gitlab.MergeRequest, discussions []*gitlab.
 	reviewers := reviewersList(mr)
 	labels := labelsList(mr)
 
-	fmt.Fprintf(&out, "title:\t%s\n", mr.Title)
-	fmt.Fprintf(&out, "state:\t%s\n", mrState(opts.io.Color(), mr))
-	fmt.Fprintf(&out, "author:\t%s\n", mr.Author.Username)
-	fmt.Fprintf(&out, "labels:\t%s\n", labels)
-	fmt.Fprintf(&out, "assignees:\t%s\n", assignees)
-	fmt.Fprintf(&out, "reviewers:\t%s\n", reviewers)
-	fmt.Fprintf(&out, "comments:\t%d\n", mr.UserNotesCount)
+	fmt.Fprintf(&out, "title:\t%s\n", mr.Title)                     //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
+	fmt.Fprintf(&out, "state:\t%s\n", mrState(opts.io.Color(), mr)) //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
+	fmt.Fprintf(&out, "author:\t%s\n", mr.Author.Username)          //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
+	fmt.Fprintf(&out, "labels:\t%s\n", labels)                      //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
+	fmt.Fprintf(&out, "assignees:\t%s\n", assignees)                //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
+	fmt.Fprintf(&out, "reviewers:\t%s\n", reviewers)                //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
+	fmt.Fprintf(&out, "comments:\t%d\n", mr.UserNotesCount)         //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
 	if mr.Milestone != nil {
-		fmt.Fprintf(&out, "milestone:\t%s\n", mr.Milestone.Title)
+		fmt.Fprintf(&out, "milestone:\t%s\n", mr.Milestone.Title) //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
 	}
-	fmt.Fprintf(&out, "number:\t%d\n", mr.IID)
-	fmt.Fprintf(&out, "url:\t%s\n", mr.WebURL)
-	fmt.Fprintf(&out, "--\n")
-	fmt.Fprintf(&out, "%s\n", mr.Description)
+	fmt.Fprintf(&out, "number:\t%d\n", mr.IID) //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
+	fmt.Fprintf(&out, "url:\t%s\n", mr.WebURL) //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
+	fmt.Fprintf(&out, "--\n")                  //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
+	fmt.Fprintf(&out, "%s\n", mr.Description)  //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
 
 	if opts.showComments {
 		if len(discussions) > 0 {
 			mrutils.PrintDiscussions(&out, opts.io, discussions, opts.showSystemLogs)
 		} else {
-			fmt.Fprintln(&out, "This merge request has no comments.")
+			fmt.Fprintln(&out, "This merge request has no comments.") //nolint:forbidigo // writing to strings.Builder, not stdout/stderr
 		}
 	}
 

@@ -161,7 +161,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				}
 			}
 
-			fmt.Fprintln(f.IO().StdOut, "Updated schedule with ID", scheduleId)
+			f.IO().LogInfo("Updated schedule with ID", scheduleId)
 
 			return nil
 		},

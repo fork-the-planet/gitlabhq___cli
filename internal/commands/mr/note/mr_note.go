@@ -66,7 +66,7 @@ func NewCmdNote(f cmdutils.Factory) *cobra.Command {
 
 			uniqueNoteEnabled, _ := cmd.Flags().GetBool("unique")
 			if uniqueNoteEnabled {
-				found, err := deduplicateNote(client, repo.FullName(), mr.IID, body, mr.WebURL, f.IO().StdOut)
+				found, err := deduplicateNote(f.IO(), client, repo.FullName(), mr.IID, body, mr.WebURL)
 				if err != nil {
 					return err
 				}
@@ -80,7 +80,7 @@ func NewCmdNote(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintf(f.IO().StdOut, "%s#note_%d\n", mr.WebURL, noteInfo.ID)
+			f.IO().LogInfof("%s#note_%d\n", mr.WebURL, noteInfo.ID)
 			return nil
 		},
 	}
@@ -138,6 +138,6 @@ func resolveDiscussion(ctx context.Context, client *gitlab.Client, f cmdutils.Fa
 		return fmt.Errorf("failed to %s discussion: %w", action, err)
 	}
 
-	fmt.Fprintf(f.IO().StdOut, "✓ Discussion %sd (note #%d in !%d)\n", action, noteID, mr.IID)
+	f.IO().LogInfof("✓ Discussion %sd (note #%d in !%d)\n", action, noteID, mr.IID)
 	return nil
 }

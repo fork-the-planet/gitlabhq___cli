@@ -62,13 +62,12 @@ func NewCmdSubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Co
 			for _, issue := range issues {
 				valid, msg := issuable.ValidateIncidentCmd(issueType, "subscribe", issue)
 				if !valid {
-					fmt.Fprintln(f.IO().StdOut, msg)
+					f.IO().LogInfo(msg)
 					continue
 				}
 
 				if f.IO().IsaTTY && f.IO().IsErrTTY {
-					fmt.Fprintf(
-						f.IO().StdOut,
+					f.IO().LogInfof(
 						"- %s #%d in %s\n",
 						subscribingMessage[issueType],
 						issue.IID,
@@ -79,8 +78,7 @@ func NewCmdSubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Co
 				issue, err := subscribe(client, repo.FullName(), int(issue.IID))
 				if err != nil {
 					if errors.Is(err, errIssuableUserAlreadySubscribed) {
-						fmt.Fprintf(
-							f.IO().StdOut,
+						f.IO().LogInfof(
 							"%s You are already subscribed to this %s.\n\n",
 							c.FailedIcon(),
 							issueType,
@@ -90,8 +88,8 @@ func NewCmdSubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Co
 					return err
 				}
 
-				fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), "Subscribed")
-				fmt.Fprintln(f.IO().StdOut, issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
+				f.IO().LogInfo(c.GreenCheck(), "Subscribed")
+				f.IO().LogInfo(issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
 			}
 			return nil
 		},

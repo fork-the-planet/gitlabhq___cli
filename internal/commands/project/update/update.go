@@ -155,7 +155,7 @@ func (o *options) run() error {
 	}
 
 	greenCheck := o.io.Color().Green("✓")
-	fmt.Fprintf(o.io.StdOut, "%s Updated repository %s on GitLab: %s\n", greenCheck, project.NameWithNamespace, project.WebURL)
+	o.io.LogInfof("%s Updated repository %s on GitLab: %s\n", greenCheck, project.NameWithNamespace, project.WebURL)
 	return nil
 }
 

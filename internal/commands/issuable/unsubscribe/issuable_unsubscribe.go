@@ -61,13 +61,12 @@ func NewCmdUnsubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.
 			for _, issue := range issues {
 				valid, msg := issuable.ValidateIncidentCmd(issueType, "unsubscribe", issue)
 				if !valid {
-					fmt.Fprintln(f.IO().StdOut, msg)
+					f.IO().LogInfo(msg)
 					continue
 				}
 
 				if f.IO().IsaTTY && f.IO().IsErrTTY {
-					fmt.Fprintf(
-						f.IO().StdOut,
+					f.IO().LogInfof(
 						"- %s #%d in %s\n",
 						unsubscribingMessage[issueType],
 						issue.IID,
@@ -78,8 +77,7 @@ func NewCmdUnsubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.
 				issue, err := unsubscribe(client, repo.FullName(), int(issue.IID), nil)
 				if err != nil {
 					if errors.Is(err, errIssuableUserNotSubscribed) {
-						fmt.Fprintf(
-							f.IO().StdOut,
+						f.IO().LogInfof(
 							"%s You are not subscribed to this %s.\n\n",
 							c.FailedIcon(),
 							issueType,
@@ -89,8 +87,8 @@ func NewCmdUnsubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.
 					return err
 				}
 
-				fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), "Unsubscribed")
-				fmt.Fprintln(f.IO().StdOut, issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
+				f.IO().LogInfo(c.GreenCheck(), "Unsubscribed")
+				f.IO().LogInfo(issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
 			}
 			return nil
 		},
