@@ -227,7 +227,7 @@ func (o *createOptions) run(ctx context.Context) error {
 	case o.reply != "":
 		return o.runReply(ctx)
 	case o.unique:
-		found, err := deduplicateNote(o.client, o.repo.FullName(), o.mr.IID, o.body, o.mr.WebURL, o.io.StdOut)
+		found, err := deduplicateNote(o.io, o.client, o.repo.FullName(), o.mr.IID, o.body, o.mr.WebURL)
 		if err != nil {
 			return err
 		}
@@ -262,7 +262,7 @@ func (o *createOptions) runCreate(ctx context.Context) error {
 		return fmt.Errorf("discussion created but returned no notes")
 	}
 
-	fmt.Fprintf(o.io.StdOut, "%s#note_%d\n", o.mr.WebURL, disc.Notes[0].ID)
+	o.io.LogInfof("%s#note_%d\n", o.mr.WebURL, disc.Notes[0].ID)
 	return nil
 }
 
@@ -277,7 +277,7 @@ func (o *createOptions) runCreateNote(ctx context.Context) error {
 		return fmt.Errorf("failed to create note: %w", err)
 	}
 
-	fmt.Fprintf(o.io.StdOut, "%s#note_%d\n", o.mr.WebURL, note.ID)
+	o.io.LogInfof("%s#note_%d\n", o.mr.WebURL, note.ID)
 	return nil
 }
 
@@ -298,6 +298,6 @@ func (o *createOptions) runReply(ctx context.Context) error {
 		return fmt.Errorf("failed to add reply: %w", err)
 	}
 
-	fmt.Fprintf(o.io.StdOut, "%s#note_%d\n", o.mr.WebURL, note.ID)
+	o.io.LogInfof("%s#note_%d\n", o.mr.WebURL, note.ID)
 	return nil
 }

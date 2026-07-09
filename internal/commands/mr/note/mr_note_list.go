@@ -2,7 +2,6 @@ package note
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -114,7 +113,7 @@ func (o *listOptions) run(ctx context.Context) error {
 
 	out := o.factory.IO().StdOut
 	if len(filtered) == 0 {
-		fmt.Fprintln(out, "No discussions found.")
+		o.factory.IO().LogInfo("No discussions found.")
 		return nil
 	}
 

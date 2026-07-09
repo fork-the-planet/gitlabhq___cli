@@ -27,7 +27,7 @@ func NewCmdVersion(f cmdutils.Factory) *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			buildInfo := f.BuildInfo()
-			fmt.Fprint(f.IO().StdOut, Scheme(buildInfo.Version, buildInfo.Commit))
+			f.IO().LogInfof("%s", Scheme(buildInfo.Version, buildInfo.Commit))
 			return nil
 		},
 	}

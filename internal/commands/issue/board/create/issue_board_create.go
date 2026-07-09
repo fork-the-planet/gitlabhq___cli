@@ -43,7 +43,6 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 				boardName = args[0]
 			}
 			var err error
-			out := f.IO().StdOut
 			c := f.IO().Color()
 
 			client, err := f.GitLabClient()
@@ -72,14 +71,14 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 				Name: new(boardName),
 			}
 
-			fmt.Fprintln(out, "- Creating board")
+			f.IO().LogInfo("- Creating board")
 
 			issueBoard, err := createIssueBoard(client, repo.FullName(), opts)
 			if err != nil {
 				return err
 			}
 
-			fmt.Fprintf(out, "%s Board created: %q", c.GreenCheck(), issueBoard.Name)
+			f.IO().LogInfof("%s Board created: %q", c.GreenCheck(), issueBoard.Name)
 
 			return nil
 		},

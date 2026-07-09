@@ -1,8 +1,6 @@
 package list
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -50,10 +48,9 @@ func run(io *iostreams.IOStreams, stack git.Stack, currentBranch string) {
 	c := io.Color()
 	for ref := range stack.Iter() {
 		if currentBranch == ref.Branch {
-			fmt.Fprintf(io.StdOut, "> %s", c.Bold(ref.Branch))
+			io.LogInfof("> %s - %s\n", c.Bold(ref.Branch), c.Cyan(ref.Subject()))
 		} else {
-			fmt.Fprintf(io.StdOut, "  %s", ref.Branch)
+			io.LogInfof("  %s - %s\n", ref.Branch, c.Cyan(ref.Subject()))
 		}
-		fmt.Fprintf(io.StdOut, " - %s\n", c.Cyan(ref.Subject()))
 	}
 }

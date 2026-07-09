@@ -1,8 +1,6 @@
 package unsubscribe
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -62,15 +60,15 @@ func NewCmdUnsubscribe(f cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				fmt.Fprintf(f.IO().StdOut, "- Unsubscribing from merge request !%d.\n", mr.IID)
+				f.IO().LogInfof("- Unsubscribing from merge request !%d.\n", mr.IID)
 
 				mr, err = unsubscribeFromMR(client, repo.FullName(), mr.IID, nil)
 				if err != nil {
 					return err
 				}
 
-				fmt.Fprintf(f.IO().StdOut, "%s You have successfully unsubscribed from merge request !%d.\n", c.RedCheck(), mr.IID)
-				fmt.Fprintln(f.IO().StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO().IsaTTY))
+				f.IO().LogInfof("%s You have successfully unsubscribed from merge request !%d.\n", c.RedCheck(), mr.IID)
+				f.IO().LogInfo(mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO().IsaTTY))
 			}
 
 			return nil

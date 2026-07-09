@@ -137,7 +137,7 @@ func (o *options) run(ctx context.Context) error {
 	labClient := apiClient.Lab()
 
 	if o.isTerminal {
-		fmt.Fprintf(o.io.StdErr, "- Forking %s\n", c.Bold(o.repoToFork.FullName()))
+		o.io.LogErrorf("- Forking %s\n", c.Bold(o.repoToFork.FullName()))
 	}
 
 	forkOpts := &gitlab.ForkProjectOptions{}
@@ -155,7 +155,7 @@ func (o *options) run(ctx context.Context) error {
 			strings.Contains(err.Error(), "Project namespace name has already been taken") ||
 			strings.Contains(err.Error(), "Name has already been taken") {
 
-			fmt.Fprintln(o.io.StdErr, c.Yellow("! Repository already exists in your namespace"))
+			o.io.LogError(c.Yellow("! Repository already exists in your namespace"))
 
 			namespace := o.path
 			currentUser, err := api.UserByName(labClient, "@me")
@@ -199,8 +199,7 @@ func (o *options) run(ctx context.Context) error {
 						)
 					}
 
-					fmt.Fprintf(
-						o.io.StdErr,
+					o.io.LogErrorf(
 						"%s Using existing repository %s.\n",
 						c.GreenCheck(),
 						c.Bold(forkedProject.PathWithNamespace),
@@ -209,8 +208,7 @@ func (o *options) run(ctx context.Context) error {
 
 					protocol, err := o.config().Get(o.repoToFork.RepoHost(), "git_protocol")
 					if err != nil {
-						fmt.Fprintf(
-							o.io.StdErr,
+						o.io.LogErrorf(
 							"%s: %q. Falling back to default protocol.",
 							c.Yellow("Warning"),
 							err.Error(),
@@ -226,8 +224,8 @@ func (o *options) run(ctx context.Context) error {
 					// Return early since we've successfully handled the existing repository case
 					return nil
 				} else if !o.currentDirIsParent {
-					fmt.Fprintf(o.io.StdErr, "- You can clone the existing repository with:")
-					fmt.Fprintf(o.io.StdErr, "  %s\n", c.Gray(fmt.Sprintf("glab repo clone %s/%s", namespace, o.repoToFork.RepoName())))
+					o.io.LogErrorf("- You can clone the existing repository with:")
+					o.io.LogErrorf("  %s\n", c.Gray(fmt.Sprintf("glab repo clone %s/%s", namespace, o.repoToFork.RepoName())))
 					return nil
 				} else {
 					return nil
@@ -253,18 +251,18 @@ func (o *options) run(ctx context.Context) error {
 			if !skipFirstCheck {
 				// Safety check - make sure forkedProject is not nil before accessing its ID field
 				if forkedProject == nil {
-					fmt.Fprintf(o.io.StdErr, "Error: Lost track of forked project during status check")
+					o.io.LogErrorf("Error: Lost track of forked project during status check")
 					break loop
 				}
 
 				// Now it's safe to access forkedProject.ID
 				forkedProject, err = api.GetProject(labClient, forkedProject.ID)
 				if err != nil {
-					fmt.Fprintf(o.io.StdErr, "error checking fork status: %q", err.Error())
+					o.io.LogErrorf("error checking fork status: %q", err.Error())
 					if retries == maximumRetries {
 						break loop
 					}
-					fmt.Fprintln(o.io.StdErr, "- Retrying...")
+					o.io.LogError("- Retrying...")
 					retries++
 					continue
 				}
@@ -275,7 +273,7 @@ func (o *options) run(ctx context.Context) error {
 			// Import status should be one of {none, failed, scheduled, started, finished}
 			// https://docs.gitlab.com/ee/api/project_import_export.html#import-status
 			if forkedProject == nil {
-				fmt.Fprintf(o.io.StdErr, "Error: Lost track of forked project during status check")
+				o.io.LogErrorf("Error: Lost track of forked project during status check")
 				break loop
 			}
 
@@ -287,11 +285,11 @@ func (o *options) run(ctx context.Context) error {
 				continue
 			case "scheduled", "started": // import scheduled or started
 				if importStatus != forkedProject.ImportStatus { // avoid printing the same message again
-					fmt.Fprintln(o.io.StdErr, "- "+forkedProject.ImportStatus)
+					o.io.LogError("- " + forkedProject.ImportStatus)
 					importStatus = forkedProject.ImportStatus
 				}
 			case "finished": // import completed
-				fmt.Fprintln(o.io.StdErr, "- "+forkedProject.ImportStatus)
+				o.io.LogError("- " + forkedProject.ImportStatus)
 				break loop
 			case "failed": // import failed
 				importError = errors.New(forkedProject.ImportError) // return the import error
@@ -303,20 +301,19 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	if importError != nil {
-		fmt.Fprintf(o.io.StdErr, "%s: %q", c.Red("Fork failed"), importError.Error())
+		o.io.LogErrorf("%s: %q", c.Red("Fork failed"), importError.Error())
 		return nil
 	}
 
 	// Only print one message about the fork creation
 	if forkedProject != nil {
-		fmt.Fprintf(
-			o.io.StdErr,
+		o.io.LogErrorf(
 			"%s Created fork %s.\n",
 			c.GreenCheck(),
 			forkedProject.PathWithNamespace,
 		)
 	} else {
-		fmt.Fprintf(o.io.StdErr, "\n%s Created fork but couldn't retrieve details.\n", c.GreenCheck())
+		o.io.LogErrorf("\n%s Created fork but couldn't retrieve details.\n", c.GreenCheck())
 		// Early return since we can't proceed with a nil forkedProject
 		return nil
 	}
@@ -335,7 +332,7 @@ func (o *options) run(ctx context.Context) error {
 	if o.currentDirIsParent {
 		// Safety check for Remotes method
 		if o.remotes == nil {
-			fmt.Fprintf(o.io.StdErr, "%s: Unable to access git remotes", c.Red("Error"))
+			o.io.LogErrorf("%s: Unable to access git remotes", c.Red("Error"))
 			return fmt.Errorf("remotes method is nil")
 		}
 
@@ -361,8 +358,7 @@ func (o *options) run(ctx context.Context) error {
 		if forkedProject.Namespace != nil {
 			if remote, err := remotes.FindByRepo(forkedProject.Namespace.FullPath, forkedProject.Path); err == nil {
 				if o.isTerminal {
-					fmt.Fprintf(
-						o.io.StdErr,
+					o.io.LogErrorf(
 						"%s Using existing remote %s.\n",
 						c.GreenCheck(),
 						c.Bold(remote.Name),
@@ -421,7 +417,7 @@ func (o *options) run(ctx context.Context) error {
 			}
 
 			if o.isTerminal {
-				fmt.Fprintf(o.io.StdErr, "%s Cloned fork.\n", c.GreenCheck())
+				o.io.LogErrorf("%s Cloned fork.\n", c.GreenCheck())
 			}
 		}
 	}
@@ -433,13 +429,13 @@ func searchProject(o *options, client *gitlab.Client) (*gitlab.Project, error) {
 		Search: new(o.repoToFork.RepoName()),
 	})
 	if err != nil {
-		fmt.Fprintf(o.io.StdErr, "ERROR: Cannot list projects: %v\n", err)
+		o.io.LogErrorf("ERROR: Cannot list projects: %v\n", err)
 		return nil, err
 	}
 
 	currentUser, err := api.UserByName(client, "@me")
 	if err != nil {
-		fmt.Fprintf(o.io.StdErr, "ERROR: Cannot get current user: %v\n", err)
+		o.io.LogErrorf("ERROR: Cannot get current user: %v\n", err)
 		return nil, err
 	}
 
@@ -454,8 +450,7 @@ func searchProject(o *options, client *gitlab.Client) (*gitlab.Project, error) {
 
 	// No matching project found; output error about unsupported namespaces
 	c := o.io.Color()
-	fmt.Fprintln(
-		o.io.StdErr,
+	o.io.LogError(
 		c.Red(
 			"Error: Only user namespaces that are equal to your username are currently supported.",
 		),
@@ -486,7 +481,7 @@ func (o *options) addOrReplaceRemote(remoteName, fallbackName, remoteURL string)
 			return err
 		}
 		if o.isTerminal {
-			fmt.Fprintf(o.io.StdErr, "%s Renamed %s remote to %s\n",
+			o.io.LogErrorf("%s Renamed %s remote to %s\n",
 				c.GreenCheck(),
 				c.Bold(remoteName),
 				c.Bold(fallbackName))
@@ -500,7 +495,7 @@ func (o *options) addOrReplaceRemote(remoteName, fallbackName, remoteURL string)
 	}
 
 	if o.isTerminal {
-		fmt.Fprintf(o.io.StdErr, "%s Added remote %s.\n",
+		o.io.LogErrorf("%s Added remote %s.\n",
 			c.GreenCheck(),
 			c.Bold(remoteName))
 	}

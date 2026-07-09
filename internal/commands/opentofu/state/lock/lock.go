@@ -2,7 +2,6 @@ package lock
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -72,6 +71,6 @@ func (o *options) run(ctx context.Context) error {
 		return err
 	}
 
-	fmt.Fprintf(o.io.StdOut, "Locked state %s\n", o.stateName)
+	o.io.LogInfof("Locked state %s\n", o.stateName)
 	return nil
 }

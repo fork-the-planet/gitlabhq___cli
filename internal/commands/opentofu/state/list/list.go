@@ -1,8 +1,6 @@
 package list
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -79,6 +77,6 @@ func (o *options) run() error {
 	for _, state := range states {
 		table.AddRow(state.Name, state.LatestVersion.Serial, state.CreatedAt, state.UpdatedAt, state.LockedAt)
 	}
-	fmt.Fprint(o.io.StdOut, table.Render())
+	o.io.LogInfof("%s", table.Render())
 	return nil
 }

@@ -89,7 +89,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 				}
 			}
 
-			fmt.Fprintln(f.IO().StdOut, "Created schedule with ID", schedule.ID)
+			f.IO().LogInfo("Created schedule with ID", schedule.ID)
 
 			return nil
 		},

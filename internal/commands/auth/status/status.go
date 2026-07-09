@@ -89,8 +89,6 @@ func (o *options) run(ctx context.Context) error {
 	c := o.io.Color()
 	cfg := o.config()
 
-	stderr := o.io.StdErr
-
 	statusInfo := map[string][]string{}
 
 	instances, err := cfg.Hosts()
@@ -192,16 +190,16 @@ func (o *options) run(ctx context.Context) error {
 		if !ok {
 			continue
 		}
-		fmt.Fprintf(stderr, "%s\n", c.Bold(instance))
+		o.io.LogErrorf("%s\n", c.Bold(instance))
 		for _, line := range lines {
-			fmt.Fprintf(stderr, "  %s\n", line)
+			o.io.LogErrorf("  %s\n", line)
 		}
 	}
 
 	envToken, envTokenSource := config.GetFromEnvWithSource("token")
 	if envToken != "" {
-		fmt.Fprintf(stderr, "\n%s Token is from environment variable %s. This takes precedence over tokens stored in config or keyring.\n", c.WarnIcon(), envTokenSource)
-		fmt.Fprintf(stderr, "  If a wrapper (e.g., 'op plugin run -- glab') is setting this, run %s in your shell to check.\n", c.Bold("type glab"))
+		o.io.LogErrorf("\n%s Token is from environment variable %s. This takes precedence over tokens stored in config or keyring.\n", c.WarnIcon(), envTokenSource)
+		o.io.LogErrorf("  If a wrapper (e.g., 'op plugin run -- glab') is setting this, run %s in your shell to check.\n", c.Bold("type glab"))
 	}
 
 	if failedAuth {

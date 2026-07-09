@@ -1,8 +1,6 @@
 package close
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -59,7 +57,7 @@ func NewCmdClose(f cmdutils.Factory) *cobra.Command {
 				}); err != nil {
 					return err
 				}
-				fmt.Fprintf(f.IO().StdOut, "- Closing merge request...\n")
+				f.IO().LogInfof("- Closing merge request...\n")
 				_, err := api.UpdateMR(client, repo.FullName(), mr.IID, l)
 				if err != nil {
 					return err
@@ -68,8 +66,8 @@ func NewCmdClose(f cmdutils.Factory) *cobra.Command {
 				// prints it as red
 				mr.State = "closed"
 
-				fmt.Fprintf(f.IO().StdOut, "%s Closed merge request !%d.\n", c.RedCheck(), mr.IID)
-				fmt.Fprintln(f.IO().StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO().IsaTTY))
+				f.IO().LogInfof("%s Closed merge request !%d.\n", c.RedCheck(), mr.IID)
+				f.IO().LogInfo(mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO().IsaTTY))
 			}
 
 			return nil

@@ -1,8 +1,6 @@
 package approve
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -58,12 +56,12 @@ func NewCmdApprove(f cmdutils.Factory) *cobra.Command {
 					opts.SHA = new(s)
 				}
 
-				fmt.Fprintf(f.IO().StdOut, "- Approving merge request !%d\n", mr.IID)
+				f.IO().LogInfof("- Approving merge request !%d\n", mr.IID)
 				_, _, err := client.MergeRequestApprovals.ApproveMergeRequest(repo.FullName(), mr.IID, opts)
 				if err != nil {
 					return err
 				}
-				fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), "Approved")
+				f.IO().LogInfo(c.GreenCheck(), "Approved")
 			}
 
 			return nil

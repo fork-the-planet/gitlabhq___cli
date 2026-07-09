@@ -1,8 +1,6 @@
 package list
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -52,7 +50,7 @@ func (o *options) run() error {
 	}
 
 	if len(skills) == 0 {
-		fmt.Fprintf(o.io.StdErr, "no skills available.\n")
+		o.io.LogErrorf("no skills available.\n")
 		return nil
 	}
 
@@ -66,6 +64,6 @@ func (o *options) run() error {
 	for _, s := range skills {
 		table.AddRow(s.Name, string(s.Source), s.Description)
 	}
-	fmt.Fprintf(o.io.StdOut, "%s", table.Render())
+	o.io.LogInfof("%s", table.Render())
 	return nil
 }

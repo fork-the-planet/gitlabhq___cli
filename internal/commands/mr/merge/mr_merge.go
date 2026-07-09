@@ -199,7 +199,7 @@ func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) err
 				}
 			}
 			if action == cmdutils.CancelAction {
-				fmt.Fprintln(o.io.StdErr, "Cancelled.")
+				o.io.LogError("Cancelled.")
 				return cmdutils.SilentError
 			}
 		}
@@ -220,8 +220,8 @@ func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) err
 	}
 	if o.setAutoMerge && mr.Pipeline != nil {
 		if mr.Pipeline.Status == "canceled" || mr.Pipeline.Status == "failed" {
-			fmt.Fprintln(o.io.StdOut, c.FailedIcon(), "Pipeline status:", mr.Pipeline.Status)
-			fmt.Fprintln(o.io.StdOut, c.FailedIcon(), "Cannot perform merge action")
+			o.io.LogInfo(c.FailedIcon(), "Pipeline status:", mr.Pipeline.Status)
+			o.io.LogInfo(c.FailedIcon(), "Cannot perform merge action")
 			return cmdutils.SilentError
 		}
 		mergeOpts.AutoMerge = new(true)
@@ -277,15 +277,15 @@ func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) err
 	isMerged := true
 	if o.setAutoMerge {
 		if mr.Pipeline == nil {
-			fmt.Fprintln(o.io.StdOut, c.WarnIcon(), "No pipeline running on", mr.SourceBranch)
+			o.io.LogInfo(c.WarnIcon(), "No pipeline running on", mr.SourceBranch)
 		} else {
 			switch mr.Pipeline.Status {
 			case "success":
-				fmt.Fprintln(o.io.StdOut, c.GreenCheck(), "Pipeline succeeded.")
+				o.io.LogInfo(c.GreenCheck(), "Pipeline succeeded.")
 			default:
-				fmt.Fprintln(o.io.StdOut, c.WarnIcon(), "Pipeline status:", mr.Pipeline.Status)
+				o.io.LogInfo(c.WarnIcon(), "Pipeline status:", mr.Pipeline.Status)
 				if mr.State != "merged" {
-					fmt.Fprintln(o.io.StdOut, c.GreenCheck(), "Will auto-merge")
+					o.io.LogInfo(c.GreenCheck(), "Will auto-merge")
 					isMerged = false
 				}
 			}
@@ -299,9 +299,9 @@ func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) err
 		case MRMergeMethodSquash:
 			action = "Squashed and merged!"
 		}
-		fmt.Fprintln(o.io.StdOut, c.GreenCheck(), action)
+		o.io.LogInfo(c.GreenCheck(), action)
 	}
-	fmt.Fprintln(o.io.StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, o.io.IsaTTY))
+	o.io.LogInfo(mrutils.DisplayMR(c, &mr.BasicMergeRequest, o.io.IsaTTY))
 	return nil
 }
 

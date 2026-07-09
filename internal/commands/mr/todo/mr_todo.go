@@ -2,7 +2,6 @@ package todo
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -53,7 +52,7 @@ func NewCmdTodo(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), "Done!!")
+			f.IO().LogInfo(c.GreenCheck(), "Done!!")
 
 			return nil
 		},

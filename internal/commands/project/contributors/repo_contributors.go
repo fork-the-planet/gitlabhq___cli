@@ -1,8 +1,6 @@
 package contributors
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -122,6 +120,6 @@ func (o *options) run() error {
 		table.EndRow()
 	}
 
-	fmt.Fprintf(o.io.StdOut, "%s\n%s\n", title.Describe(), table.String())
+	o.io.LogInfof("%s\n%s\n", title.Describe(), table.String())
 	return err
 }

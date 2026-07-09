@@ -1,8 +1,6 @@
 package delete
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -48,11 +46,11 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 			}
 
 			for _, mr := range mrs {
-				fmt.Fprintf(f.IO().StdOut, "- Deleting merge request !%d.\n", mr.IID)
+				f.IO().LogInfof("- Deleting merge request !%d.\n", mr.IID)
 				if err = api.DeleteMR(client, repo.FullName(), mr.IID); err != nil {
 					return err
 				}
-				fmt.Fprintf(f.IO().StdOut, "%s Merge request !%d deleted.\n", c.RedCheck(), mr.IID)
+				f.IO().LogInfof("%s Merge request !%d deleted.\n", c.RedCheck(), mr.IID)
 			}
 
 			return nil

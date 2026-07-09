@@ -124,11 +124,11 @@ func (o *options) run() error {
 				return err
 			}
 		} else {
-			fmt.Fprintf(o.io.StdOut, "Showing iteration %d of %d for group %s.\n\n", len(iterations), len(iterations), o.group)
+			o.io.LogInfof("Showing iteration %d of %d for group %s.\n\n", len(iterations), len(iterations), o.group)
 			for _, iteration := range iterations {
 				iterationBuilder.WriteString(formatIterationInfo(iteration.Description, iteration.Title, iteration.WebURL))
 			}
-			fmt.Fprintln(o.io.StdOut, utils.Indent(iterationBuilder.String(), " "))
+			o.io.LogInfo(utils.Indent(iterationBuilder.String(), " "))
 		}
 	} else {
 		repo, err := o.baseRepo()
@@ -144,11 +144,11 @@ func (o *options) run() error {
 				return err
 			}
 		} else {
-			fmt.Fprintf(o.io.StdOut, "Showing iteration %d of %d on %s.\n\n", len(iterations), len(iterations), repo.FullName())
+			o.io.LogInfof("Showing iteration %d of %d on %s.\n\n", len(iterations), len(iterations), repo.FullName())
 			for _, iteration := range iterations {
 				iterationBuilder.WriteString(formatIterationInfo(iteration.Description, iteration.Title, iteration.WebURL))
 			}
-			fmt.Fprintln(o.io.StdOut, utils.Indent(iterationBuilder.String(), " "))
+			o.io.LogInfo(utils.Indent(iterationBuilder.String(), " "))
 		}
 	}
 	return nil

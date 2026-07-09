@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -179,7 +178,7 @@ func (o *options) cachedPAT(ctx context.Context) (*gitlab.PersonalAccessToken, e
 	})
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
-			fmt.Fprintf(os.Stderr, "Unable to use cache, proceeding without it: %s\n", err)
+			o.io.LogErrorf("Unable to use cache, proceeding without it: %s\n", err)
 			return createFunc()
 		}
 

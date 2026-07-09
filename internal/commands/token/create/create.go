@@ -276,10 +276,8 @@ func (o *options) run() error {
 		if err := o.io.PrintJSON(outputToken); err != nil {
 			return err
 		}
-	} else {
-		if _, err := fmt.Fprintf(o.io.StdOut, "%s\n", outputTokenValue); err != nil {
-			return err
-		}
+	} else if _, err := fmt.Fprintln(o.io.StdOut, outputTokenValue); err != nil { //nolint:forbidigo // write error must propagate to the caller
+		return err
 	}
 
 	return nil

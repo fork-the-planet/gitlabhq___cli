@@ -2,7 +2,6 @@ package list
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -107,6 +106,6 @@ func (o *options) printTable(scopes *gitlab.RunnerControllerScopes) error {
 	for _, s := range scopes.RunnerLevelScopings {
 		table.AddRow("runner", s.RunnerID, s.CreatedAt, s.UpdatedAt)
 	}
-	fmt.Fprint(o.io.StdOut, table.Render())
+	o.io.LogInfof("%s", table.Render())
 	return nil
 }

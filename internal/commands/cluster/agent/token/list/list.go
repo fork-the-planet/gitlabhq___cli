@@ -123,7 +123,7 @@ func (o *options) run(ctx context.Context) error {
 
 		table.AddRow(token.ID, token.Name, token.Status, token.CreatedAt.Format(time.RFC3339), username, lastUsedAt, token.Description)
 	}
-	fmt.Fprint(o.io.StdOut, table.Render())
+	o.io.LogInfof("%s", table.Render())
 
 	return nil
 }

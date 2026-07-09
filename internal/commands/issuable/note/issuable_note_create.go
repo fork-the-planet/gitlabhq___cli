@@ -33,7 +33,6 @@ func NewCmdNote(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			out := f.IO().StdOut
 
 			client, err := f.GitLabClient()
 			if err != nil {
@@ -47,7 +46,7 @@ func NewCmdNote(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 
 			valid, msg := issuable.ValidateIncidentCmd(issueType, "comment", issue)
 			if !valid {
-				fmt.Fprintln(f.IO().StdOut, msg)
+				f.IO().LogInfo(msg)
 				return nil
 			}
 
@@ -74,7 +73,7 @@ func NewCmdNote(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 				return err
 			}
 
-			fmt.Fprintf(out, "%s#note_%d\n", issue.WebURL, noteInfo.ID)
+			f.IO().LogInfof("%s#note_%d\n", issue.WebURL, noteInfo.ID)
 			return nil
 		},
 	}

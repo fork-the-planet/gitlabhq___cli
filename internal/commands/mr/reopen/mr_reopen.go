@@ -1,8 +1,6 @@
 package reopen
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -57,14 +55,14 @@ func NewCmdReopen(f cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				fmt.Fprintf(f.IO().StdOut, "- Reopening merge request !%d...\n", mr.IID)
+				f.IO().LogInfof("- Reopening merge request !%d...\n", mr.IID)
 				mr, err = api.UpdateMR(client, repo.FullName(), mr.IID, l)
 				if err != nil {
 					return err
 				}
 
-				fmt.Fprintf(f.IO().StdOut, "%s Reopened merge request !%d.\n", c.GreenCheck(), mr.IID)
-				fmt.Fprintln(f.IO().StdOut, mrutils.DisplayMR(f.IO().Color(), &mr.BasicMergeRequest, f.IO().IsaTTY))
+				f.IO().LogInfof("%s Reopened merge request !%d.\n", c.GreenCheck(), mr.IID)
+				f.IO().LogInfo(mrutils.DisplayMR(f.IO().Color(), &mr.BasicMergeRequest, f.IO().IsaTTY))
 			}
 
 			return nil

@@ -215,12 +215,12 @@ func (opts *options) run(cmd *cobra.Command) error {
 	case "json":
 		return opts.io.PrintJSON(wi)
 	default:
-		fmt.Fprintln(opts.io.StdOut, "- Updating work item in", opts.scope.Path)
+		opts.io.LogInfo("- Updating work item in", opts.scope.Path)
 
 		if opts.io.IsaTTY {
-			fmt.Fprintf(opts.io.StdOut, "#%d %s\n%s\n", wi.IID, wi.Title, wi.WebURL)
+			opts.io.LogInfof("#%d %s\n%s\n", wi.IID, wi.Title, wi.WebURL)
 		} else {
-			fmt.Fprintln(opts.io.StdOut, wi.WebURL)
+			opts.io.LogInfo(wi.WebURL)
 		}
 	}
 

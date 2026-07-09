@@ -142,7 +142,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 				// always save options to file
 				recoverErr := createRecoverSaveFile(opts)
 				if recoverErr != nil {
-					fmt.Fprintf(opts.io.StdErr, "Could not create recovery file: %v", recoverErr)
+					opts.io.LogErrorf("Could not create recovery file: %v", recoverErr)
 				}
 
 				return err
@@ -310,7 +310,6 @@ func (o *options) selectTemplate(ctx context.Context, client *gitlab.Client) (st
 }
 
 func (o *options) run(ctx context.Context) error {
-	out := o.io.StdOut
 	c := o.io.Color()
 	mrCreateOpts := &gitlab.CreateMergeRequestOptions{}
 	glRepo, err := o.baseRepo()
@@ -322,10 +321,10 @@ func (o *options) run(ctx context.Context) error {
 		if err := recovery.FromFile(glRepo.FullName(), "mr.json", o); err != nil {
 			// if the file to recover doesn't exist, we can just ignore the error and move on
 			if !errors.Is(err, os.ErrNotExist) {
-				fmt.Fprintf(o.io.StdErr, "Failed to recover from file: %v", err)
+				o.io.LogErrorf("Failed to recover from file: %v", err)
 			}
 		} else {
-			fmt.Fprintln(o.io.StdOut, "Recovered create options from file")
+			o.io.LogInfo("Recovered create options from file")
 		}
 	}
 
@@ -376,10 +375,10 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	if !o.TargetProject.MergeRequestsEnabled { //nolint:staticcheck
-		fmt.Fprintf(o.io.StdErr, "Failed to create a merge request for project %q. Please ensure:\n", o.TargetProject.PathWithNamespace)
-		fmt.Fprintf(o.io.StdErr, " - You are authenticated with the GitLab CLI.\n")
-		fmt.Fprintf(o.io.StdErr, " - Merge requests are enabled for this project.\n")
-		fmt.Fprintf(o.io.StdErr, " - Your role in this project allows you to create merge requests.\n")
+		o.io.LogErrorf("Failed to create a merge request for project %q. Please ensure:\n", o.TargetProject.PathWithNamespace)
+		o.io.LogErrorf(" - You are authenticated with the GitLab CLI.\n")
+		o.io.LogErrorf(" - Merge requests are enabled for this project.\n")
+		o.io.LogErrorf(" - Your role in this project allows you to create merge requests.\n")
 		return cmdutils.SilentError
 	}
 
@@ -464,7 +463,7 @@ func (o *options) run(ctx context.Context) error {
 	} else {
 		o.TargetTrackingBranch = fmt.Sprintf("%s/%s", baseRepoRemote.Name, o.TargetBranch)
 		if o.SourceBranch == o.TargetBranch && glrepo.IsSame(baseRepo, headRepo) {
-			fmt.Fprintf(o.io.StdErr, "You must be on a different branch other than %q\n", o.TargetBranch)
+			o.io.LogErrorf("You must be on a different branch other than %q\n", o.TargetBranch)
 			return cmdutils.SilentError
 		}
 
@@ -606,12 +605,12 @@ func (o *options) run(ctx context.Context) error {
 			Branch: &o.SourceBranch,
 			Ref:    &o.TargetBranch,
 		}
-		fmt.Fprintln(o.io.StdErr, "\nCreating related branch...")
+		o.io.LogError("\nCreating related branch...")
 		branch, _, err := client.Branches.CreateBranch(headRepo.FullName(), lb)
 		if err == nil {
-			fmt.Fprintln(o.io.StdErr, "Branch created: ", branch.WebURL)
+			o.io.LogError("Branch created: ", branch.WebURL)
 		} else {
-			fmt.Fprintln(o.io.StdErr, "Error creating branch: ", err.Error())
+			o.io.LogError("Error creating branch: ", err.Error())
 		}
 	}
 
@@ -714,7 +713,7 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	if action == cmdutils.CancelAction {
-		fmt.Fprintln(o.io.StdErr, "Discarded.")
+		o.io.LogError("Discarded.")
 		return nil
 	}
 
@@ -732,7 +731,7 @@ func (o *options) run(ctx context.Context) error {
 			message = "\nCreating draft merge request for %s into %s in %s\n\n"
 		}
 
-		fmt.Fprintf(o.io.StdErr, message, c.Cyan(o.SourceBranch), c.Cyan(o.TargetBranch), baseRepo.FullName())
+		o.io.LogErrorf(message, c.Cyan(o.SourceBranch), c.Cyan(o.TargetBranch), baseRepo.FullName())
 
 		// It is intentional that we create against the head repo, it is necessary
 		// for cross-repository merge requests
@@ -750,16 +749,16 @@ func (o *options) run(ctx context.Context) error {
 
 			_, _, err = client.MergeRequests.AcceptMergeRequest(headRepo.FullName(), mr.IID, mergeOpts)
 			if err != nil {
-				fmt.Fprintln(out, mrutils.DisplayMR(c, &mr.BasicMergeRequest, o.io.IsaTTY))
+				o.io.LogInfo(mrutils.DisplayMR(c, &mr.BasicMergeRequest, o.io.IsaTTY))
 				return fmt.Errorf("merge request created but auto-merge could not be enabled: %w", err)
 			}
 
-			fmt.Fprintln(out, mrutils.DisplayMR(c, &mr.BasicMergeRequest, o.io.IsaTTY))
-			fmt.Fprintf(out, "%s Auto-merge enabled. Will merge when all checks pass.\n", c.GreenCheck())
+			o.io.LogInfo(mrutils.DisplayMR(c, &mr.BasicMergeRequest, o.io.IsaTTY))
+			o.io.LogInfof("%s Auto-merge enabled. Will merge when all checks pass.\n", c.GreenCheck())
 			return nil
 		}
 
-		fmt.Fprintln(out, mrutils.DisplayMR(c, &mr.BasicMergeRequest, o.io.IsaTTY))
+		o.io.LogInfo(mrutils.DisplayMR(c, &mr.BasicMergeRequest, o.io.IsaTTY))
 		return nil
 	}
 
@@ -815,7 +814,7 @@ func handlePush(opts *options, remote *glrepo.Remote) error {
 			if err != nil {
 				return err
 			}
-			fmt.Fprintf(opts.io.StdErr, "\nwarning: you have %s\n", utils.Pluralize(c, "uncommitted change"))
+			opts.io.LogErrorf("\nwarning: you have %s\n", utils.Pluralize(c, "uncommitted change"))
 		}
 		err := git.Push(sourceRemote.Name, fmt.Sprintf("HEAD:%s", sourceBranch), opts.io.StdOut, opts.io.StdErr)
 		if err == nil {
@@ -845,7 +844,7 @@ func previewMR(opts *options) error {
 	}
 
 	if opts.io.IsOutputTTY() {
-		fmt.Fprintf(opts.io.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(openURL))
+		opts.io.LogErrorf("Opening %s in your browser.\n", utils.DisplayURL(openURL))
 	}
 	browser, _ := cfg.Get(repo.RepoHost(), "browser")
 	return utils.OpenInBrowser(openURL, browser)
@@ -983,6 +982,6 @@ func createRecoverSaveFile(opts *options) error {
 		return err
 	}
 
-	fmt.Fprintf(opts.io.StdErr, "Failed to create merge request. Created recovery file: %s\nRun the command again with the '--recover' option to retry.\n", recoverFile)
+	opts.io.LogErrorf("Failed to create merge request. Created recovery file: %s\nRun the command again with the '--recover' option to retry.\n", recoverFile)
 	return nil
 }

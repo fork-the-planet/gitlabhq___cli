@@ -106,7 +106,7 @@ func readZip(artifact *bytes.Reader, path string, listPaths bool, zipReadLimit i
 			}
 
 			if listPaths {
-				fmt.Fprintln(out, friendlyPath(destPath))
+				fmt.Fprintln(out, friendlyPath(destPath)) //nolint:forbidigo // out is a generic io.Writer; production caller passes os.Stdout directly, not IOStreams
 			}
 
 			written += writtenPerFile

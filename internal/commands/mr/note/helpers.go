@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
 
 func getBodyFromStdinOrEditor(f cmdutils.Factory, cmd *cobra.Command) (string, error) {
@@ -40,7 +41,7 @@ func getBodyFromStdinOrEditor(f cmdutils.Factory, cmd *cobra.Command) (string, e
 // deduplicateNote checks whether a note with the same body already exists on the MR.
 // If a duplicate is found, it prints the URL and returns (true, nil).
 // If no duplicate is found, returns (false, nil).
-func deduplicateNote(client *gitlab.Client, repo string, mrIID int64, body, webURL string, out io.Writer) (bool, error) {
+func deduplicateNote(io *iostreams.IOStreams, client *gitlab.Client, repo string, mrIID int64, body, webURL string) (bool, error) {
 	opts := &gitlab.ListMergeRequestNotesOptions{ListOptions: gitlab.ListOptions{PerPage: api.DefaultListLimit}}
 	for {
 		notes, resp, err := client.Notes.ListMergeRequestNotes(repo, mrIID, opts)
@@ -49,7 +50,7 @@ func deduplicateNote(client *gitlab.Client, repo string, mrIID int64, body, webU
 		}
 		for _, noteInfo := range notes {
 			if strings.TrimSpace(noteInfo.Body) == strings.TrimSpace(body) {
-				fmt.Fprintf(out, "%s#note_%d\n", webURL, noteInfo.ID)
+				io.LogInfof("%s#note_%d\n", webURL, noteInfo.ID)
 				return true, nil
 			}
 		}

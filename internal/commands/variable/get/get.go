@@ -132,7 +132,7 @@ func (o *options) run() error {
 	}
 
 	if o.outputFormat != "json" {
-		fmt.Fprint(o.io.StdOut, variableValue)
+		o.io.LogInfof("%s", variableValue)
 	}
 	return nil
 }

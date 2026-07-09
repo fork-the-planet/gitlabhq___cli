@@ -1,8 +1,6 @@
 package list
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -129,7 +127,7 @@ func (o *options) run(cmd *cobra.Command) error {
 		}
 		defer o.io.StopPager()
 
-		fmt.Fprintln(o.io.StdOut, releaseutils.DisplayRelease(o.io, release, repo))
+		o.io.LogInfo(releaseutils.DisplayRelease(o.io, release, repo))
 	} else {
 
 		releases, err := listReleases(client, repo.FullName(), l)
@@ -151,7 +149,7 @@ func (o *options) run(cmd *cobra.Command) error {
 		}
 		defer o.io.StopPager()
 
-		fmt.Fprintf(o.io.StdOut, "%s\n%s\n", title.Describe(), releaseutils.DisplayAllReleases(o.io, releases, repo.FullName()))
+		o.io.LogInfof("%s\n%s\n", title.Describe(), releaseutils.DisplayAllReleases(o.io, releases, repo.FullName()))
 	}
 	return nil
 }

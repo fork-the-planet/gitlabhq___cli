@@ -97,7 +97,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	fmt.Fprintln(o.io.StdOut, "Started schedule with ID", o.scheduleID)
+	o.io.LogInfo("Started schedule with ID", o.scheduleID)
 
 	return nil
 }

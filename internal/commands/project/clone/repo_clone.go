@@ -248,7 +248,7 @@ func groupClone(opts *options, ctxOpts *ContextOpts) error {
 		return err
 	}
 	if len(projects) == 0 {
-		fmt.Fprintf(opts.io.StdErr, "Group %q does not have any projects.\n", opts.groupName)
+		opts.io.LogErrorf("Group %q does not have any projects.\n", opts.groupName)
 		return cmdutils.SilentError
 	}
 
@@ -267,7 +267,7 @@ func groupClone(opts *options, ctxOpts *ContextOpts) error {
 
 	// Print error/success msgs in human-readable formats
 	for _, out := range finalOutput {
-		fmt.Fprintln(opts.io.StdOut, out)
+		opts.io.LogInfo(out)
 	}
 	if err != nil { // if any error came up
 		return cmdutils.SilentError

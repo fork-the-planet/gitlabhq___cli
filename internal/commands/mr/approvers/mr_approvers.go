@@ -1,8 +1,6 @@
 package approvers
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -67,7 +65,7 @@ func NewCmdApprovers(f cmdutils.Factory) *cobra.Command {
 				return opts.io.PrintJSON(mrApprovals)
 			}
 
-			fmt.Fprintf(opts.io.StdOut, "\nListing merge request !%d eligible approvers:\n", mr.IID)
+			opts.io.LogInfof("\nListing merge request !%d eligible approvers:\n", mr.IID)
 			mrutils.PrintMRApprovalState(opts.io, mrApprovals)
 
 			return nil

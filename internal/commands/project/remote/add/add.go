@@ -127,7 +127,7 @@ func (o *options) run() error {
 		return cmdutils.WrapError(err, "failed to add remote")
 	}
 
-	fmt.Fprintf(o.io.StdOut, "%s Remote %q added using %s protocol.\n",
+	o.io.LogInfof("%s Remote %q added using %s protocol.\n",
 		o.io.Color().GreenCheck(), o.remoteName, o.protocol)
 
 	return nil

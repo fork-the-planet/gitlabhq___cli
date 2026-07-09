@@ -114,7 +114,7 @@ func (o *options) complete(args []string) error {
 				return errors.New("stdin required if no 'path' is provided")
 			}
 		}
-		fmt.Fprintln(o.io.StdOut, "reading from stdin (Ctrl+D to finish, Ctrl+C to abort):")
+		o.io.LogInfo("reading from stdin (Ctrl+D to finish, Ctrl+C to abort):")
 		content, err := readFromSTDIN(o.io)
 		if err != nil {
 			return err
@@ -172,7 +172,7 @@ func (o *options) run(ctx context.Context) error {
 
 	var snippet *gitlab.Snippet
 	if o.personal {
-		fmt.Fprintln(o.io.StdErr, "- Creating snippet in personal space")
+		o.io.LogError("- Creating snippet in personal space")
 		snippet, _, err = client.Snippets.CreateSnippet(&gitlab.CreateSnippetOptions{
 			Title:       &o.title,
 			Description: &o.description,
@@ -180,7 +180,7 @@ func (o *options) run(ctx context.Context) error {
 			Files:       &o.files,
 		})
 	} else {
-		fmt.Fprintln(o.io.StdErr, "- Creating snippet in", repo.FullName())
+		o.io.LogError("- Creating snippet in", repo.FullName())
 		snippet, _, err = client.ProjectSnippets.CreateSnippet(repo.FullName(), &gitlab.CreateProjectSnippetOptions{
 			Title:       &o.title,
 			Description: &o.description,
@@ -198,9 +198,9 @@ func (o *options) run(ctx context.Context) error {
 	}
 	names := strings.Join(files, " ")
 	if o.io.IsaTTY {
-		fmt.Fprintf(o.io.StdOut, "%s %s (%s)\n %s\n", snippetID, snippet.Title, names, snippet.WebURL)
+		o.io.LogInfof("%s %s (%s)\n %s\n", snippetID, snippet.Title, names, snippet.WebURL)
 	} else {
-		fmt.Fprintln(o.io.StdOut, snippet.WebURL)
+		o.io.LogInfo(snippet.WebURL)
 	}
 
 	return nil

@@ -80,7 +80,6 @@ func (o *options) complete(args []string) {
 
 func (o *options) run(ctx context.Context) error {
 	var err error
-	out := o.io.StdOut
 	c := o.io.Color()
 
 	client, err := o.gitlabClient()
@@ -128,7 +127,7 @@ func (o *options) run(ctx context.Context) error {
 		}
 	}
 
-	fmt.Fprintln(o.io.StdOut, "Validating...")
+	o.io.LogInfo("Validating...")
 
 	lintOpts := &gitlab.ProjectNamespaceLintOptions{
 		Content:     new(string(content)),
@@ -149,13 +148,13 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	if !lint.Valid {
-		fmt.Fprintln(out, c.Red(o.path+" is invalid."))
+		o.io.LogInfo(c.Red(o.path + " is invalid."))
 		for i, err := range lint.Errors {
 			i++
-			fmt.Fprintln(out, i, err)
+			o.io.LogInfo(i, err)
 		}
 		return cmdutils.SilentError
 	}
-	fmt.Fprintln(out, c.GreenCheck(), "CI/CD YAML is valid!")
+	o.io.LogInfo(c.GreenCheck(), "CI/CD YAML is valid!")
 	return nil
 }

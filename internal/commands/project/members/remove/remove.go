@@ -124,7 +124,7 @@ func (o *options) run() error {
 	}
 
 	c := o.io.Color()
-	fmt.Fprintf(o.io.StdOut, "%s Successfully removed %s from %s\n",
+	o.io.LogInfof("%s Successfully removed %s from %s\n",
 		c.GreenCheck(),
 		c.Bold(userIdentifier),
 		c.Bold(repo.FullName()))

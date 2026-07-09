@@ -97,7 +97,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				if opts.outputFormat != "json" {
 					redCheck := c.Red("✘")
-					fmt.Fprintf(opts.io.StdOut, "%s %v\n", redCheck, err)
+					opts.io.LogInfof("%s %v\n", redCheck, err)
 				}
 				return err
 			}
@@ -167,17 +167,17 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 						status = c.Gray(s)
 					}
 					if compact {
-						fmt.Fprintf(writer, "(%s) • %s [%s]\n", status, job.Name, job.Stage)
+						fmt.Fprintf(writer, "(%s) • %s [%s]\n", status, job.Name, job.Stage) //nolint:forbidigo // writer is a uilive live-updating writer, not IOStreams
 					} else {
-						fmt.Fprintf(writer, "(%s) • %s\t%s\t\t%s\n", status, c.Gray(duration), job.Stage, job.Name)
+						fmt.Fprintf(writer, "(%s) • %s\t%s\t\t%s\n", status, c.Gray(duration), job.Stage, job.Name) //nolint:forbidigo // writer is a uilive live-updating writer, not IOStreams
 					}
 				}
 
 				if !compact {
-					fmt.Fprintf(writer.Newline(), "\n%s\n", runningPipeline.WebURL)
-					fmt.Fprintf(writer.Newline(), "SHA: %s\n", runningPipeline.SHA)
+					fmt.Fprintf(writer.Newline(), "\n%s\n", runningPipeline.WebURL) //nolint:forbidigo // writer is a uilive live-updating writer, not IOStreams
+					fmt.Fprintf(writer.Newline(), "SHA: %s\n", runningPipeline.SHA) //nolint:forbidigo // writer is a uilive live-updating writer, not IOStreams
 				}
-				fmt.Fprintf(writer.Newline(), "Pipeline state: %s\n\n", runningPipeline.Status)
+				fmt.Fprintf(writer.Newline(), "Pipeline state: %s\n\n", runningPipeline.Status) //nolint:forbidigo // writer is a uilive live-updating writer, not IOStreams
 
 				inProgress := isLivePollableStatus(runningPipeline.Status)
 
@@ -279,7 +279,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 			}
 			// Only show "Exiting..." message if cancelled via Ctrl+C
 			if ctx.Err() != nil {
-				fmt.Fprintln(writer.Newline(), "Exiting...")
+				fmt.Fprintln(writer.Newline(), "Exiting...") //nolint:forbidigo // writer is a uilive live-updating writer, not IOStreams
 			}
 			if runningPipeline.Status == "failed" {
 				return cmdutils.SilentError

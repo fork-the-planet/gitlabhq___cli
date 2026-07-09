@@ -171,7 +171,7 @@ func (o *options) runSingleDelete(ctx context.Context, client *gitlab.Client, re
 	tagPath := fmt.Sprintf("%s:%s", repo.FullName(), o.tagName)
 
 	if !o.forceDelete && o.io.PromptEnabled() {
-		fmt.Fprintf(o.io.StdErr, "This action will permanently delete container registry tag %q.\n\n", tagPath)
+		o.io.LogErrorf("This action will permanently delete container registry tag %q.\n\n", tagPath)
 		err := o.io.Confirm(ctx, &o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete container registry tag %q?", tagPath))
 		if err != nil {
 			return cmdutils.WrapError(err, "could not prompt")
@@ -198,7 +198,7 @@ func (o *options) runSingleDelete(ctx context.Context, client *gitlab.Client, re
 
 func (o *options) runBulkDelete(ctx context.Context, client *gitlab.Client, repo glrepo.Interface) error {
 	if !o.forceDelete && o.io.PromptEnabled() {
-		fmt.Fprint(o.io.StdErr, bulkDeleteConfirmationMessage(o.repositoryID, repo.FullName(), o.nameRegexDelete, o.nameRegexKeep, o.keepN, o.olderThan))
+		o.io.LogErrorf("%s", bulkDeleteConfirmationMessage(o.repositoryID, repo.FullName(), o.nameRegexDelete, o.nameRegexKeep, o.keepN, o.olderThan))
 		err := o.io.Confirm(ctx, &o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to schedule matching container registry tags for deletion from repository %d?", o.repositoryID))
 		if err != nil {
 			return cmdutils.WrapError(err, "could not prompt")

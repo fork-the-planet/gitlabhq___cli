@@ -163,13 +163,13 @@ func (o *options) run() error {
 
 	c := o.io.Color()
 	if o.roleID != 0 {
-		fmt.Fprintf(o.io.StdOut, "%s Successfully added %s with custom role ID %d to %s\n",
+		o.io.LogInfof("%s Successfully added %s with custom role ID %d to %s\n",
 			c.GreenCheck(),
 			c.Bold(member.Username),
 			o.roleID,
 			c.Bold(repo.FullName()))
 	} else {
-		fmt.Fprintf(o.io.StdOut, "%s Successfully added %s as %s to %s\n",
+		o.io.LogInfof("%s Successfully added %s as %s to %s\n",
 			c.GreenCheck(),
 			c.Bold(member.Username),
 			c.Bold(o.role),
@@ -177,7 +177,7 @@ func (o *options) run() error {
 	}
 
 	if o.expiresAt != "" {
-		fmt.Fprintf(o.io.StdOut, "  Membership expires on: %s\n", o.expiresAt)
+		o.io.LogInfof("  Membership expires on: %s\n", o.expiresAt)
 	}
 
 	return nil

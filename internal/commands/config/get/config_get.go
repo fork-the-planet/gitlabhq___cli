@@ -1,8 +1,6 @@
 package get
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -72,7 +70,7 @@ func (o *options) run() error {
 	}
 
 	if val != "" {
-		fmt.Fprintf(o.io.StdOut, "%s\n", val)
+		o.io.LogInfo(val)
 	}
 	return nil
 }

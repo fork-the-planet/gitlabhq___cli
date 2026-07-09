@@ -98,6 +98,6 @@ func (o *options) run() error {
 		return o.io.PrintJSON(registryutils.NewRepositoryJSON(repository, false, o.includeTagsCount))
 	}
 
-	fmt.Fprintln(o.io.StdOut, registryutils.DisplayRepository(o.io, repository))
+	o.io.LogInfo(registryutils.DisplayRepository(o.io, repository))
 	return nil
 }

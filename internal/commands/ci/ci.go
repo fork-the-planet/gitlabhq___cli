@@ -1,8 +1,6 @@
 package ci
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -42,7 +40,7 @@ func NewCmdCI(f cmdutils.Factory) *cobra.Command {
 			mcpannotations.Safe: "true",
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Fprintf(cmd.ErrOrStderr(), "Aliases 'pipe' and 'pipeline' are deprecated. Use 'ci' instead.\n\n")
+			f.IO().LogErrorf("Aliases 'pipe' and 'pipeline' are deprecated. Use 'ci' instead.\n\n")
 			_ = cmd.Help()
 		},
 	}

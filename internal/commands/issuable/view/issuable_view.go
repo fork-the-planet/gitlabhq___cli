@@ -120,14 +120,14 @@ func (o *options) run(issueType issuable.IssueType, args []string) error {
 
 	valid, msg := issuable.ValidateIncidentCmd(issueType, "view", o.issue)
 	if !valid {
-		fmt.Fprintln(o.io.StdErr, msg)
+		o.io.LogError(msg)
 		return nil
 	}
 
 	// open in browser if --web flag is specified
 	if o.web {
 		if o.io.IsaTTY && o.io.IsErrTTY {
-			fmt.Fprintf(o.io.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(o.issue.WebURL))
+			o.io.LogErrorf("Opening %s in your browser.\n", utils.DisplayURL(o.issue.WebURL))
 		}
 
 		browser, _ := cfg.Get(baseRepo.RepoHost(), "browser")
@@ -196,40 +196,40 @@ func printTTYIssuePreview(opts *options) {
 	c := opts.io.Color()
 	issueTimeAgo := utils.TimeToPrettyTimeAgo(*opts.issue.CreatedAt)
 	// Header
-	fmt.Fprint(opts.io.StdOut, issueState(opts, c))
-	fmt.Fprintf(opts.io.StdOut, c.Gray(" • opened by %s %s\n"), opts.issue.Author.Username, issueTimeAgo)
-	fmt.Fprint(opts.io.StdOut, c.Bold(opts.issue.Title))
-	fmt.Fprintf(opts.io.StdOut, c.Gray(" #%d"), opts.issue.IID)
-	fmt.Fprintln(opts.io.StdOut)
+	opts.io.LogInfof("%s", issueState(opts, c))
+	opts.io.LogInfof(c.Gray(" • opened by %s %s\n"), opts.issue.Author.Username, issueTimeAgo)
+	opts.io.LogInfof("%s", c.Bold(opts.issue.Title))
+	opts.io.LogInfof(c.Gray(" #%d"), opts.issue.IID)
+	opts.io.LogInfo()
 
 	// Description
 	if opts.issue.Description != "" {
 		opts.issue.Description, _ = utils.RenderMarkdown(opts.issue.Description, opts.io.BackgroundColor())
-		fmt.Fprintln(opts.io.StdOut, opts.issue.Description)
+		opts.io.LogInfo(opts.issue.Description)
 	}
 
-	fmt.Fprintf(opts.io.StdOut, c.Gray("\n%d upvotes • %d downvotes • %d comments\n"), opts.issue.Upvotes, opts.issue.Downvotes, opts.issue.UserNotesCount)
+	opts.io.LogInfof(c.Gray("\n%d upvotes • %d downvotes • %d comments\n"), opts.issue.Upvotes, opts.issue.Downvotes, opts.issue.UserNotesCount)
 
 	// Meta information
 	if labels := labelsList(opts); labels != "" {
-		fmt.Fprint(opts.io.StdOut, c.Bold("Labels: "))
-		fmt.Fprintln(opts.io.StdOut, labels)
+		opts.io.LogInfof("%s", c.Bold("Labels: "))
+		opts.io.LogInfo(labels)
 	}
 	if assignees := assigneesList(opts); assignees != "" {
-		fmt.Fprint(opts.io.StdOut, c.Bold("Assignees: "))
-		fmt.Fprintln(opts.io.StdOut, assignees)
+		opts.io.LogInfof("%s", c.Bold("Assignees: "))
+		opts.io.LogInfo(assignees)
 	}
 	if opts.issue.Milestone != nil {
-		fmt.Fprint(opts.io.StdOut, c.Bold("Milestone: "))
-		fmt.Fprintln(opts.io.StdOut, opts.issue.Milestone.Title)
+		opts.io.LogInfof("%s", c.Bold("Milestone: "))
+		opts.io.LogInfo(opts.issue.Milestone.Title)
 	}
 	if opts.issue.State == "closed" {
-		fmt.Fprintf(opts.io.StdOut, "Closed by: %s %s\n", opts.issue.ClosedBy.Username, issueTimeAgo)
+		opts.io.LogInfof("Closed by: %s %s\n", opts.issue.ClosedBy.Username, issueTimeAgo)
 	}
 
 	// Comments
 	if opts.showComments {
-		fmt.Fprintln(opts.io.StdOut, heredoc.Doc(`
+		opts.io.LogInfo(heredoc.Doc(`
 			--------------------------------------------
 			Comments / Notes
 			--------------------------------------------
@@ -240,28 +240,28 @@ func printTTYIssuePreview(opts *options) {
 					continue
 				}
 				createdAt := utils.TimeToPrettyTimeAgo(*note.CreatedAt)
-				fmt.Fprint(opts.io.StdOut, note.Author.Username)
+				opts.io.LogInfof("%s", note.Author.Username)
 				if note.System {
-					fmt.Fprintf(opts.io.StdOut, " %s ", note.Body)
-					fmt.Fprintln(opts.io.StdOut, c.Gray(createdAt))
+					opts.io.LogInfof(" %s ", note.Body)
+					opts.io.LogInfo(c.Gray(createdAt))
 				} else {
 					body, _ := utils.RenderMarkdown(note.Body, opts.io.BackgroundColor())
-					fmt.Fprint(opts.io.StdOut, " commented ")
-					fmt.Fprintf(opts.io.StdOut, c.Gray("%s\n"), createdAt)
-					fmt.Fprintln(opts.io.StdOut, utils.Indent(body, " "))
+					opts.io.LogInfof("%s", " commented ")
+					opts.io.LogInfof(c.Gray("%s\n"), createdAt)
+					opts.io.LogInfo(utils.Indent(body, " "))
 				}
-				fmt.Fprintln(opts.io.StdOut)
+				opts.io.LogInfo()
 			}
 		} else {
-			fmt.Fprintf(opts.io.StdOut, "There are no comments on this %s.\n", *opts.issue.IssueType)
+			opts.io.LogInfof("There are no comments on this %s.\n", *opts.issue.IssueType)
 		}
 	}
 
-	fmt.Fprintf(opts.io.StdOut, c.Gray("\nView this %s on GitLab: %s\n"), *opts.issue.IssueType, opts.issue.WebURL)
+	opts.io.LogInfof(c.Gray("\nView this %s on GitLab: %s\n"), *opts.issue.IssueType, opts.issue.WebURL)
 }
 
 func printRawIssuePreview(opts *options) {
-	fmt.Fprint(opts.io.StdOut, rawIssuePreview(opts))
+	opts.io.LogInfof("%s", rawIssuePreview(opts))
 }
 
 func rawIssuePreview(opts *options) string {

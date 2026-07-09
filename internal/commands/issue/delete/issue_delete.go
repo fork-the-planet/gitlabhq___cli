@@ -1,8 +1,6 @@
 package delete
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -55,7 +53,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 
 			for _, issue := range issues {
 				if f.IO().IsErrTTY && f.IO().IsaTTY {
-					fmt.Fprintf(f.IO().StdErr, "- Deleting issue #%d.\n", issue.IID)
+					f.IO().LogErrorf("- Deleting issue #%d.\n", issue.IID)
 				}
 
 				err := deleteIssue(client, repo.FullName(), issue.IID)
@@ -63,7 +61,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				fmt.Fprintln(f.IO().StdErr, c.GreenCheck(), "Issue deleted.")
+				f.IO().LogError(c.GreenCheck(), "Issue deleted.")
 			}
 			return nil
 		},

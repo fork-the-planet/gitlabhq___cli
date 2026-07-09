@@ -1,7 +1,6 @@
 package add
 
 import (
-	"fmt"
 	"io"
 	"os"
 
@@ -103,7 +102,7 @@ func (o *options) run() error {
 	}
 
 	cs := o.io.Color()
-	fmt.Fprintf(o.io.StdOut, "%s New GPG key added to your account.", cs.GreenCheck())
+	o.io.LogInfof("%s New GPG key added to your account.", cs.GreenCheck())
 
 	return nil
 }

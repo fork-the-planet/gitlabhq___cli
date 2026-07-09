@@ -1,7 +1,6 @@
 package list
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -363,7 +362,7 @@ func (o *options) run() error {
 			return err
 		}
 		defer o.io.StopPager()
-		fmt.Fprintf(o.io.StdOut, "%s\n%s\n", title.Describe(), mrutils.DisplayAllMRs(o.io, mergeRequests))
+		o.io.LogInfof("%s\n%s\n", title.Describe(), mrutils.DisplayAllMRs(o.io, mergeRequests))
 	}
 	return nil
 }

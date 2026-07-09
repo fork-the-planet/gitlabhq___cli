@@ -263,7 +263,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 	}
 
 	greenCheck := c.Green("✓")
-	fmt.Fprintf(f.IO().StdOut, "%s Created project on GitLab: %s - %s\n", greenCheck, project.NameWithNamespace, project.WebURL)
+	f.IO().LogInfof("%s Created project on GitLab: %s - %s\n", greenCheck, project.NameWithNamespace, project.WebURL)
 
 	cfg := f.Config()
 	webURL, _ := url.Parse(project.WebURL)
@@ -275,37 +275,37 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 			if readme {
 				// GitLab initialized the repo server-side; clone so the local branch matches the remote.
 				if err := repoCloner(remote, ".", remoteName); err != nil {
-					fmt.Fprintf(f.IO().StdErr, "Warning: Project created on GitLab but clone failed: %v\n", err)
-					fmt.Fprintf(f.IO().StdErr, "You can manually clone with: git clone %s .\n", remote)
+					f.IO().LogErrorf("Warning: Project created on GitLab but clone failed: %v\n", err)
+					f.IO().LogErrorf("You can manually clone with: git clone %s .\n", remote)
 				} else {
-					fmt.Fprintf(f.IO().StdOut, "%s Cloned repository\n", greenCheck)
+					f.IO().LogInfof("%s Cloned repository\n", greenCheck)
 				}
 			} else {
 				if err := gitInitializer(); err != nil {
-					fmt.Fprintf(f.IO().StdErr, "Warning: Project created on GitLab but git init failed: %v\n", err)
-					fmt.Fprintf(f.IO().StdErr, "You can manually initialize the repository with: git init\n")
+					f.IO().LogErrorf("Warning: Project created on GitLab but git init failed: %v\n", err)
+					f.IO().LogErrorf("You can manually initialize the repository with: git init\n")
 				} else {
-					fmt.Fprintf(f.IO().StdOut, "%s Initialized git repository\n", greenCheck)
+					f.IO().LogInfof("%s Initialized git repository\n", greenCheck)
 					if _, err := addRemote(remoteName, remote); err != nil {
-						fmt.Fprintf(f.IO().StdErr, "Warning: Could not add remote: %v\n", err)
+						f.IO().LogErrorf("Warning: Could not add remote: %v\n", err)
 					} else {
-						fmt.Fprintf(f.IO().StdOut, "%s Added remote %s\n", greenCheck, remote)
+						f.IO().LogInfof("%s Added remote %s\n", greenCheck, remote)
 					}
 					if defaultBranch != "" {
 						gitBranch := git.GitCommand("checkout", "-b", defaultBranch)
 						gitBranch.Stdout = os.Stdout
 						gitBranch.Stdin = os.Stdin
 						if err := run.PrepareCmd(gitBranch).Run(); err != nil {
-							fmt.Fprintf(f.IO().StdErr, "Warning: Failed to create branch %s: %v\n", defaultBranch, err)
+							f.IO().LogErrorf("Warning: Failed to create branch %s: %v\n", defaultBranch, err)
 						}
 					}
 				}
 			}
 		} else {
 			if _, err := addRemote(remoteName, remote); err != nil {
-				fmt.Fprintf(f.IO().StdErr, "Warning: Could not add remote: %v\n", err)
+				f.IO().LogErrorf("Warning: Could not add remote: %v\n", err)
 			} else {
-				fmt.Fprintf(f.IO().StdOut, "%s Added remote %s\n", greenCheck, remote)
+				f.IO().LogInfof("%s Added remote %s\n", greenCheck, remote)
 			}
 		}
 
@@ -328,16 +328,16 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 		projectPath := project.Path
 		if readme {
 			if err := repoCloner(remote, projectPath, remoteName); err != nil {
-				fmt.Fprintf(f.IO().StdErr, "Warning: Project created on GitLab but clone failed: %v\n", err)
-				fmt.Fprintf(f.IO().StdErr, "You can manually clone with: git clone %s %s\n", remote, projectPath)
+				f.IO().LogErrorf("Warning: Project created on GitLab but clone failed: %v\n", err)
+				f.IO().LogErrorf("You can manually clone with: git clone %s %s\n", remote, projectPath)
 			} else {
-				fmt.Fprintf(f.IO().StdOut, "%s Initialized repository in './%s/'\n", greenCheck, projectPath)
+				f.IO().LogInfof("%s Initialized repository in './%s/'\n", greenCheck, projectPath)
 			}
 		} else {
 			if err := repoInitializer(projectPath, remote); err != nil {
 				return err
 			}
-			fmt.Fprintf(f.IO().StdOut, "%s Initialized repository in './%s/'\n", greenCheck, projectPath)
+			f.IO().LogInfof("%s Initialized repository in './%s/'\n", greenCheck, projectPath)
 		}
 	}
 

@@ -114,7 +114,7 @@ func (o *options) run() error {
 			return err
 		}
 
-		fmt.Fprintf(o.io.StdOut, "%s Deleted variable %s with scope %s for %s.\n", c.GreenCheck(), o.key, o.scope, baseRepo.FullName())
+		o.io.LogInfof("%s Deleted variable %s with scope %s for %s.\n", c.GreenCheck(), o.key, o.scope, baseRepo.FullName())
 	} else {
 		// Delete group-level variable
 		_, err := client.GroupVariables.RemoveVariable(o.group, o.key, nil)
@@ -122,7 +122,7 @@ func (o *options) run() error {
 			return err
 		}
 
-		fmt.Fprintf(o.io.StdOut, "%s Deleted variable %s for group %s.\n", c.GreenCheck(), o.key, o.group)
+		o.io.LogInfof("%s Deleted variable %s for group %s.\n", c.GreenCheck(), o.key, o.group)
 	}
 
 	return nil

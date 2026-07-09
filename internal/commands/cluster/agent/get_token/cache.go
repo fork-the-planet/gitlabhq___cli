@@ -163,18 +163,18 @@ func (c *cache) getCachedToken() (*gitlab.PersonalAccessToken, error) {
 	}
 
 	if token.Revoked {
-		fmt.Fprintln(os.Stderr, "Cached token has been revoked, creating new one")
+		fmt.Fprintln(os.Stderr, "Cached token has been revoked, creating new one") //nolint:forbidigo // cache has no IOStreams reference, writes directly to os.Stderr
 		return nil, errTokenRevoked
 	}
 
 	isRevoked, err := c.isTokenRevoked(&token)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Warning: Failed to check if token is revoked: %v. Using cached token anyway.\n", err)
+		fmt.Fprintf(os.Stderr, "Warning: Failed to check if token is revoked: %v. Using cached token anyway.\n", err) //nolint:forbidigo // cache has no IOStreams reference, writes directly to os.Stderr
 		return &token, nil
 	}
 
 	if isRevoked {
-		fmt.Fprintln(os.Stderr, "Cached token has been revoked, creating new one")
+		fmt.Fprintln(os.Stderr, "Cached token has been revoked, creating new one") //nolint:forbidigo // cache has no IOStreams reference, writes directly to os.Stderr
 		return nil, errTokenRevoked
 	}
 

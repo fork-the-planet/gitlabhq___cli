@@ -164,13 +164,13 @@ func (o *options) run(ctx context.Context) error {
 		diffLine := diffLines.Text()
 		switch {
 		case isHeaderLine(diffLine):
-			fmt.Fprintf(o.io.StdOut, "\x1b[1;38m%s\x1b[m\n", diffLine)
+			o.io.LogInfof("\x1b[1;38m%s\x1b[m\n", diffLine)
 		case isAdditionLine(diffLine):
-			fmt.Fprintf(o.io.StdOut, "\x1b[32m%s\x1b[m\n", diffLine)
+			o.io.LogInfof("\x1b[32m%s\x1b[m\n", diffLine)
 		case isRemovalLine(diffLine):
-			fmt.Fprintf(o.io.StdOut, "\x1b[31m%s\x1b[m\n", diffLine)
+			o.io.LogInfof("\x1b[31m%s\x1b[m\n", diffLine)
 		default:
-			fmt.Fprintln(o.io.StdOut, diffLine)
+			o.io.LogInfo(diffLine)
 		}
 	}
 

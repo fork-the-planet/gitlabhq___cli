@@ -235,7 +235,7 @@ func (o *options) run(ctx context.Context) error {
 
 	if o.openInBrowser { // open in browser if --web flag is specified
 		if o.io.IsOutputTTY() {
-			fmt.Fprintf(o.io.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(webURL))
+			o.io.LogErrorf("Opening %s in your browser.\n", utils.DisplayURL(webURL))
 		}
 
 		cfg := o.config()

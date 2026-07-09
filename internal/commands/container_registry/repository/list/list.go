@@ -175,9 +175,9 @@ func (o *options) run(ctx context.Context) error {
 		title.Total = int(resp.TotalItems)
 	}
 
-	fmt.Fprintf(o.io.StdOut, "%s\n", title.Describe())
+	o.io.LogInfof("%s\n", title.Describe())
 	if len(repositories) > 0 {
-		fmt.Fprintf(o.io.StdOut, "%s\n", registryutils.DisplayRepositories(o.io, repositories, o.group == "" && o.includeTagsCount))
+		o.io.LogInfof("%s\n", registryutils.DisplayRepositories(o.io, repositories, o.group == "" && o.includeTagsCount))
 	}
 
 	return nil

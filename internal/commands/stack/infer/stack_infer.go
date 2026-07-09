@@ -134,7 +134,7 @@ func run(ctx context.Context, f cmdutils.Factory, gr git.GitRunner, args []strin
 	}
 
 	io.StopSpinner("")
-	fmt.Fprintf(io.StdOut, "%s Added %d layer(s) to stack %q. Run `glab stack sync` to push and create merge requests.\n",
+	io.LogInfof("%s Added %d layer(s) to stack %q. Run `glab stack sync` to push and create merge requests.\n",
 		color.GreenCheck(), len(commits), title)
 
 	return nil
@@ -286,7 +286,7 @@ func promptAndCreateStack(ctx context.Context, f cmdutils.Factory, gr git.GitRun
 
 	title := utils.ReplaceNonAlphaNumericChars(titleString, "-")
 	if title != titleString {
-		fmt.Fprintf(io.StdErr, "%s warning: invalid characters have been replaced with dashes: %s\n",
+		io.LogErrorf("%s warning: invalid characters have been replaced with dashes: %s\n",
 			color.WarnIcon(),
 			color.Blue(title))
 	}
@@ -314,7 +314,7 @@ func promptAndCreateStack(ctx context.Context, f cmdutils.Factory, gr git.GitRun
 		return "", fmt.Errorf("error adding base branch to metadata: %w", err)
 	}
 
-	fmt.Fprintf(io.StdOut, "New stack created with title %q.\n", title)
+	io.LogInfof("New stack created with title %q.\n", title)
 
 	return title, nil
 }

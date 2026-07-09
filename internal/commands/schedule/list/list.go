@@ -1,8 +1,6 @@
 package list
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -92,7 +90,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 			title.Page = int(l.Page)
 			title.CurrentPageTotal = len(schedules)
 
-			fmt.Fprintf(opts.io.StdOut, "%s\n%s\n", title.Describe(), ciutils.DisplaySchedules(opts.io, schedules, repo.FullName()))
+			opts.io.LogInfof("%s\n%s\n", title.Describe(), ciutils.DisplaySchedules(opts.io, schedules, repo.FullName()))
 			return nil
 		},
 	}

@@ -114,7 +114,7 @@ func resolveBranch(cmd *cobra.Command, f cmdutils.Factory) (string, error) {
 		branch = currentBranch
 	} else {
 		// `ci run` is running out of a git repo
-		fmt.Fprintln(f.IO().StdOut, "not in a Git repository. Using repository argument.")
+		f.IO().LogInfo("not in a Git repository. Using repository argument.")
 		client, err := f.GitLabClient()
 		if err != nil {
 			return "", err
@@ -282,7 +282,7 @@ func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 				webURL := pipe.WebURL
 
 				if f.IO().IsOutputTTY() {
-					fmt.Fprintf(f.IO().StdErr, "Opening %s in your browser.\n", utils.DisplayURL(webURL))
+					f.IO().LogErrorf("Opening %s in your browser.\n", utils.DisplayURL(webURL))
 				}
 
 				cfg := f.Config()
@@ -292,7 +292,7 @@ func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 			}
 
 			output := fmt.Sprintf("Created pipeline (id: %d), status: %s, ref: %s, weburl: %s", pipe.ID, pipe.Status, pipe.Ref, pipe.WebURL)
-			fmt.Fprintln(f.IO().StdOut, output)
+			f.IO().LogInfo(output)
 			return nil
 		},
 	}

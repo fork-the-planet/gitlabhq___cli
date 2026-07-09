@@ -204,7 +204,7 @@ func printGroupVariables(variables []*gitlab.GroupVariable, opts *options, out i
 		for _, variable := range variables {
 			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !strings.Contains(variable.EnvironmentScope, "*") {
-					fmt.Fprintf(out, "%s=%s\n", variable.Key, variable.Value)
+					fmt.Fprintf(out, "%s=%s\n", variable.Key, variable.Value) //nolint:forbidigo // out is a generic io.Writer with an os.Stdout fallback, not IOStreams directly
 					writtenKeys = append(writtenKeys, variable.Key)
 				}
 			}
@@ -213,7 +213,7 @@ func printGroupVariables(variables []*gitlab.GroupVariable, opts *options, out i
 		for _, variable := range variables {
 			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !(keysMap[variable.Key]) && (strings.Contains(variable.EnvironmentScope, "*")) {
-					fmt.Fprintf(out, "%s=%s\n", variable.Key, variable.Value)
+					fmt.Fprintf(out, "%s=%s\n", variable.Key, variable.Value) //nolint:forbidigo // out is a generic io.Writer with an os.Stdout fallback, not IOStreams directly
 				}
 			}
 		}
@@ -221,7 +221,7 @@ func printGroupVariables(variables []*gitlab.GroupVariable, opts *options, out i
 		for _, variable := range variables {
 			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !strings.Contains(variable.EnvironmentScope, "*") {
-					fmt.Fprintf(out, "export %s=%s\n", variable.Key, variable.Value)
+					fmt.Fprintf(out, "export %s=%s\n", variable.Key, variable.Value) //nolint:forbidigo // out is a generic io.Writer with an os.Stdout fallback, not IOStreams directly
 					writtenKeys = append(writtenKeys, variable.Key)
 				}
 			}
@@ -230,7 +230,7 @@ func printGroupVariables(variables []*gitlab.GroupVariable, opts *options, out i
 		for _, variable := range variables {
 			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !(keysMap[variable.Key]) && (strings.Contains(variable.EnvironmentScope, "*")) {
-					fmt.Fprintf(out, "export %s=%s\n", variable.Key, variable.Value)
+					fmt.Fprintf(out, "export %s=%s\n", variable.Key, variable.Value) //nolint:forbidigo // out is a generic io.Writer with an os.Stdout fallback, not IOStreams directly
 				}
 			}
 		}
@@ -260,7 +260,7 @@ func printProjectVariables(variables []*gitlab.ProjectVariable, opts *options, o
 		for _, variable := range variables {
 			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !strings.Contains(variable.EnvironmentScope, "*") {
-					fmt.Fprintf(out, "%s=\"%s\"\n", variable.Key, variable.Value)
+					fmt.Fprintf(out, "%s=\"%s\"\n", variable.Key, variable.Value) //nolint:forbidigo // out is a generic io.Writer with an os.Stdout fallback, not IOStreams directly
 					writtenKeys = append(writtenKeys, variable.Key)
 				}
 			}
@@ -269,7 +269,7 @@ func printProjectVariables(variables []*gitlab.ProjectVariable, opts *options, o
 		for _, variable := range variables {
 			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !(keysMap[variable.Key]) && (strings.Contains(variable.EnvironmentScope, "*")) {
-					fmt.Fprintf(out, "%s=\"%s\"\n", variable.Key, variable.Value)
+					fmt.Fprintf(out, "%s=\"%s\"\n", variable.Key, variable.Value) //nolint:forbidigo // out is a generic io.Writer with an os.Stdout fallback, not IOStreams directly
 				}
 			}
 		}
@@ -277,7 +277,7 @@ func printProjectVariables(variables []*gitlab.ProjectVariable, opts *options, o
 		for _, variable := range variables {
 			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !strings.Contains(variable.EnvironmentScope, "*") {
-					fmt.Fprintf(out, "export %s=\"%s\"\n", variable.Key, variable.Value)
+					fmt.Fprintf(out, "export %s=\"%s\"\n", variable.Key, variable.Value) //nolint:forbidigo // out is a generic io.Writer with an os.Stdout fallback, not IOStreams directly
 					writtenKeys = append(writtenKeys, variable.Key)
 				}
 			}
@@ -286,7 +286,7 @@ func printProjectVariables(variables []*gitlab.ProjectVariable, opts *options, o
 		for _, variable := range variables {
 			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !(keysMap[variable.Key]) && (strings.Contains(variable.EnvironmentScope, "*")) {
-					fmt.Fprintf(out, "export %s=\"%s\"\n", variable.Key, variable.Value)
+					fmt.Fprintf(out, "export %s=\"%s\"\n", variable.Key, variable.Value) //nolint:forbidigo // out is a generic io.Writer with an os.Stdout fallback, not IOStreams directly
 				}
 			}
 		}

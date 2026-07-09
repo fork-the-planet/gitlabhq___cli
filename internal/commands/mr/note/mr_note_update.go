@@ -160,6 +160,6 @@ func (o *updateOptions) run(ctx context.Context) error {
 		return fmt.Errorf("failed to update note: %w", err)
 	}
 
-	fmt.Fprintf(o.io.StdOut, "%s#note_%d\n", o.mr.WebURL, o.noteID)
+	o.io.LogInfof("%s#note_%d\n", o.mr.WebURL, o.noteID)
 	return nil
 }
