@@ -252,6 +252,55 @@ func TestCiStatusCommand_WithPromptsEnabled_FinishedPipeline(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestCiStatusCommand_JSONWithWait_Error(t *testing.T) {
+	// Test that providing both `--output json` and `--wait`
+	// returns the "--output json cannot be used with --live, --wait, or --compact flags" error.
+	t.Parallel()
+
+	tc := gitlabtesting.NewTestClient(t)
+
+	exec := cmdtest.SetupCmdForTest(t, NewCmdStatus, false,
+		cmdtest.WithGitLabClient(tc.Client),
+		cmdtest.WithBranch("main"),
+	)
+
+	_, err := exec("--output json --wait")
+	require.Error(t, err)
+	assert.EqualError(t, err, "--output json cannot be used with --live, --wait, or --compact flags")
+}
+
+func TestCiStatusCommand_Wait_NoPrompt(t *testing.T) {
+	// Test that --wait disables prompting and exits cleanly on a finished pipeline.
+	// This is the same as TestCiStatusCommand_NoPrompt, except using the --wait flag.
+	tc := gitlabtesting.NewTestClient(t)
+
+	gomock.InOrder(
+		tc.MockPipelines.EXPECT().
+			GetLatestPipeline("OWNER/REPO", &gitlab.GetLatestPipelineOptions{Ref: new("main")}, gomock.Any()).
+			Return(&gitlab.Pipeline{ID: 1, Status: "success"}, nil, nil),
+
+		tc.MockJobs.EXPECT().
+			ListPipelineJobs("OWNER/REPO", int64(1), gomock.Any()).
+			Return([]*gitlab.Job{{ID: 1, Name: "test"}}, nil, nil),
+
+		tc.MockJobs.EXPECT().
+			ListPipelineJobs("OWNER/REPO", int64(1), gomock.Any(), gomock.Any()).
+			Return([]*gitlab.Job{
+				{ID: 1, Name: "test", Stage: "test", Status: "success"},
+			}, &gitlab.Response{NextPage: 0}, nil),
+	)
+
+	exec := cmdtest.SetupCmdForTest(t, NewCmdStatus, true,
+		cmdtest.WithGitLabClient(tc.Client),
+		cmdtest.WithBranch("main"),
+	)
+
+	// This should complete without hanging. Unlike TestCiStatusCommand_NoPrompt,
+	// prompting is disabled via the --wait flag rather than f.IOStub.SetPrompt.
+	_, err := exec("--wait")
+	require.NoError(t, err)
+}
+
 func Test_isLivePollableStatus(t *testing.T) {
 	t.Parallel()
 
