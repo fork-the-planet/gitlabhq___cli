@@ -14,6 +14,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/text"
 )
 
 type options struct {
@@ -33,11 +34,11 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 
 	statusCmd := &cobra.Command{
 		Use:   "status <profile> [flags]",
-		Short: "Show the status of a security scan profile for a project.",
+		Short: "Show the status of a security scan profile for a project. (EXPERIMENTAL)",
 		Long: heredoc.Doc(`
 			Show whether a security scan profile is attached to a project and its
 			current scan status.
-		`),
+		`) + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			# Show dependency scanning status for the current project
 			$ glab security config status dependency_scanning

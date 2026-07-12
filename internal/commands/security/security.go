@@ -12,9 +12,10 @@ import (
 func NewCmd(f cmdutils.Factory) *cobra.Command {
 	securityCmd := &cobra.Command{
 		Use:   "security <command> [flags]",
-		Short: "Manage GitLab security features. (EXPERIMENTAL)",
+		Short: "Manage GitLab security scan profiles for a project. (EXPERIMENTAL)",
 		Long: heredoc.Doc(`
-			Configure GitLab security features for a project.
+			Use these commands to enable, disable, or inspect the security scans
+			attached to a project.
 		`) + text.ExperimentalString,
 	}
 

@@ -12,6 +12,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/text"
 )
 
 type options struct {
@@ -31,12 +32,14 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 
 	enableCmd := &cobra.Command{
 		Use:   "enable <profile> [flags]",
-		Short: "Enable a security scan profile for a project.",
+		Short: "Enable a security scan profile for a project. (EXPERIMENTAL)",
 		Long: heredoc.Doc(`
 			Attach a security scan profile to a project.
 
-			You must be a Maintainer or Owner of the project.
-		`),
+			Prerequisites:
+
+			- At least the Maintainer role or the Security Manager role for the project.
+		`) + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			# Enable dependency scanning on the current project
 			$ glab security config enable dependency_scanning

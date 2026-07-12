@@ -12,6 +12,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/text"
 )
 
 type options struct {
@@ -31,12 +32,14 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 
 	disableCmd := &cobra.Command{
 		Use:   "disable <profile> [flags]",
-		Short: "Disable a security scan profile for a project.",
+		Short: "Disable a security scan profile for a project. (EXPERIMENTAL)",
 		Long: heredoc.Doc(`
 			Detach a security scan profile from a project.
 
-			You must be a Maintainer or Owner of the project.
-		`),
+			Prerequisites:
+
+			- At least the Maintainer role or the Security Manager role for the project.
+		`) + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			# Disable dependency scanning on the current project
 			$ glab security config disable dependency_scanning
