@@ -17,6 +17,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/commands/securefile/helpers"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 	"gitlab.com/gitlab-org/cli/internal/utils"
@@ -24,7 +25,7 @@ import (
 
 func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 	securefileDownloadCmd := &cobra.Command{
-		Use:   "download [<id>] [flags]",
+		Use:   "download [<id> | --id <id> | --name <name>] [flags]",
 		Short: `Download one or more secure files from a project.`,
 		Long: heredoc.Docf(`
 		To download a single file, identify it by its numeric ID (as a positional
@@ -188,33 +189,12 @@ func downloadSecureFileByName(ios *iostreams.IOStreams, client *gitlab.Client, r
 		return err
 	}
 
-	// Get the fileID for the given Name
-	options := &gitlab.ListProjectSecureFilesOptions{
-		ListOptions: gitlab.ListOptions{
-			Page:    1,
-			PerPage: api.MaxPerPage,
-		},
+	fileID, err := helpers.GetSecureFileIDByName(client, fileName, repoName)
+	if err != nil {
+		return err
 	}
 
-	var fileID int64
-	for secureFile, err := range gitlab.Scan2(func(p gitlab.PaginationOptionFunc) ([]*gitlab.SecureFile, *gitlab.Response, error) {
-		return client.SecureFiles.ListProjectSecureFiles(repoName, options, p)
-	}) {
-		if err != nil {
-			return fmt.Errorf("error fetching secure files: %w", err)
-		}
-
-		if secureFile.Name == fileName {
-			fileID = secureFile.ID
-			break
-		}
-	}
-
-	if fileID == 0 {
-		return fmt.Errorf("couldn't locate secure file with name %s", fileName)
-	}
-
-	err := saveFile(ios, client, repoName, fileID, path, verifyChecksum, forceDownload)
+	err = saveFile(ios, client, repoName, fileID, path, verifyChecksum, forceDownload)
 	if err != nil {
 		return err
 	}

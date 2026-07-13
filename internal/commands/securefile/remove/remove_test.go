@@ -9,10 +9,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	gitlab "gitlab.com/gitlab-org/api/client-go/v2"
 	gitlabtesting "gitlab.com/gitlab-org/api/client-go/v2/testing"
 
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
+
+const repoName = "OWNER/REPO"
 
 func Test_SecurefileRemove(t *testing.T) {
 	type testCase struct {
@@ -26,17 +29,45 @@ func Test_SecurefileRemove(t *testing.T) {
 
 	testCases := []testCase{
 		{
-			name:        "Remove a secure file",
+			name:        "Remove a secure file via id arg",
 			cli:         "1 -y",
 			expectedMsg: []string{"• Deleting secure file repo=OWNER/REPO fileID=1", "✓ Secure file 1 deleted."},
 			setupMock: func(tc *gitlabtesting.TestClient) {
 				tc.MockSecureFiles.EXPECT().
-					RemoveSecureFile("OWNER/REPO", int64(1)).
+					RemoveSecureFile(repoName, int64(1)).
 					Return(nil, nil)
 			},
 		},
 		{
-			name: "Remove a secure file but API errors",
+			name:        "Remove a secure file via id flag",
+			cli:         "--id 1 -y",
+			expectedMsg: []string{"• Deleting secure file repo=OWNER/REPO fileID=1", "✓ Secure file 1 deleted."},
+			setupMock: func(tc *gitlabtesting.TestClient) {
+				tc.MockSecureFiles.EXPECT().
+					RemoveSecureFile(repoName, int64(1)).
+					Return(nil, nil)
+			},
+		},
+		{
+			name:        "Remove a secure file via name flag",
+			cli:         "--name file2.txt -y",
+			expectedMsg: []string{"• Deleting secure file repo=OWNER/REPO fileID=2", "✓ Secure file 2 deleted."},
+			setupMock: func(tc *gitlabtesting.TestClient) {
+				tc.MockSecureFiles.EXPECT().
+					ListProjectSecureFiles(repoName, &gitlab.ListProjectSecureFilesOptions{
+						ListOptions: gitlab.ListOptions{Page: 1, PerPage: 100},
+					}, nil).
+					Return([]*gitlab.SecureFile{
+						{ID: 1, Name: "file1.txt"},
+						{ID: 2, Name: "file2.txt"},
+					}, &gitlab.Response{}, nil)
+				tc.MockSecureFiles.EXPECT().
+					RemoveSecureFile(repoName, int64(2)).
+					Return(nil, nil)
+			},
+		},
+		{
+			name: "Remove a secure file but API errors via id arg",
 			cli:  "1 -y",
 			setupMock: func(tc *gitlabtesting.TestClient) {
 				tc.MockSecureFiles.EXPECT().
@@ -47,7 +78,7 @@ func Test_SecurefileRemove(t *testing.T) {
 			wantStderr: "error removing secure file: DELETE https://gitlab.com/api/v4/projects/OWNER%2FREPO/secure_files/1: 400",
 		},
 		{
-			name:       "Remove a secure file with invalid file ID",
+			name:       "Remove a secure file with invalid file ID via id arg",
 			cli:        "abc -y",
 			setupMock:  func(tc *gitlabtesting.TestClient) {},
 			wantErr:    true,

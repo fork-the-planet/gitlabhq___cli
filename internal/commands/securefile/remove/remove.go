@@ -11,6 +11,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go/v2"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/commands/securefile/helpers"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
@@ -19,6 +20,7 @@ import (
 type options struct {
 	forceDelete bool
 	fileID      int64
+	fileName    string
 
 	io           *iostreams.IOStreams
 	gitlabClient func() (*gitlab.Client, error)
@@ -32,7 +34,7 @@ func NewCmdRemove(f cmdutils.Factory) *cobra.Command {
 		baseRepo:     f.BaseRepo,
 	}
 	securefileRemoveCmd := &cobra.Command{
-		Use:   "remove <id>",
+		Use:   "remove [<id> | --id <id> | --name <name>] [flags]",
 		Short: `Remove a secure file from a project.`,
 		Long: heredoc.Docf(`
 		Remove a secure file from a project, identified by its numeric ID.
@@ -43,25 +45,30 @@ func NewCmdRemove(f cmdutils.Factory) *cobra.Command {
 		to target another project.
 		`, "`"),
 		Aliases: []string{"rm", "delete"},
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.MaximumNArgs(1),
 		Example: heredoc.Doc(`
 			# Remove a secure file by ID
 			glab securefile remove 1
+			glab securefile remove --id 1
+
+			# Remove a secure file by name
+			glab securefile remove --name example.txt
 
 			# Skip the confirmation prompt
 			glab securefile remove 1 -y
+			glab securefile remove --name example.txt -y
 
 			# Use the 'rm' alias
 			glab securefile rm 1
 
 			# Use the 'delete' alias
-			glab securefile delete 1
+			glab securefile delete --name example.txt
 		`),
 		Annotations: map[string]string{
 			mcpannotations.Destructive: "true",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := opts.complete(args); err != nil {
+			if err := opts.complete(cmd, args); err != nil {
 				return err
 			}
 
@@ -74,16 +81,38 @@ func NewCmdRemove(f cmdutils.Factory) *cobra.Command {
 	}
 
 	securefileRemoveCmd.Flags().BoolVarP(&opts.forceDelete, "yes", "y", false, "Skip the confirmation prompt.")
+	securefileRemoveCmd.Flags().Int64("id", 0, "ID of the secure file to remove.")
+	securefileRemoveCmd.Flags().String("name", "", "Name of the secure file to remove.")
+
+	securefileRemoveCmd.MarkFlagsMutuallyExclusive("id", "name")
 
 	return securefileRemoveCmd
 }
 
-func (o *options) complete(args []string) error {
-	fileID, err := strconv.Atoi(args[0])
+func (o *options) complete(cmd *cobra.Command, args []string) error {
+	name, err := cmd.Flags().GetString("name")
 	if err != nil {
-		return fmt.Errorf("secure file ID must be an integer: %s", args[0])
+		return fmt.Errorf("unable to get name flag: %w", err)
 	}
-	o.fileID = int64(fileID)
+	if name != "" {
+		o.fileName = name
+		return nil
+	}
+
+	if cmd.Flags().Changed("id") {
+		o.fileID, err = cmd.Flags().GetInt64("id")
+		if err != nil {
+			return fmt.Errorf("unable to get id flag: %w", err)
+		}
+	} else {
+		if len(args) == 0 {
+			return &cmdutils.FlagError{Err: fmt.Errorf("provide a secure file ID argument, or the --id or --name flag")}
+		}
+		o.fileID, err = strconv.ParseInt(args[0], 10, 64)
+		if err != nil {
+			return fmt.Errorf("secure file ID must be an integer: %s", args[0])
+		}
+	}
 
 	return nil
 }
@@ -105,6 +134,13 @@ func (o *options) run(ctx context.Context) error {
 	repo, err := o.baseRepo()
 	if err != nil {
 		return err
+	}
+
+	if o.fileName != "" {
+		o.fileID, err = helpers.GetSecureFileIDByName(client, o.fileName, repo.FullName())
+		if err != nil {
+			return err
+		}
 	}
 
 	if !o.forceDelete && o.io.PromptEnabled() {
