@@ -113,6 +113,18 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		4. Optional. To fetch the new tag locally after the release, run
 		   %[1]sgit fetch --tags origin%[1]s.
 
+		Authentication in CI/CD:
+
+		- Recommended: Use %[1]sCI_JOB_TOKEN%[1]s and turn on CI auto-login by
+		  setting %[1]sGLAB_ENABLE_CI_AUTOLOGIN=true%[1]s. glab sends
+		  %[1]sCI_JOB_TOKEN%[1]s in the %[1]sJOB-TOKEN%[1]s header, which the Releases
+		  API accepts.
+		- Alternative: Use %[1]sGITLAB_TOKEN%[1]s set to a project or group access token with the
+		  %[1]sapi%[1]s scope.
+		- Do not set %[1]sGITLAB_TOKEN=$CI_JOB_TOKEN%[1]s because the Releases API will
+		  return a %[1]s404 Not Found%[1]s. %[1]sGITLAB_TOKEN%[1]s is sent as a personal access token in
+		  the %[1]sPRIVATE-TOKEN%[1]s header, which the Releases API does not accept.
+
 		The %[1]s--publish-to-catalog%[1]s flag is an experiment: it might be
 		unstable or removed at any time, and is not ready for production use.
 		For more information, see
@@ -143,6 +155,12 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 
 			# Upload all tarballs in a specified folder (types default to 'other')
 			glab release create v1.0.1 ./dist/*.tar.gz
+
+			# Create a release from a CI/CD job using the job token
+			GLAB_ENABLE_CI_AUTOLOGIN=true glab release create v1.0.1 --notes "See CHANGELOG.md" --ref "$CI_COMMIT_SHA"
+
+			# Create a release from a CI/CD job using a project or group access token with the 'api' scope
+			GITLAB_TOKEN="$ACCESS_TOKEN" glab release create v1.0.1 --notes "See CHANGELOG.md" --ref "$CI_COMMIT_SHA"
 
 			# Create a release with assets specified as JSON object
 			glab release create v1.0.1 --assets-links='
