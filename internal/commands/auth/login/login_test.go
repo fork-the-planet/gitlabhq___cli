@@ -4,6 +4,7 @@ package login
 
 import (
 	"bytes"
+	"os/exec"
 	"testing"
 
 	"github.com/google/shlex"
@@ -11,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/zalando/go-keyring"
 
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
@@ -447,4 +449,82 @@ func Test_keyringLogin(t *testing.T) {
 	token, err = keyring.Get("glab:gitlab.com:token", "")
 	require.NoError(t, err)
 	assert.Equal(t, "glpat-1234", token)
+}
+
+func Test_initialAPIHostname(t *testing.T) {
+	t.Run("flag wins over saved value", func(t *testing.T) {
+		cfg := config.NewBlankConfigInDir(t.TempDir())
+		require.NoError(t, cfg.Set("gl.io", "api_host", "saved.gl.io"))
+
+		got := initialAPIHostname(cfg, "gl.io", "flag.gl.io")
+
+		assert.Equal(t, "flag.gl.io", got)
+	})
+
+	t.Run("saved value wins over hostname when flag empty", func(t *testing.T) {
+		cfg := config.NewBlankConfigInDir(t.TempDir())
+		require.NoError(t, cfg.Set("gl.io", "api_host", "saved.gl.io"))
+
+		got := initialAPIHostname(cfg, "gl.io", "")
+
+		assert.Equal(t, "saved.gl.io", got)
+	})
+
+	t.Run("falls back to hostname when nothing saved and flag empty", func(t *testing.T) {
+		cfg := config.NewBlankConfigInDir(t.TempDir())
+
+		got := initialAPIHostname(cfg, "gl.io", "")
+
+		assert.Equal(t, "gl.io", got)
+	})
+}
+
+func Test_initialSSHHostname(t *testing.T) {
+	t.Run("saved value is used", func(t *testing.T) {
+		cfg := config.NewBlankConfigInDir(t.TempDir())
+		require.NoError(t, cfg.Set("gl.io", "ssh_host", "ssh.gl.io"))
+
+		got := initialSSHHostname(cfg, "gl.io")
+
+		assert.Equal(t, "ssh.gl.io", got)
+	})
+
+	t.Run("uses SSH host detected from git remotes when nothing saved", func(t *testing.T) {
+		t.Chdir(t.TempDir())
+		require.NoError(t, exec.Command("git", "init").Run())
+		require.NoError(t, exec.Command("git", "remote", "add", "origin", "ssh://ssh.gl.io/owner/repo.git").Run())
+		cfg := config.NewBlankConfigInDir(t.TempDir())
+
+		got := initialSSHHostname(cfg, "gl.io")
+
+		assert.Equal(t, "ssh.gl.io", got)
+	})
+
+	t.Run("falls back to hostname when nothing saved and no git detection", func(t *testing.T) {
+		t.Chdir(t.TempDir())
+		cfg := config.NewBlankConfigInDir(t.TempDir())
+
+		got := initialSSHHostname(cfg, "gl.io")
+
+		assert.Equal(t, "gl.io", got)
+	})
+}
+
+func Test_initialContainerRegistryDomains(t *testing.T) {
+	t.Run("saved value is used", func(t *testing.T) {
+		cfg := config.NewBlankConfigInDir(t.TempDir())
+		require.NoError(t, cfg.Set("gitlab.com", "container_registry_domains", "my.custom.registry"))
+
+		got := initialContainerRegistryDomains(cfg, "gitlab.com")
+
+		assert.Equal(t, "my.custom.registry", got)
+	})
+
+	t.Run("falls back to hostname-derived default when nothing saved", func(t *testing.T) {
+		cfg := config.NewBlankConfigInDir(t.TempDir())
+
+		got := initialContainerRegistryDomains(cfg, "gitlab.com")
+
+		assert.Equal(t, "gitlab.com,gitlab.com:443,registry.gitlab.com", got)
+	})
 }
