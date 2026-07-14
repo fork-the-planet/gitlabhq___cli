@@ -15,7 +15,9 @@ import (
 )
 
 func Test_noteTimeAgo(t *testing.T) {
+	t.Parallel()
 	t.Run("combines relative and absolute time", func(t *testing.T) {
+		t.Parallel()
 		created := time.Now().Add(-24 * time.Hour)
 		got := noteTimeAgo(&gitlab.Note{CreatedAt: &created})
 		expected := "about 1 day ago (" + created.Format("2006-01-02 15:04:05") + ")"
@@ -23,6 +25,7 @@ func Test_noteTimeAgo(t *testing.T) {
 	})
 
 	t.Run("empty when CreatedAt is nil", func(t *testing.T) {
+		t.Parallel()
 		assert.Empty(t, noteTimeAgo(&gitlab.Note{}))
 	})
 }
