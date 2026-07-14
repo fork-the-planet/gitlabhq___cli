@@ -303,11 +303,7 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 	// Split hostname into base hostname and subfolder if present
 	var subfolder string
 	hostname, _ := splitHostnameAndSubfolder(opts.Hostname)
-	apiHostname := hostname
-
-	if opts.ApiHost != "" {
-		apiHostname = opts.ApiHost
-	}
+	apiHostname := initialAPIHostname(cfg, hostname, opts.ApiHost)
 
 	isSelfHosted := false
 
@@ -386,7 +382,7 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 
 		// If interactive and self-hosted, prompt for API hostname and SSH hostname
 		if opts.Interactive && isSelfHosted {
-			// Prompt for API hostname
+			// Prompt for API hostname (pre-filled by initialAPIHostname above)
 			apiHostnameInput := huh.NewInput().
 				Title("API hostname:").
 				Description("For instances with a different hostname for the API endpoint.").
@@ -400,12 +396,8 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 				return fmt.Errorf("could not prompt: %w", err)
 			}
 
-			// Prompt for SSH hostname (default to main hostname, like API hostname)
-			sshHostname := hostname
-			// Try to detect from git remotes as a suggestion
-			if detectedSSH := detectSSHHost(hostname); detectedSSH != "" {
-				sshHostname = detectedSSH
-			}
+			// Prompt for SSH hostname
+			sshHostname := initialSSHHostname(cfg, hostname)
 
 			sshHostnameInput := huh.NewInput().
 				Title("SSH hostname:").
@@ -482,7 +474,7 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 		if opts.ContainerRegistryDomains != "" {
 			containerRegistryDomains = opts.ContainerRegistryDomains
 		} else {
-			containerRegistryDomains = defaultContainerRegistryDomainsString(hostname)
+			containerRegistryDomains = initialContainerRegistryDomains(cfg, hostname)
 			containerRegistryInput := huh.NewInput().
 				Title("What domains does this host use for the container registry and image dependency proxy?").
 				Value(&containerRegistryDomains).
@@ -728,6 +720,47 @@ func showTokenPrompt(ctx context.Context, io *iostreams.IOStreams, hostname stri
 	}
 
 	return token, nil
+}
+
+// initialAPIHostname returns the value used to pre-fill the API-hostname
+// prompt (and the value written to config when the prompt is skipped).
+// Precedence: --api-host flag, then a value previously saved for the host,
+// then the base hostname. Reading the saved value first prevents a
+// re-authentication from silently overwriting a value the user set with
+// `glab config set`.
+func initialAPIHostname(cfg config.Config, hostname, apiHostFlag string) string {
+	if apiHostFlag != "" {
+		return apiHostFlag
+	}
+	if saved, _ := cfg.Get(hostname, "api_host"); saved != "" {
+		return saved
+	}
+	return hostname
+}
+
+// initialSSHHostname returns the value used to pre-fill the SSH-hostname
+// prompt. Precedence: a value previously saved for the host, then a value
+// detected from local git remotes, then the base hostname.
+func initialSSHHostname(cfg config.Config, hostname string) string {
+	if saved, _ := cfg.Get(hostname, "ssh_host"); saved != "" {
+		return saved
+	}
+	if detected := detectSSHHost(hostname); detected != "" {
+		return detected
+	}
+	return hostname
+}
+
+// initialContainerRegistryDomains returns the value used to pre-fill the
+// container-registry-domains prompt. Prefers a value previously saved for the
+// host so a re-authentication does not silently overwrite domains the user
+// set via `glab config set`; otherwise falls back to a hostname-derived
+// default.
+func initialContainerRegistryDomains(cfg config.Config, hostname string) string {
+	if saved, _ := cfg.Get(hostname, "container_registry_domains"); saved != "" {
+		return saved
+	}
+	return defaultContainerRegistryDomainsString(hostname)
 }
 
 func defaultContainerRegistryDomainsString(hostname string) string {
