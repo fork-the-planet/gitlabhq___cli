@@ -223,8 +223,12 @@ func printTTYIssuePreview(opts *options) {
 		opts.io.LogInfof("%s", c.Bold("Milestone: "))
 		opts.io.LogInfo(opts.issue.Milestone.Title)
 	}
-	if opts.issue.State == "closed" {
-		opts.io.LogInfof("Closed by: %s %s\n", opts.issue.ClosedBy.Username, issueTimeAgo)
+	if opts.issue.State == "closed" && opts.issue.ClosedBy != nil {
+		if opts.issue.ClosedAt != nil {
+			opts.io.LogInfof("Closed by: %s %s\n", opts.issue.ClosedBy.Username, utils.TimeToPrettyTimeAgo(*opts.issue.ClosedAt))
+		} else {
+			opts.io.LogInfof("Closed by: %s\n", opts.issue.ClosedBy.Username)
+		}
 	}
 
 	// Comments

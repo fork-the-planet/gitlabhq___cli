@@ -488,6 +488,76 @@ func Test_assigneesList(t *testing.T) {
 	}
 }
 
+func Test_printTTYIssuePreview_closed(t *testing.T) {
+	createdAt, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
+	closedAt, _ := time.Parse(time.RFC3339, "2015-01-15T09:00:00.000Z")
+	issueType := string(issuable.TypeIssue)
+
+	tests := []struct {
+		name         string
+		issue        *gitlab.Issue
+		wantContains []string
+		wantOmits    []string
+	}{
+		{
+			name: "closed_issue_with_nil_closed_by_does_not_panic",
+			issue: &gitlab.Issue{
+				Title:     "Closed issue",
+				State:     "closed",
+				Author:    &gitlab.IssueAuthor{Username: "alice"},
+				CreatedAt: &createdAt,
+				IssueType: &issueType,
+				ClosedBy:  nil,
+				ClosedAt:  nil,
+			},
+			wantOmits: []string{"Closed by:"},
+		},
+		{
+			name: "closed_issue_with_closed_by_and_closed_at",
+			issue: &gitlab.Issue{
+				Title:     "Closed issue",
+				State:     "closed",
+				Author:    &gitlab.IssueAuthor{Username: "alice"},
+				CreatedAt: &createdAt,
+				IssueType: &issueType,
+				ClosedBy:  &gitlab.IssueCloser{Username: "bob"},
+				ClosedAt:  &closedAt,
+			},
+			wantContains: []string{"Closed by: bob "},
+		},
+		{
+			name: "closed_issue_with_closed_by_but_no_closed_at",
+			issue: &gitlab.Issue{
+				Title:     "Closed issue",
+				State:     "closed",
+				Author:    &gitlab.IssueAuthor{Username: "alice"},
+				CreatedAt: &createdAt,
+				IssueType: &issueType,
+				ClosedBy:  &gitlab.IssueCloser{Username: "bob"},
+				ClosedAt:  nil,
+			},
+			wantContains: []string{"Closed by: bob\n"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ios, _, stdout, _ := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
+			opts := &options{io: ios, issue: tt.issue}
+
+			require.NotPanics(t, func() { printTTYIssuePreview(opts) })
+
+			out := stripansi.Strip(stdout.String())
+			for _, want := range tt.wantContains {
+				assert.Contains(t, out, want)
+			}
+			for _, omit := range tt.wantOmits {
+				assert.NotContains(t, out, omit)
+			}
+		})
+	}
+}
+
 func TestIssueViewJSON(t *testing.T) {
 	exec := cmdtest.SetupCmdForTest(t, func(f cmdutils.Factory) *cobra.Command {
 		return NewCmdView(f, issuable.TypeIssue)
