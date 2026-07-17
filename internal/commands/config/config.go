@@ -40,6 +40,9 @@ func NewCmdConfig(f cmdutils.Factory) *cobra.Command {
 		- %[1]stelemetry%[1]s: If %[1]sfalse%[1]s, disables sending usage data to your GitLab instance. Defaults to %[1]strue%[1]s. Override with environment variable %[1]s$GLAB_SEND_TELEMETRY%[1]s.
 		- %[1]stoken%[1]s: Your GitLab access token. Defaults to environment variables.
 		- %[1]svisual%[1]s: Takes precedence over %[1]seditor%[1]s. If unset, uses the default editor. Override with environment variable %[1]s$VISUAL%[1]s.
+
+		Configuration file locations follow the XDG Base Directory specification.
+		For the full search order and platform-specific paths, see [configuration](https://gitlab.com/gitlab-org/cli#configuration).
 		`, "`"),
 		Aliases: []string{"conf"},
 	}

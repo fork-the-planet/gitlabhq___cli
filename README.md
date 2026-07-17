@@ -327,7 +327,7 @@ If no legacy config exists, `glab` uses platform-specific XDG Base Directory loc
 
 - **Linux**: `~/.config/glab-cli/config.yml` (XDG_CONFIG_HOME)
 - **macOS**: `~/Library/Application Support/glab-cli/config.yml` (XDG_CONFIG_HOME)
-- **Windows**: `%APPDATA%\glab-cli\config.yml` (XDG_CONFIG_HOME)
+- **Windows**: `%LOCALAPPDATA%\glab-cli\config.yml` (XDG_CONFIG_HOME)
 
 **Note**: If you have config files in both the legacy location (`~/.config/glab-cli/config.yml`)
 and the platform-specific XDG location, `glab` will use the legacy location and display a warning.
