@@ -122,16 +122,11 @@ Many core commands also have sub-commands. Some examples:
 
 ### GitLab Duo for the CLI
 
-The GitLab CLI also provides support for GitLab Duo AI/ML powered features. These include:
+The GitLab CLI also includes support for using the GitLab Duo Agent Platform directly in your terminal.
 
-- [`glab duo ask`](docs/source/duo/ask.md)
+Use `glab duo cli` to ask GitLab Duo questions about your codebase and to autonomously perform actions on your behalf.
 
-Use `glab duo ask` to ask GitLab Duo (Classic) questions about `git` commands. It can help you
-remember a command you forgot, or provide suggestions on how to run commands to perform other tasks.
-
-To interact with the GitLab Duo Agent Platform, use the [GitLab Duo CLI](https://docs.gitlab.com/user/gitlab_duo_cli/).
-
-A unified experience is proposed in [issue 585937](https://gitlab.com/gitlab-org/gitlab/-/work_items/585937).
+For more information, see [GitLab Duo CLI](https://docs.gitlab.com/user/gitlab_duo_cli/).
 
 ## Demo
 
