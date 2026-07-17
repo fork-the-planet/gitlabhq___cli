@@ -189,12 +189,12 @@ func downloadSecureFileByName(ios *iostreams.IOStreams, client *gitlab.Client, r
 		return err
 	}
 
-	fileID, err := helpers.GetSecureFileIDByName(client, fileName, repoName)
+	secureFile, err := helpers.GetSecureFileByName(client, fileName, repoName)
 	if err != nil {
 		return err
 	}
 
-	err = saveFile(ios, client, repoName, fileID, path, verifyChecksum, forceDownload)
+	err = saveFile(ios, client, repoName, secureFile.ID, path, verifyChecksum, forceDownload)
 	if err != nil {
 		return err
 	}

@@ -137,10 +137,12 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	if o.fileName != "" {
-		o.fileID, err = helpers.GetSecureFileIDByName(client, o.fileName, repo.FullName())
+		secureFile, err := helpers.GetSecureFileByName(client, o.fileName, repo.FullName())
 		if err != nil {
 			return err
 		}
+
+		o.fileID = secureFile.ID
 	}
 
 	if !o.forceDelete && o.io.PromptEnabled() {

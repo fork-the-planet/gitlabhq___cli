@@ -2,8 +2,6 @@ package create
 
 import (
 	"fmt"
-	"io"
-	"os"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -11,6 +9,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go/v2"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/commands/securefile/helpers"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
@@ -91,7 +90,7 @@ func (o *options) run() error {
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("fileName"), o.fileName)
 
-	reader, err := getReaderFromFilePath(o.inputFilePath)
+	reader, err := helpers.GetReaderFromFilePath(o.inputFilePath)
 	if err != nil {
 		return fmt.Errorf("unable to read file at %s: %w", o.inputFilePath, err)
 	}
@@ -103,13 +102,4 @@ func (o *options) run() error {
 
 	o.io.LogInfof(color.Bold("%s Secure file %s created.\n"), color.GreenCheck(), o.fileName)
 	return nil
-}
-
-func getReaderFromFilePath(filePath string) (io.Reader, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-
-	return file, nil
 }

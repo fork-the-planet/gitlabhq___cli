@@ -2,13 +2,15 @@ package helpers
 
 import (
 	"fmt"
+	"io"
+	"os"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go/v2"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 )
 
-func GetSecureFileIDByName(client *gitlab.Client, fileName, repoName string) (int64, error) {
+func GetSecureFileByName(client *gitlab.Client, fileName, repoName string) (*gitlab.SecureFile, error) {
 	options := &gitlab.ListProjectSecureFilesOptions{
 		ListOptions: gitlab.ListOptions{
 			Page:    1,
@@ -20,13 +22,22 @@ func GetSecureFileIDByName(client *gitlab.Client, fileName, repoName string) (in
 		return client.SecureFiles.ListProjectSecureFiles(repoName, options, p)
 	}) {
 		if err != nil {
-			return 0, fmt.Errorf("error fetching secure files: %w", err)
+			return nil, fmt.Errorf("error fetching secure files: %w", err)
 		}
 
 		if secureFile.Name == fileName {
-			return secureFile.ID, nil
+			return secureFile, nil
 		}
 	}
 
-	return 0, fmt.Errorf("couldn't locate secure file with name %s", fileName)
+	return nil, fmt.Errorf("couldn't locate secure file with name %s", fileName)
+}
+
+func GetReaderFromFilePath(filePath string) (io.Reader, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
 }

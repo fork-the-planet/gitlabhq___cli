@@ -502,6 +502,8 @@
       url: 'cli/securefile/list/'
     - title: glab securefile remove
       url: 'cli/securefile/remove/'
+    - title: glab securefile update
+      url: 'cli/securefile/update/'
 - title: glab security
   url: 'cli/security/'
   submenu:

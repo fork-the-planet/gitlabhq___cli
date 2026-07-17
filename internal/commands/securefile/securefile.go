@@ -10,6 +10,7 @@ import (
 	securefileGetCmd "gitlab.com/gitlab-org/cli/internal/commands/securefile/get"
 	securefileListCmd "gitlab.com/gitlab-org/cli/internal/commands/securefile/list"
 	securefileRemoveCmd "gitlab.com/gitlab-org/cli/internal/commands/securefile/remove"
+	securefileUpdateCmd "gitlab.com/gitlab-org/cli/internal/commands/securefile/update"
 )
 
 func NewCmdSecurefile(f cmdutils.Factory) *cobra.Command {
@@ -30,6 +31,7 @@ func NewCmdSecurefile(f cmdutils.Factory) *cobra.Command {
 	securefileCmd.AddCommand(securefileDownloadCmd.NewCmdDownload(f))
 	securefileCmd.AddCommand(securefileGetCmd.NewCmdGet(f))
 	securefileCmd.AddCommand(securefileListCmd.NewCmdList(f))
+	securefileCmd.AddCommand(securefileUpdateCmd.NewCmdUpdate(f))
 	securefileCmd.AddCommand(securefileRemoveCmd.NewCmdRemove(f))
 	return securefileCmd
 }

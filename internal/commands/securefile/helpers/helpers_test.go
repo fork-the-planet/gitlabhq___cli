@@ -15,7 +15,7 @@ import (
 
 const repoName = "OWNER/REPO"
 
-func Test_GetSecureFileIDByName(t *testing.T) {
+func Test_GetSecureFileByName(t *testing.T) {
 	type testCase struct {
 		name       string
 		fileName   string
@@ -91,7 +91,7 @@ func Test_GetSecureFileIDByName(t *testing.T) {
 			tc.setupMock(testClient)
 
 			// WHEN
-			fileID, err := GetSecureFileIDByName(testClient.Client, tc.fileName, repoName)
+			secureFile, err := GetSecureFileByName(testClient.Client, tc.fileName, repoName)
 
 			// THEN
 			if tc.wantErr {
@@ -101,7 +101,7 @@ func Test_GetSecureFileIDByName(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantID, fileID)
+			assert.Equal(t, tc.wantID, secureFile.ID)
 		})
 	}
 }
