@@ -44,6 +44,7 @@ GLab is an open source GitLab CLI tool. It brings GitLab to your terminal, next 
   - [Debugging](#debugging)
 - [Troubleshooting](#troubleshooting)
 - [Issues](#issues)
+- [Security](#security)
 - [Contributing](#contributing)
   - [Versioning](#versioning)
   - [Classify version changes](#classify-version-changes)
@@ -456,6 +457,16 @@ For help with common issues, see the
 ## Issues
 
 If you have an issue: report it on the [issue tracker](https://gitlab.com/gitlab-org/cli/-/issues)
+
+## Security
+
+To report a security vulnerability in `glab`, follow the process in
+the [security policy](SECURITY.md). Please do not open a public issue.
+
+To learn how the project handles dependency updates and container-scanner CVE
+reports, see [dependency management](CONTRIBUTING.md#dependency-management)
+and [reporting a vulnerability](CONTRIBUTING.md#reporting-a-vulnerability)
+in `CONTRIBUTING.md`.
 
 ## Contributing
 

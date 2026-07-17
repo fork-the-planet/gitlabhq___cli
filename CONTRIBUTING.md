@@ -53,6 +53,39 @@ If you are a GitLab team member that is interested in becoming a maintainer of t
 
 Create a [new issue from the "Default" template](https://gitlab.com/gitlab-org/cli/-/issues/new?issuable_template=Default) and follow the instructions in the template.
 
+### Dependency management
+
+Go and Node.js dependencies are managed automatically by Renovate, which opens
+[merge requests](https://gitlab.com/gitlab-org/cli/-/merge_requests/?sort=created_date&state=opened&label_name%5B%5D=maintenance%3A%3Adependency&first_page_size=100) as upstream releases become available.
+Updates are merged on our normal review cadence rather than immediately, to
+give us time to verify compatibility.
+
+Every CI/CD pipeline also runs GitLab Advanced SAST, Dependency Scanning, and
+Secret Detection. Vulnerabilities in our direct dependencies surface
+automatically in the project's Vulnerability Report.
+
+### Reporting a vulnerability
+
+If you believe you've found a security vulnerability in `glab`, follow the
+process in the [security policy](SECURITY.md). Do not open a public issue.
+
+If you're relaying output from a container-image scanner (Trivy, Grype, and
+similar), please first verify that the vulnerability is actually reachable
+from `glab` code. The Go team provides
+[`govulncheck`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck), a
+separate tool that performs analysis of call-graph reachability:
+
+```shell
+go install golang.org/x/vuln/cmd/govulncheck@latest
+govulncheck ./...
+```
+
+Image scanners frequently flag module-level CVEs in transitive Go dependencies that
+the CLI never imports. For example sub-packages of `golang.org/x/image` or `golang.org/x/net`.
+
+These findings are not actionable on their own, but a
+`govulncheck` report that shows a reachable symbol is.
+
 ### Your First Code Contribution?
 
 Read about the contribution process in [`development_process.md`](docs/development_process.md). This document explains how we review and release changes.
